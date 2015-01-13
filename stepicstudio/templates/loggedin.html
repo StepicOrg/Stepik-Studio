@@ -1,0 +1,10 @@
+{%  extends "base.html" %}
+{% if Recording == False %}
+    {%  block content %}
+    Hello, {{ full_name }}
+
+    Go to your courses -> <a href="/courses/">List of {{ full_name }}'s courses </a><br>
+    Or check system status and edit your setting -> <a href="/settings/"> Your StepicStudio dashboard</a>
+
+    {% endblock %}
+{% endif %}

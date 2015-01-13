@@ -1,0 +1,41 @@
+{%  extends "base.html" %}
+
+{% if Recording == False %}
+    {%  block content %}
+
+
+        <!--ADD BACK BUTTON -->
+        <br xmlns="http://www.w3.org/1999/html">this page is for Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}:</a>
+        <br>
+        <h3>
+        from  <a href = {{ Course.url }}>{{ Course.name}}</a>
+        </h3>
+        <br>
+        <ul id="sortable">
+            {% for S in Steps  %}
+            <li data-lessonPosition ='{{ S.position }}' id="{{ S.pk }}" class="ui-state-default">
+                <span class="lesson_path hiddenInfo">Path: {{ Lesson.os_path }}</span>
+                <a href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/"> {{ S.name }}</a>
+                <div class="lesson_info">
+                        <span>info</span>
+                        <div class="delete_button">
+                            <div class="delete-url" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/delete/"> Delete</div>
+                        </div>
+                </div>
+
+            </li>
+            {% endfor %}
+            <br>
+        </ul>
+
+        Add new steps here
+
+    {% endblock %}
+    {% block controls %}
+        <a href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
+        <div class="delete_button right">
+        <div class="delete-url" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/delete/">Delete lesson </div>
+{#        <a href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/delete/"=RIGHT> Detele This Lesson </a><br>#}
+        </div>
+    {% endblock %}
+{% endif %}

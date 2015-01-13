@@ -1,0 +1,10 @@
+{%  extends "base.html" %}
+{% block content %}
+    username: {{ settings.user }} <br>
+    server IP-addres: {{ settings.serverIP }} <br>
+    client IP-addres: {{ settings.clientIP }} <br>
+    File Path on server: {{ settings.serverFilesFolder }} <br>
+    Screencast folder on client: {{ settings.clientFilesFolder }} <br>
+    Record video from camera: {{ settings.recordVideo }} <br>
+    Record screencast:{{ settings.recordScreen }} <br>
+{%  endblock %}

@@ -1,0 +1,20 @@
+{%  extends "base.html" %}
+{%  load static %}
+
+{% if Recording == False %}
+    {%  block content %}
+        Structure for <a href = {{ Course.url }}>{{ Course.name}}</a><br>
+        <br>
+        {% for L in all_course_lessons %}
+            {{ L.name }}<br>
+            {% for S, ind in all_steps %}
+                {% if S.from_lesson == L.id %}
+                    &nbsp;&nbsp;&nbsp;&nbsp;{{ S.name }} {% if ind == False %} (Not recorded) {% endif %}
+                    <br>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+    {% endblock %}
+
+{% endif %}

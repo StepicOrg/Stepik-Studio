@@ -1,0 +1,121 @@
+<flashmedialiveencoder_profile>
+    <preset>
+        <name>Custom</name>
+        <description />
+    </preset>
+    <capture>
+        <video>
+        <device>LGPLite Stream Engine</device>
+        <crossbar_input>0</crossbar_input>
+        <frame_rate>25.00</frame_rate>
+        <size>
+            <width>1920</width>
+            <height>1080</height>
+        </size>
+        </video>
+        <audio>
+        <device>LGPLite Stream Engine Audio</device>
+        <crossbar_input>0</crossbar_input>
+        <sample_rate>44100</sample_rate>
+        <channels>2</channels>
+        <input_volume>75</input_volume>
+        </audio>
+    </capture>
+    <process>
+        <video>
+        <preserve_aspect />
+        </video>
+    </process>
+    <encode>
+        <video>
+        <format>H.264</format>
+        <datarate>5000;</datarate>
+        <outputsize>1920x1080;</outputsize>
+        <advanced>
+            <profile>Baseline</profile>
+            <level>5.1</level>
+            <keyframe_frequency>1 Second</keyframe_frequency>
+        </advanced>
+        <autoadjust>
+            <enable>false</enable>
+            <maxbuffersize>1</maxbuffersize>
+            <dropframes>
+            <enable>false</enable>
+            </dropframes>
+            <degradequality>
+            <enable>false</enable>
+            <minvideobitrate />
+            <preservepfq>false</preservepfq>
+            </degradequality>
+        </autoadjust>
+        </video>
+        <audio>
+        <format>MP3</format>
+        <datarate>96</datarate>
+        </audio>
+    </encode>
+    <restartinterval>
+        <days />
+        <hours />
+        <minutes />
+    </restartinterval>
+    <reconnectinterval>
+        <attempts />
+        <interval />
+    </reconnectinterval>
+    <output>
+        <file>
+        <limitbysize>
+            <enable>false</enable>
+            <size>10</size>
+        </limitbysize>
+        <limitbyduration>
+            <enable>false</enable>
+            <hours>1</hours>
+            <minutes>0</minutes>
+        </limitbyduration>
+        <path>Professor.mp4</path>
+        </file>
+    </output>
+    <metadata>
+        <entry>
+        <key>author</key>
+        <value />
+        </entry>
+        <entry>
+        <key>copyright</key>
+        <value />
+        </entry>
+        <entry>
+        <key>description</key>
+        <value />
+        </entry>
+        <entry>
+        <key>keywords</key>
+        <value />
+        </entry>
+        <entry>
+        <key>rating</key>
+        <value />
+        </entry>
+        <entry>
+        <key>title</key>
+        <value />
+        </entry>
+    </metadata>
+    <preview>
+        <video>
+        <input>
+            <zoom>100%</zoom>
+        </input>
+        <output>
+            <zoom>100%</zoom>
+        </output>
+        </video>
+        <audio />
+    </preview>
+    <log>
+        <level>100</level>
+        <directory>/Users/mehanig/CODE/TESTER_FOLDER/Not_how_to_MOOC_By_User_2/Intro/4/Step16from45</directory>
+    </log>
+</flashmedialiveencoder_profile>

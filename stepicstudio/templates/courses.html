@@ -1,0 +1,11 @@
+{%  extends "base.html" %}
+{% if Recording == False %}
+    {%  block content %}
+        <br>You can record:<br>
+        {%  for i in Courses %}
+        <b><a href="/course/{{i.id}}/"> {{i}} </a><br>
+
+
+        {% endfor %}
+        {% endblock %}
+{% endif %}

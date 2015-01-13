@@ -1,0 +1,10 @@
+DROP DATABASE IF EXISTS `mydb`;
+CREATE DATABASE `mydb`
+    DEFAULT CHARACTER SET utf8
+    DEFAULT COLLATE utf8_general_ci;
+
+USE 'mysql';
+GRANT ALL PRIVILEGES ON mydb.* TO 'mydb_user'@'%' IDENTIFIED BY 'your_password'
+
+WITH GRANT OPTION;
+FLUSH PRIVILEGES;

@@ -1,0 +1,167 @@
+
+        body {
+
+            text-align: center;
+            font-size: 1.275em;
+            color: #333333;
+            /*font-family: "Myriad Pro Light", "Gill Sans", "Gill Sans MT", Calibri, sans-serif;*/
+            /*font-weight:lighter;*/
+            font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+             Helvetica, Arial, "Lucida Grande", sans-serif;
+
+        }
+
+        #page {
+            width: 1050px;
+            text-align: left;
+            margin: 10px auto 20px auto;
+            background-color: #489b14;
+        }
+
+        #sidebar{
+            float: left;
+            width: 200px;
+            border: 1px  solid #000;
+        }
+
+        #content {
+            float: left;
+            width:800px;
+            border: 1px solid #35af44;
+            padding: 10px;
+
+            color: #888;
+            height: auto;
+            margin-right: 6px;
+            margin-top: 2px;
+            font-size: 22px;
+        }
+
+        .lesson_info {
+            float: right;
+            text-align: left;
+            width: auto;
+            color: #565656;
+
+        }
+
+        .lesson_info_link {
+            padding-right: 110px;
+
+        }
+
+        .lesson_path{
+            padding-right: 400px;
+        }
+
+        .hiddenInfo {
+            display: none;
+        }
+
+        .lesson_path {
+            font-size: 0.475em;
+        }
+
+        .delete_button {
+            width: auto;
+            cursor: pointer;
+            padding-left: 30px;
+        }
+
+        .right {
+            float: right;
+            width: auto;
+        }
+
+        /* Basic Grey */
+
+.basic-grey {
+    margin-left:auto;
+    margin-right:auto;
+    max-width: 500px;
+    padding: 25px 15px 25px 10px;
+    color: #888;
+    text-shadow: 1px 1px 1px #FFF;
+    border:3px solid #eeeeee;
+}
+.basic-grey h1 {
+    font-size: 25px;
+    padding: 0px 0px 10px 40px;
+    display: block;
+    border-bottom:1px solid #E4E4E4;
+    margin: -10px -15px 30px -10px;;
+    color: #888;
+}
+.basic-grey h1>span {
+    display: block;
+    font-size: 11px;
+}
+.basic-grey label {
+    display: block;
+    margin: 0px;
+}
+.basic-grey label>span {
+    float: left;
+    width: 20%;
+    text-align: right;
+    padding-right: 10px;
+    margin-top: 10px;
+    color: #888;
+}
+.basic-grey input[type="text"], .basic-grey input[type="password"],.basic-grey textarea, .basic-grey select {
+    border: 1px solid #DADADA;
+    color: #888;
+    height: 30px;
+    margin-bottom: 16px;
+    margin-right: 6px;
+    margin-top: 2px;
+    outline: 0 none;
+    padding: 3px 3px 3px 5px;
+    width: 70%;
+    font-size: 19px;
+    line-height:15px;
+    box-shadow: inset 0px 1px 4px #ECECEC;
+    -moz-box-shadow: inset 0px 1px 4px #ECECEC;
+    -webkit-box-shadow: inset 0px 1px 4px #ECECEC;
+}
+.basic-grey textarea{
+    padding: 5px 3px 3px 5px;
+}
+.basic-grey select {
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance: none;
+    text-indent: 0.01px;
+    text-overflow: '';
+    width: 70%;
+    height: 35px;
+    line-height: 25px;
+}
+.basic-grey textarea{
+    height:100px;
+}
+.basic-grey .button {
+    font-size: 19px;
+    background: #7ab06f;
+    border: none;
+    padding: 10px 25px 10px 25px;
+    color: #FFF;
+    box-shadow: 2px 1px 5px #B6B6B6;
+    border-radius: 0px;
+    width: 200px;
+    text-shadow: 1px 1px 1px #4e7f43;
+    cursor: pointer;
+    font-family: "Myriad Pro Light", "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
+    font-weight:lighter;
+}
+.basic-grey .button:hover {
+    background: #528446
+}
+
+
+
+
+    #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+    #sortable li { margin: 0 3px 3px 3px; padding: 0.8em; padding-top: 0.1em; padding-left: 1.5em;  font-size: 1.4em; height: 18px; 
+        background: #FAFAFA; border-width: 0px;}
+    #sortable li span { position: absolute; margin-left: -1.3em; }

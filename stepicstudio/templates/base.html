@@ -1,0 +1,61 @@
+{%  load static %}
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title{%  block title %}Stepic Studio Server{% endblock %}</title>
+<head>
+
+    <link rel = "stylesheet" type="text/css" href="{% static "css/default.css" %}" >
+    <link rel = "stylesheet" type="text/css" href="{% static "css/jquery-ui.css" %}" >
+    <link rel = "stylesheet" type="text/css" href="{% static "css/jquery-ui.theme.css" %}" >
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="{% static "js/list.js" %}"></script>
+    <script src="//code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+
+
+
+
+</head>
+<body>
+
+    <div id="page">
+        <div id = "left_controls">
+            <div id = "sidebar">
+                {% block sidebar %}
+                <ul>
+                    <li>Logged as {{ full_name }}</li>
+                    <li><a href="/courses/">Courses list</a></li>
+                    <li><a href="/settings/">Settings</a></li>
+                    {%  if Course.id > 0 %}
+                    <li><a href="/course/{{ Course.id }}/structure">Structure</a> </li>
+                    {% endif %}
+                    <li><a href="/logout/">Log out</a></li>
+                </ul>
+                {% endblock %}
+                <div id = "sidebar" class="recorder">
+                    RECORDER:
+                    {% block recorder %}
+                        {% if Recording == True %}
+                            <br>
+                            Recording started:
+                            <br>
+                            <a href="/stop_recording/"> Press here to stop</a>
+
+
+                        {% else %}
+                                No Recodring.
+                        {% endif %}
+                    {% endblock %}
+                </div>
+            </div>
+
+
+        </div>
+        <div id="content">
+            {% block content %} {% endblock %}
+            {% block controls %} {% endblock %}
+        </div>
+
+    </div>
+</body>
+</html>

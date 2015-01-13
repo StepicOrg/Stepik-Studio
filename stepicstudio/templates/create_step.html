@@ -1,0 +1,13 @@
+{%  extends "base.html" %}
+{% if Recording == False %}
+    {%  block content %}
+
+    <form action="{{ postUrl }}" method = "post" > {% csrf_token %}
+        <ul>
+            {{ form.as_ul }}
+        </ul>
+        <input type="submit" name="submit" value="Add Step">
+    </form>
+     <div class="back button" ALIGN="RIGHT">Back</div>
+    {% endblock %}
+{% endif %}
