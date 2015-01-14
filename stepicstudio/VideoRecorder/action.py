@@ -11,8 +11,9 @@ def start_recording(**kwargs):
     user_id = kwargs["user_id"]
     folder_path = kwargs["serverFilesFolder"].serverFilesFolder
     data = kwargs["data"]
-    generate_xml(XML_SETTINGS_DIR, substep_server_path(folder_path=folder_path, data=data), SUBSTEP_PROFESSOR )
-    server_status = add_file_to_test(folder_path=folder_path, data=data)
+    generate_xml(XML_SETTINGS_DIR, substep_server_path(folder_path=folder_path, data=data), SUBSTEP_PROFESSOR)
+    add_file_to_test(folder_path=folder_path, data=data)
+    server_status = run_adobe_live()
     screencast_status = ssh_screencast_start()
     db_camera = CameraStatus.objects.get(id="1")
     if server_status and screencast_status:
@@ -46,9 +47,9 @@ def files_update(**kwargs):
 def stop_cam_recording():
     camstat = CameraStatus.objects.get(id="1")
     camstat.status = False
-    #Add command to stop server ADOBE LIVE
     ssh_screencast_stop()
     camstat.save()
+    stop_adobe_live()
 
 
 def delete_files_associated(url_args):

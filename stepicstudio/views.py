@@ -181,11 +181,11 @@ def add_step(request, courseId, lessonId):
             last_saved = Step.objects.get(id=saved_step.pk)
             last_saved.from_lesson = from_lesson
             last_saved.save()
-            return HttpResponseRedirect(COURSE_ULR_NAME + '/' + courseId + '/' + LESSON_URL_NAME + '/' + from_lesson + '/')
+            return HttpResponseRedirect('/' + COURSE_ULR_NAME + '/' + courseId + '/' + LESSON_URL_NAME + '/' + from_lesson + '/')
     else:
         form = StepForm(request.user.id, lessonId)
 
-    args = {"full_name": request.user.username, "postUrl": COURSE_ULR_NAME + "/"+courseId+"/" + LESSON_URL_NAME
+    args = {"full_name": request.user.username, "postUrl": "/" + COURSE_ULR_NAME + "/"+courseId+"/" + LESSON_URL_NAME
                                                                                 + "/"+lessonId+"/add_step/"}
     args.update({"Recording": camera_curr_status})
     args.update(csrf(request))
@@ -196,7 +196,7 @@ def add_step(request, courseId, lessonId):
 
 @login_required(login_url='/login/')
 def show_step(request, courseId, lessonId, stepId):
-    postURL = COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
+    postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     args =  {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId),
                                                      "Lesson": Lesson.objects.all().get(id=lessonId),
                                                      "Step": Step.objects.get(id=stepId),
@@ -215,9 +215,9 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
     stepIndex = len(SubStep.objects.all().filter(from_step=stepId)) + 1
     substep.name = "Step"+str(stepIndex)+"from"+str(substep.from_step)
     substep.save()
-    postURL = COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
+    postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
-                                                "postUrl": postUrl,
+                                                "postUrl": postURL,
                                                 "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
                                                 "Step": Step.objects.all().filter(id=stepId)[0],
                                                 "SubSteps": SubStep.objects.all().filter(from_step=stepId),
@@ -232,7 +232,7 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
 
 @login_required(login_url='/login')
 def recording_page(request, courseId, lessonId, stepId):
-    postURL = COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
+    postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
                                                 "postUrl": postURL,
                                                 "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
@@ -252,9 +252,9 @@ def stop_all_recording(request):
 
 
 def stop_recording(request, courseId, lessonId, stepId):
-        postURL = COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
+        postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
         args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
-                "postUrl": postUrl, "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
+                "postUrl": postURL, "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
                 "Step": Step.objects.all().filter(id=stepId)[0],
                 "SubSteps": SubStep.objects.all().filter(from_step=stepId), }
         args.update(csrf(request))
@@ -263,7 +263,7 @@ def stop_recording(request, courseId, lessonId, stepId):
         last_substep_time = SubStep.objects.all().filter(from_step=stepId).aggregate(Max('start_time'))['start_time__max']
         recorded_substep = SubStep.objects.all().filter(start_time=last_substep_time)[0]
         add_stat_info(recorded_substep.id)
-        return HttpResponseRedirect(postUrl, args)
+        return HttpResponseRedirect(postURL, args)
 
 
 
@@ -271,7 +271,7 @@ def stop_recording(request, courseId, lessonId, stepId):
 @login_required(login_url='/login/')
 def remove_substep(request, courseId, lessonId, stepId, substepId):
     substep = SubStep.objects.get(id=substepId)
-    postURL = COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
+    postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     args = {"full_name": request.user.username,
                                                      "Course": Course.objects.all().filter(id=courseId)[0],
                                                      "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
@@ -289,7 +289,7 @@ def remove_substep(request, courseId, lessonId, stepId, substepId):
 
 def delete_step(request, courseId, lessonId, stepId):
     step = Step.objects.all().get(id=stepId)
-    postURL = COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/"
+    postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/"
     args = {"full_name": request.user.username,
                                                      "Course": Course.objects.all().filter(id=courseId)[0],
                                                      "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
@@ -320,7 +320,7 @@ def user_profile(request):
                                                   "settings": UserProfile.objects.get(user_id=request.user.id),
                                                   })
 
-## СДЕЛАТЬ ЛОК НА БАЗУ И ОБНОВИТЬ ФАЙЛЫ
+##TODO: Refactor
 def reorder_elements(request):
     if request.POST and request.is_ajax():
         args = url_to_args(request.META['HTTP_REFERER'])
@@ -362,6 +362,6 @@ def video_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
     print(substep.os_path)
     file = FileWrapper(open(substep.os_path, 'rb'))
-    response = HttpResponse(file, content_type='video/mp4')
-    response['Content-Disposition'] = 'filename=my_video.mp4'
+    response = HttpResponse(file, content_type='video/f4v')
+    response['Content-Disposition'] = 'filename=Professor.f4v'
     return response

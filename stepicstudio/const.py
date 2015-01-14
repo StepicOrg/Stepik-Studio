@@ -2,5 +2,5 @@ COURSE_ULR_NAME = 'course'
 LESSON_URL_NAME = 'lesson'
 STEP_URL_NAME = 'step'
 SUBSTEP_URL_NAME = None
-SUBSTEP_PROFESSOR = 'Professor.mp4'
+SUBSTEP_PROFESSOR = 'Professor.f4v'
 SUBSTEP_SCREEN = 'Screen.mp4'
