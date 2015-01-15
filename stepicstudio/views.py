@@ -22,7 +22,7 @@ from wsgiref.util import guess_scheme
 def can_edit_page(view_function):
     def process_request(*args, **kwargs):
         access = test_access(args[0].user.id, list(filter(None, args[0].path.split("/"))))
-        print("runing" + str(args[0].user.id) + str(kwargs['courseId']) )
+        print("runing " + str(args[0].user.id) + str(kwargs['courseId']))
         # if cant_edit_course(args[0].user.id, kwargs['courseId']):
         if not access:
             return HttpResponseRedirect("/login/")
@@ -56,16 +56,16 @@ def test_access(user_id, path_list):
         step_id = path_list[path_list.index(STEP_URL_NAME)+1]
     else:
         step_id = None
-    print("NOW" + str(user_id) + str(course_id) )
+    print("NOW " + str(user_id) + " " + str(course_id))
     print(cant_edit_course(user_id, course_id))
     if path_list[0] == COURSE_ULR_NAME and not cant_edit_course(user_id, course_id):
         print(path_list)
-        if lesson_id and not Lesson.objects.all().get(id=lesson_id).from_course == course_id:
-            print("bla1 ")
+        if lesson_id and not (str(Lesson.objects.all().get(id=lesson_id).from_course) == str(course_id)):
+            print(lesson_id,  Lesson.objects.all().get(id=lesson_id).from_course, course_id )
+            print("Error here 1 ")
             return False
-        if step_id and not Step.objects.all().get(id=step_id).from_lesson == lesson_id:
-
-            print("bla2 ")
+        if step_id and not (int(Step.objects.all().get(id=step_id).from_lesson) == int(lesson_id)):
+            print("Error here 2 ")
             return False
         return True
     else:
@@ -127,6 +127,7 @@ def loggedin(request):
 
 ##TODO: Implement correctly !!! REDECORATE WITH CAN_EDIT_PAGE
 @login_required(login_url='/login/')
+@can_edit_page
 def add_lesson(request):
     if request.POST:
         form = LessonForm(request.user.id, request.POST)
@@ -148,6 +149,7 @@ def add_lesson(request):
 
 
 @login_required(login_url='/login/')
+@can_edit_page
 def show_lesson(request, courseId, lessonId):
     args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
                                                        "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
@@ -157,6 +159,7 @@ def show_lesson(request, courseId, lessonId):
 
 
 @login_required(login_url='/login/')
+@can_edit_page
 def delete_lesson(request, courseId, lessonId):
     lesson_obj = Lesson.objects.get(id=lessonId)
     redirect_to_course_page = request.path.split("/")
@@ -171,7 +174,9 @@ def delete_lesson(request, courseId, lessonId):
 
 
 ##IMPLEMENT CORRECTLY
+
 @login_required(login_url='/login/')
+@can_edit_page
 def add_step(request, courseId, lessonId):
     if request.POST:
         form = StepForm(request.user.id, lessonId, request.POST)
@@ -195,6 +200,7 @@ def add_step(request, courseId, lessonId):
 
 
 @login_required(login_url='/login/')
+@can_edit_page
 def show_step(request, courseId, lessonId, stepId):
     postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     args =  {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId),
@@ -209,6 +215,7 @@ def show_step(request, courseId, lessonId, stepId):
 #TODO: ADD RERECORD FUNCTION HERE
 ## TODO: ADD DECORATOR can_edit_page
 @login_required(login_url='/login/')
+@can_edit_page
 def start_new_step_recording(request, courseId, lessonId, stepId):
     substep = SubStep()
     substep.from_step = stepId
@@ -244,6 +251,7 @@ def recording_page(request, courseId, lessonId, stepId):
 
 ##TODO: Add statistic here
 @login_required(login_url='/login')
+@can_edit_page
 def stop_all_recording(request):
         args = {"full_name": request.user.username }
         args.update(csrf(request))
@@ -251,7 +259,8 @@ def stop_all_recording(request):
         args.update({"Recording": camera_curr_status})
         return render_to_response("courses.html", args)
 
-
+@login_required(login_url="/login")
+@can_edit_page
 def stop_recording(request, courseId, lessonId, stepId):
         postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
         args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
@@ -270,6 +279,7 @@ def stop_recording(request, courseId, lessonId, stepId):
 
 
 @login_required(login_url='/login/')
+@can_edit_page
 def remove_substep(request, courseId, lessonId, stepId, substepId):
     substep = SubStep.objects.get(id=substepId)
     postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
@@ -287,7 +297,8 @@ def remove_substep(request, courseId, lessonId, stepId, substepId):
     #return render_to_response("step_view.html", args)
     return HttpResponseRedirect(postURL)
 
-
+@login_required(login_url="/login/")
+@can_edit_page
 def delete_step(request, courseId, lessonId, stepId):
     step = Step.objects.all().get(id=stepId)
     postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/"
@@ -340,7 +351,8 @@ def reorder_elements(request):
     else:
         return Http404
 
-
+@login_required(login_url="/login/")
+@can_edit_page
 def show_course_struct(request, courseId):
     args = {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId)}
     args.update({"serverFilesFolder": UserProfile.objects.get(user=request.user.id)})
@@ -364,7 +376,7 @@ def video_view(request, substepId):
     print(substep.os_path)
     file = FileWrapper(open(substep.os_path, 'rb'))
     response = HttpResponse(file, content_type='video/f4v')
-    response['Content-Disposition'] = 'filename=Professor.f4v'
+    response['Content-Disposition'] = 'inline; filename=Professor.f4v'
     return response
 
 def video_screen_view(request, substepId):
@@ -372,5 +384,5 @@ def video_screen_view(request, substepId):
     path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + SUBSTEP_SCREEN
     file = FileWrapper(open(path, 'rb'))
     response = HttpResponse(file, content_type='video/ts')
-    response['Content-Disposition'] = 'filename=Screen.ts'
+    response['Content-Disposition'] = 'inline; filename=Screen.ts'
     return response

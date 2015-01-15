@@ -1,4 +1,5 @@
 from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
+from django.contrib.auth.models import User
 from stepicstudio.FileSystemOperations.action import *
 from stepicstudio.const import *
 from stepicstudio.ssh_connections.screencast import *
@@ -10,13 +11,14 @@ from stepicstudio.ssh_connections import Screen_Recorder
 SS_WIN_PATH = ""
 SS_LINUX_PATH = ""
 
-def to_linux_translate(win_path):
-    linux_path = '/home/stepic/' + '/'.join(win_path.split("/")[1:])
+def to_linux_translate(win_path, username):
+    linux_path = '/home/stepic/VIDEO/STEPICSTUDIO/'+ username + "/" + '/'.join(win_path.split("/")[1:])
     print("to_linux_translate() This is linux path ", linux_path)
     return linux_path
 
 def start_recording(**kwargs):
     user_id = kwargs["user_id"]
+    username = User.objects.all().get(id=int(user_id)).username
     folder_path = kwargs["serverFilesFolder"].serverFilesFolder
     data = kwargs["data"]
     generate_xml(XML_SETTINGS_DIR, substep_server_path(folder_path=folder_path, data=data)[0], SUBSTEP_PROFESSOR)
@@ -25,7 +27,7 @@ def start_recording(**kwargs):
     server_status = run_adobe_live()
     #TODO:Refactor!
     screencast_status = ssh_screencast_start()
-    linux_obj = Screen_Recorder(to_linux_translate(substep_folder))
+    linux_obj = Screen_Recorder(to_linux_translate(substep_folder,username))
     # print("Folder: ", linux_obj.rexists(to_linux_translate(substep_folder)))
     linux_obj.run_screen_recorder()
     global SS_LINUX_PATH, SS_WIN_PATH
