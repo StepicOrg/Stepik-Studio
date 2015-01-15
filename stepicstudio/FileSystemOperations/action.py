@@ -60,14 +60,24 @@ def run_adobe_live():
          "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
     GlobalProcess = subprocess.Popen(p, shell=False)
     print("From Run", GlobalProcess.pid)
+    time.sleep(2)
     return True
 
-
+#TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is very bad, it doesn't support spaces and not safe
 def stop_adobe_live():
     p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
          "/s", r"C:\StepicServer\static\video\xml_settings.xml"]
-    print("From Stop", GlobalProcess.pid)
-    os.kill(GlobalProcess.pid, signal.SIGTERM)
+    tree = ET.parse(r"C:\StepicServer\static\video\xml_settings.xml")
+    root = tree.getroot()
+    stop_path = None
+    for elem in root.iter('path'):
+        stop_path = elem.text
+        print("stop_adobe_live():", elem.text)
+    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
+         "/s", stop_path]
+    subprocess.Popen(p, shell=False)
+    # print("From Stop", GlobalProcess.pid)
+    # os.kill(GlobalProcess.pid, signal.SIGTERM)
 
 def delete_substep_on_disc(**kwargs):
     folder = kwargs["folder_path"]
