@@ -127,7 +127,6 @@ def loggedin(request):
 
 ##TODO: Implement correctly !!! REDECORATE WITH CAN_EDIT_PAGE
 @login_required(login_url='/login/')
-@can_edit_page
 def add_lesson(request):
     if request.POST:
         form = LessonForm(request.user.id, request.POST)
