@@ -31,11 +31,11 @@ def substep_server_path(**kwargs):
         os.makedirs(f_c_l_step)
 
     f_c_l_s_substep = f_c_l_step + "/" + translate_non_alphanumerics(data["currSubStep"].name)
-    return f_c_l_s_substep
+    return f_c_l_s_substep, f_c_l_step
 
 
 def add_file_to_test(**kwargs):
-    folder_p = substep_server_path(**kwargs)
+    folder_p, a = substep_server_path(**kwargs)
     # if not os.path.exists(folder_p + file_p):
     #     open(folder_p + file_p, "w")
     if not os.path.isdir(folder_p):
@@ -60,7 +60,7 @@ def run_adobe_live():
          "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
     GlobalProcess = subprocess.Popen(p, shell=False)
     print("From Run", GlobalProcess.pid)
-    time.sleep(2)
+    # time.sleep(2)
     return True
 
 #TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is very bad, it doesn't support spaces and not safe
@@ -128,14 +128,14 @@ def search_as_files(args):
     args.update({"all_steps": ziped_list})
     return args
 
-
+#TODO: Let's not check if it's fine? Return True anyway?
 def delete_files_on_server(path):
     if os.path.exists(path):
         shutil.rmtree(path)
         return True
     else:
         print(path + ' No folder was found and can\'t be deleted.(This is BAD!)')
-        return False
+        return True
 
 
 def generate_xml(XMLpath, write_to_path, file_name):

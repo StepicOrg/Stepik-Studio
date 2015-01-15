@@ -42,6 +42,7 @@ urlpatterns = patterns('',
     url(r'^add_lesson/', 'stepicstudio.views.add_lesson'),
 
     url(r'^showcontent/(?P<substepId>[0-9]+)/', 'stepicstudio.views.video_view'),
+    url(r'^showscreencontent/(?P<substepId>[0-9]+)/', 'stepicstudio.views.video_screen_view'),
     #
 
 

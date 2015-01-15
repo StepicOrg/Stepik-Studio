@@ -10,7 +10,8 @@
         from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
         </h3>
                 {% for SS in SubSteps  %}
-                {{SS.name}} |  <a target="_blank" href=/showcontent/{{ SS.id }}>Show</a>
+                {{SS.name}} |  <a target="_blank" href=/showcontent/{{ SS.id }}>Show </a> | <a target="_blank" href=/showscreencontent/{{ SS.id }}>Show screen</a>
+
 
                 <div class="delete_button right">
                     <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
@@ -18,7 +19,7 @@
             <br>
             {% endfor %}
         <br>
-        <div id="start-recording" ALIGN="CENTER">
+        <div class="start-recording" ALIGN="CENTER">
             <h1><a href={{ postUrl }}record/>Start Recording</a>
             </h1>
         </div>

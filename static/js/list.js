@@ -65,11 +65,12 @@ $(document).ready(function(){
     });
 
 // TODO: This code doesn't work in chrome. Fix it later. (08 Jan 2015)
-//    $('#start-recording').mousedown(function(){
-//      var link = $(this).find("a").attr('href');
-//      $(this).find("a").text("Starting...");
-//      window.location.replace(link);
-//    });
+    $('.start-recording').on('click', function(){
+        var link = $(this).find("a").attr('href');
+        $(this).find("a").text("Starting...").click(function(){
+                return false;
+        });
+    });
 
     setInterval(function() {
         var seconds = new Date().getTime() / 1000;

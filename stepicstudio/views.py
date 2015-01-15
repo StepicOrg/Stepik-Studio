@@ -227,6 +227,7 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
     if is_started:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
+    time.sleep(4)
     return render_to_response("step_view.html", args)
 
 
@@ -364,4 +365,12 @@ def video_view(request, substepId):
     file = FileWrapper(open(substep.os_path, 'rb'))
     response = HttpResponse(file, content_type='video/f4v')
     response['Content-Disposition'] = 'filename=Professor.f4v'
+    return response
+
+def video_screen_view(request, substepId):
+    substep = SubStep.objects.all().get(id=substepId)
+    path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + SUBSTEP_SCREEN
+    file = FileWrapper(open(path, 'rb'))
+    response = HttpResponse(file, content_type='video/ts')
+    response['Content-Disposition'] = 'filename=Screen.ts'
     return response
