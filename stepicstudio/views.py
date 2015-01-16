@@ -375,7 +375,7 @@ def video_view(request, substepId):
     print(substep.os_path)
     file = FileWrapper(open(substep.os_path, 'rb'))
     response = HttpResponse(file, content_type='video/f4v')
-    response['Content-Disposition'] = 'inline; filename=Professor.f4v'
+    response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
     return response
 
 def video_screen_view(request, substepId):
@@ -383,5 +383,5 @@ def video_screen_view(request, substepId):
     path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + SUBSTEP_SCREEN
     file = FileWrapper(open(path, 'rb'))
     response = HttpResponse(file, content_type='video/ts')
-    response['Content-Disposition'] = 'inline; filename=Screen.ts'
+    response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
     return response
