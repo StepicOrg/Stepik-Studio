@@ -3,4 +3,4 @@ LESSON_URL_NAME = 'lesson'
 STEP_URL_NAME = 'step'
 SUBSTEP_URL_NAME = None
 SUBSTEP_PROFESSOR = 'Professor.f4v'
-SUBSTEP_SCREEN = 'Screen.ts'
+SUBSTEP_SCREEN = 'Screen.mkv'

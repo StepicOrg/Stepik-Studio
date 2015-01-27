@@ -45,8 +45,8 @@ class Screen_Recorder(object):
                 print("Generated from run_screen_recorder()", self.remote_path)
             i += 1
 
-        command = 'ffmpeg -f alsa -ac 2 -i default -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
-                  '-pix_fmt yuv420p -vcodec libx264 -preset ultrafast -acodec libmp3lame -af "volume=30dB" -threads 0 -y ' \
+        command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
+                  '-pix_fmt yuv420p -vcodec libx264 -acodec pcm_s16le -preset ultrafast -threads 0 -af "volume=30dB" -y ' \
                   + self.remote_path + SUBSTEP_SCREEN + ' 2< /dev/null &'
         print(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
