@@ -220,6 +220,9 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
     substep.from_step = stepId
     stepIndex = len(SubStep.objects.all().filter(from_step=stepId)) + 1
     substep.name = "Step"+str(stepIndex)+"from"+str(substep.from_step)
+    while SubStep.objects.filter(name=substep.name).count():
+        stepIndex += 1
+        substep.name = "Step"+str(stepIndex)+"from"+str(substep.from_step)
     substep.save()
     postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
