@@ -11,6 +11,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="{% static "js/list.js" %}"></script>
     <script src="//code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+    <script src="//d3js.org/d3.v3.min.js"></script>
 
 
 
@@ -28,6 +29,7 @@
                     <li><a href="/settings/">Settings</a></li>
                     {%  if Course.id > 0 %}
                     <li><a href="/course/{{ Course.id }}/structure">Structure</a> </li>
+                    <li><a href="/course/{{ Course.id }}/stat_info">Statistic</a></li>
                     {% endif %}
                     <li><a href="/logout/">Log out</a></li>
                 </ul>

@@ -371,6 +371,13 @@ def show_course_struct(request, courseId):
     args.update(csrf(request))
     return render_to_response("course_struct.html", args)
 
+@login_required(login_url="/login/")
+@can_edit_page
+def view_stat(request, courseId):
+    args = {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId)}
+    return render_to_response("stat.html", args)
+
+
 
 ###TODO: IMPLEMENT!!!
 def video_view(request, substepId):

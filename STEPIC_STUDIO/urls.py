@@ -13,6 +13,7 @@ courseurlpatterns = patterns('',
     url(r'^lesson/(?P<lessonId>[0-9]+)/', 'stepicstudio.views.show_lesson'),
 
     url(r'^structure', 'stepicstudio.views.show_course_struct'),
+    url(r'^stat_info', 'stepicstudio.views.view_stat'),
     url(r'^', 'stepicstudio.views.get_course_page'),
 )
 

@@ -165,3 +165,30 @@
     #sortable li { margin: 0 3px 3px 3px; padding: 0.8em; padding-top: 0.1em; padding-left: 1.5em;  font-size: 1.4em; height: 18px; 
         background: #FAFAFA; border-width: 0px;}
     #sortable li span { position: absolute; margin-left: -1.3em; }
+
+
+    /*D3.CSS*/
+            .bar {
+              fill: steelblue;
+            }
+
+            .bar:hover {
+              fill: brown;
+            }
+
+            .axis {
+              font: 10px sans-serif;
+            }
+
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
+
+        .x.axis path {
+          display: none;
+        }
+
+        /*D3.CSS*/
