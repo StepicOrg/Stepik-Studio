@@ -10,6 +10,7 @@ from stepicstudio.ssh_connections import Screen_Recorder
 
 SS_WIN_PATH = ""
 SS_LINUX_PATH = ""
+process = "'"
 
 def to_linux_translate(win_path, username):
     linux_path = '/home/stepic/VIDEO/STEPICSTUDIO/'+ username + "/" + '/'.join(win_path.split("/")[1:])
@@ -24,7 +25,11 @@ def start_recording(**kwargs):
     generate_xml(XML_SETTINGS_DIR, substep_server_path(folder_path=folder_path, data=data)[0], SUBSTEP_PROFESSOR)
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
-    server_status = run_adobe_live()
+    # server_status = run_adobe_live()
+    server_status = True
+    global process
+    process = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), SUBSTEP_PROFESSOR)
+    print(process.pid)
     #TODO:Refactor!
     screencast_status = ssh_screencast_start()
     linux_obj = Screen_Recorder(to_linux_translate(substep_folder,username))
@@ -67,8 +72,11 @@ def stop_cam_recording():
     camstat = CameraStatus.objects.get(id="1")
     camstat.status = False
     ssh_screencast_stop()
+    global process
+    print('PROCESS PID TO STOP: ', process.pid)
+    stop_ffmpeg_recorder(process)
     camstat.save()
-    stop_adobe_live()
+    # stop_adobe_live()
     ssh_obj = Screen_Recorder("D:")
     ssh_obj.stop_screen_recorder()
     ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)

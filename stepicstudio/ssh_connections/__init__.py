@@ -3,7 +3,7 @@ import time
 import os
 from stat import S_ISDIR
 from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
-from stepicstudio.const import SUBSTEP_SCREEN
+from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 
 #TODO: Class should throw errors.
 #TODO: Make it Singleton
@@ -12,11 +12,11 @@ class Screen_Recorder(object):
     def __init__(self, path):
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.ssh.connect('172.21.202.96', username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
+        self.ssh.connect(PROFESSOR_IP, username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
         self.path = path
         self.remote_path = ''
 
-        host = '172.21.202.96'
+        host = PROFESSOR_IP
         transport = paramiko.Transport((host, 22))
         transport.connect(username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
         self.sftp = paramiko.SFTPClient.from_transport(transport)
@@ -59,7 +59,7 @@ class Screen_Recorder(object):
         if not self.path:
             raise IOError
         else:
-            host = '172.21.202.96'
+            host = PROFESSOR_IP
             transport = paramiko.Transport((host, 22))
             transport.connect(username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
             sftp = paramiko.SFTPClient.from_transport(transport)

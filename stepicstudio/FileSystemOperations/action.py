@@ -1,4 +1,6 @@
 import os
+import os.path
+import sys
 import signal
 import shutil
 import time
@@ -6,8 +8,10 @@ import xml.etree.ElementTree as ET
 import xml.parsers.expat
 from stepicstudio.utils.extra import translate_non_alphanumerics
 from STEPIC_STUDIO.settings import ADOBE_LIVE_EXE_PATH
+from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH
 import subprocess
 import codecs
+import psutil
 
 GlobalProcess = None
 
@@ -63,6 +67,23 @@ def run_adobe_live():
     # time.sleep(2)
     return True
 
+def run_ffmpeg_recorder(path, filename):
+    # command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
+    #                         r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 2 '
+    #
+    # command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
+    #                         r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 2' \
+    #                         r' -c:v libx264 -qp 0 -preset ultrafast -profile:v high444 '
+    command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
+                            r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 2' \
+                            r' -c:v libx264 '
+
+    command += path + '\\' + filename
+    proc = subprocess.Popen(command, shell=True)
+    print("PID = ", proc.pid)
+    print(command)
+    return proc
+
 #TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is very bad, it doesn't support spaces and not safe
 def stop_adobe_live():
     p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
@@ -78,6 +99,24 @@ def stop_adobe_live():
     subprocess.Popen(p, shell=False)
     # print("From Stop", GlobalProcess.pid)
     # os.kill(GlobalProcess.pid, signal.SIGTERM)
+    if os.path.exists(stop_path):
+        print("FILE EXIST!")
+    else:
+        print(stop_path)
+        print("ERROR!!!!!!!!")
+        sys.exit(0)
+
+def stop_ffmpeg_recorder(proc):
+    def kill_proc_tree(pid, including_parent=True):
+        parent = psutil.Process(pid)
+        for child in parent.children(recursive=True):
+            child.kill()
+        if including_parent:
+            parent.kill()
+
+    #me = os.getpid()
+    kill_proc_tree(proc.pid)
+
 
 def delete_substep_on_disc(**kwargs):
     folder = kwargs["folder_path"]
