@@ -68,15 +68,15 @@ def run_adobe_live():
     return True
 
 def run_ffmpeg_recorder(path, filename):
-    # command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
-    #                         r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 2 '
-    #
+    command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
+                            r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 0  -preset ultrafast  -c:v libx264 '
+
     # command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
     #                         r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 2' \
     #                         r' -c:v libx264 -qp 0 -preset ultrafast -profile:v high444 '
-    command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
-                            r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 2' \
-                            r' -c:v libx264 '
+    # command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
+    #                         r'Capture (3)":audio="Decklink Audio Capture (3)" -threads2 ' \
+    #                         r' -c:v libx264 '
 
     command += path + '\\' + filename
     proc = subprocess.Popen(command, shell=True)
@@ -84,7 +84,7 @@ def run_ffmpeg_recorder(path, filename):
     print(command)
     return proc
 
-#TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is very bad, it doesn't support spaces and not safe
+#TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is bad, it doesn't support spaces and isn't safe
 def stop_adobe_live():
     p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
          "/s", r"C:\StepicServer\static\video\xml_settings.xml"]

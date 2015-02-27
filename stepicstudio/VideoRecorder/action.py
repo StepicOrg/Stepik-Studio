@@ -72,11 +72,11 @@ def stop_cam_recording():
     camstat = CameraStatus.objects.get(id="1")
     camstat.status = False
     ssh_screencast_stop()
+    camstat.save()
     global process
     print('PROCESS PID TO STOP: ', process.pid)
-    stop_ffmpeg_recorder(process)
-    camstat.save()
     # stop_adobe_live()
+    stop_ffmpeg_recorder(process)
     ssh_obj = Screen_Recorder("D:")
     ssh_obj.stop_screen_recorder()
     ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
