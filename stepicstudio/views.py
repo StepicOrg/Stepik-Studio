@@ -8,16 +8,13 @@ from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.VideoRecorder.action import *
 from stepicstudio.FileSystemOperations.action import search_as_files
 from stepicstudio.utils.utils import *
-from stepicstudio.ssh_connections.screencast import *
 import itertools
 from django.db.models import Max
 from stepicstudio.statistic import add_stat_info
-from django.core.files import File
 import time
-from pprint import pprint
+import requests
 from wsgiref.util import FileWrapper
-from wsgiref.util import guess_scheme
-
+from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
 
 def can_edit_page(view_function):
     def process_request(*args, **kwargs):
@@ -213,6 +210,7 @@ def show_step(request, courseId, lessonId, stepId):
 
 #TODO: ADD RERECORD FUNCTION HERE
 ## TODO: ADD DECORATOR can_edit_page
+## TODO: TOKEN at POSTrequest to statistic server is insecure
 @login_required(login_url='/login/')
 @can_edit_page
 def start_new_step_recording(request, courseId, lessonId, stepId):
@@ -237,6 +235,15 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
     time.sleep(4)
+    try:
+        print("sent data to stepic.mehanig.com")
+        data = {'User': request.user.username, 'Name': substep.name, 'Duration': 'No data', 'priority':'1', 'status':'0',
+                'token': SECURE_KEY_FOR_STAT}
+        r = requests.post(STATISTIC_URL, data=data)
+        print('STATISTIC STATUS:', r)
+    except Exception as e:
+        print('Error!!!: ', e)
+
     return render_to_response("step_view.html", args)
 
 

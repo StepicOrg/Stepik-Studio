@@ -22,7 +22,7 @@ def start_recording(**kwargs):
     username = User.objects.all().get(id=int(user_id)).username
     folder_path = kwargs["serverFilesFolder"].serverFilesFolder
     data = kwargs["data"]
-    generate_xml(XML_SETTINGS_DIR, substep_server_path(folder_path=folder_path, data=data)[0], SUBSTEP_PROFESSOR)
+    #generate_xml(XML_SETTINGS_DIR, substep_server_path(folder_path=folder_path, data=data)[0], SUBSTEP_PROFESSOR)
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
     # server_status = run_adobe_live()
