@@ -389,16 +389,23 @@ def view_stat(request, courseId):
 ###TODO: IMPLEMENT!!!
 def video_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
-    print(substep.os_path)
-    file = FileWrapper(open(substep.os_path, 'rb'))
-    response = HttpResponse(file, content_type='video/f4v')
-    response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
-    return response
+    try:
+        file = FileWrapper(open(substep.os_path, 'rb'))
+        response = HttpResponse(file, content_type='video/TS')
+        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
+        return response
+    except Exception as e:
+        print(e)
+        return HttpResponse("File to large. Please watch it on server.")
 
 def video_screen_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
-    path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + SUBSTEP_SCREEN
-    file = FileWrapper(open(path, 'rb'))
-    response = HttpResponse(file, content_type='video/ts')
-    response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
-    return response
+    try:
+        path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + SUBSTEP_SCREEN
+        file = FileWrapper(open(path, 'rb'))
+        response = HttpResponse(file, content_type='video/mkv')
+        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
+        return response
+    except Exception as e:
+        print(e)
+        return HttpResponse("File to large. Please watch it on server.")
