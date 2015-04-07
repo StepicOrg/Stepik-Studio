@@ -386,7 +386,7 @@ def view_stat(request, courseId):
 
 
 
-###TODO: IMPLEMENT!!!
+###TODO: try catch works incorrectly. Should check for file size before return
 def video_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
     try:
