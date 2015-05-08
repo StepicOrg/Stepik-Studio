@@ -22,6 +22,9 @@ class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
         labels = {'name': 'Enter lesson name', }
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Please use meaningful names', 'autofocus': 'autofocus'}),
+        }
         exclude = ('from_course', 'position', 'start_time')
 
     def lesson_save(self):
@@ -40,6 +43,9 @@ class StepForm(forms.ModelForm):
     class Meta:
         model = Step
         labels = {'name': 'Enter step name', }
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Please use meaningful names', 'autofocus': 'autofocus'}),
+        }
         exclude = ('from_lesson', 'position', 'start_time')
 
     def step_save(self):

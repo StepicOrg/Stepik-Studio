@@ -1,5 +1,4 @@
 import paramiko
-import time
 import os
 from stat import S_ISDIR
 from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
