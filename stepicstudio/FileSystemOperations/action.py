@@ -6,11 +6,10 @@ import shutil
 import time
 import xml.etree.ElementTree as ET
 import xml.parsers.expat
-from stepicstudio.utils.extra import translate_non_alphanumerics
+from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
 from STEPIC_STUDIO.settings import ADOBE_LIVE_EXE_PATH
 from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH
 import subprocess
-import codecs
 import psutil
 
 GlobalProcess = None
@@ -47,13 +46,14 @@ def add_file_to_test(**kwargs):
 
 
 #TODO CHANGE THIS SHIT! ASAP! HATE WINDOWS!
+@deprecated
 def run_adobe_live():
-    # p = [r"D:\stream_profile\stepic_run_camera.bat"]
-    # global GlobalProcess
-    # p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-    #      "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
-    # GlobalProcess = subprocess.Popen(p, shell=False)
-    # print("From Run", GlobalProcess.pid)
+    p = [r"D:\stream_profile\stepic_run_camera.bat"]
+    global GlobalProcess
+    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
+         "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
+    GlobalProcess = subprocess.Popen(p, shell=False)
+    print("From Run", GlobalProcess.pid)
     return True
 
 def run_ffmpeg_recorder(path, filename):
@@ -66,6 +66,7 @@ def run_ffmpeg_recorder(path, filename):
     return proc
 
 #TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is bad, it doesn't support spaces and isn't safe
+@deprecated
 def stop_adobe_live():
     p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
          "/s", r"C:\StepicServer\static\video\xml_settings.xml"]
@@ -85,7 +86,8 @@ def stop_adobe_live():
         print("ERROR!!!!!!!!")
         sys.exit(0)
 
-def stop_ffmpeg_recorder(proc):
+
+def stop_ffmpeg_recorder(proc: "Process"):
     def kill_proc_tree(pid, including_parent=True):
         parent = psutil.Process(pid)
         for child in parent.children(recursive=True):
@@ -96,7 +98,7 @@ def stop_ffmpeg_recorder(proc):
     kill_proc_tree(proc.pid)
 
 
-def delete_substep_on_disc(**kwargs):
+def delete_substep_on_disc(**kwargs: dict) -> True or False:
     folder = kwargs["folder_path"]
     data = kwargs["data"]
     f_course = folder + "/" + translate_non_alphanumerics(data["Course"].name)
@@ -110,7 +112,7 @@ def delete_substep_on_disc(**kwargs):
         return True
 
 
-def delete_step_on_disc(**kwargs):
+def delete_step_on_disc(**kwargs: dict):
     folder = kwargs["folder_path"]
     data = kwargs["data"]
     f_course = folder + "/" + translate_non_alphanumerics(data["Course"].name)
@@ -118,7 +120,7 @@ def delete_step_on_disc(**kwargs):
     f_c_l_step = f_c_lesson + "/" + translate_non_alphanumerics(data["Step"].name)
     return delete_files_on_server(f_c_l_step)
 
-
+@deprecated
 def files_txt_update(**kwargs):
     pass
 
@@ -145,8 +147,9 @@ def search_as_files(args):
     args.update({"all_steps": ziped_list})
     return args
 
+
 #TODO: Let's not check if it's fine? Return True anyway?
-def delete_files_on_server(path):
+def delete_files_on_server(path: str) -> True:
     if os.path.exists(path):
         shutil.rmtree(path)
         return True
@@ -154,7 +157,7 @@ def delete_files_on_server(path):
         print(path + ' No folder was found and can\'t be deleted.(This is BAD!)')
         return True
 
-
+@deprecated
 def generate_xml(XMLpath, write_to_path, file_name):
     tree = ET.parse(XMLpath)
     root = tree.getroot()

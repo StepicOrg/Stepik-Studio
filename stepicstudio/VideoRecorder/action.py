@@ -11,12 +11,12 @@ SS_WIN_PATH = ""
 SS_LINUX_PATH = ""
 process = "'"
 
-def to_linux_translate(win_path, username):
+def to_linux_translate(win_path: str, username: str) -> str:
     linux_path = '/home/stepic/VIDEO/STEPICSTUDIO/'+ username + "/" + '/'.join(win_path.split("/")[1:])
     print("to_linux_translate() This is linux path ", linux_path)
     return linux_path
 
-def start_recording(**kwargs):
+def start_recording(**kwargs: dict) -> True or False:
     user_id = kwargs["user_id"]
     username = User.objects.all().get(id=int(user_id)).username
     folder_path = kwargs["user_profile"].serverFilesFolder
