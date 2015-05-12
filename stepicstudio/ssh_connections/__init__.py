@@ -8,12 +8,20 @@ from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 #TODO: Make it Singleton
 class Screen_Recorder(object):
 
-    def __init__(self, path):
+    def __init__(self, path, remote_ubuntu=None):
+        self.path = path
+        self.remote_path = ''
+
+        if remote_ubuntu is not None:
+            global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
+            PROFESSOR_IP = remote_ubuntu['professor_ip']
+            UBUNTU_USERNAME = remote_ubuntu['ubuntu_username']
+            UBUNTU_PASSWORD = remote_ubuntu['ubuntu_password']
+            self.path = remote_ubuntu['ubuntu_folder_path'] + "/" + path
+
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(PROFESSOR_IP, username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
-        self.path = path
-        self.remote_path = ''
 
         host = PROFESSOR_IP
         transport = paramiko.Transport((host, 22))
@@ -29,7 +37,6 @@ class Screen_Recorder(object):
             return True
 
     def run_screen_recorder(self):
-        #stdin, stdout, stderr = ssh.exec_command("uptime")
         p_args = self.path.split('/')
         p_args = list(filter(None, p_args))
         self.remote_path = "/"

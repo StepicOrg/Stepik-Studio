@@ -230,11 +230,10 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
                                                 "SubSteps": SubStep.objects.all().filter(from_step=stepId),
                                                 "currSubStep": SubStep.objects.get(id=substep.pk)}
     args.update(csrf(request))
-    is_started = start_recording(user_id=request.user.id, serverFilesFolder=UserProfile.objects.get(user=request.user.id), data=args)
+    is_started = start_recording(user_id=request.user.id, user_profile=UserProfile.objects.get(user=request.user.id), data=args)
     if is_started:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
-    time.sleep(4)
     try:
         print("sent data to stepic.mehanig.com")
         data = {'User': request.user.username, 'Name': substep.name, 'Duration': 'No data', 'priority':'1', 'status':'0',
@@ -301,7 +300,7 @@ def remove_substep(request, courseId, lessonId, stepId, substepId):
                                                      "currSubStep": substep}
 
     substep_deleted = delete_substep_files(user_id=request.user.id,
-                                           serverFilesFolder=UserProfile.objects.get(user=request.user.id), data=args)
+                                           user_profile=UserProfile.objects.get(user=request.user.id), data=args)
     substep.delete()
     #return render_to_response("step_view.html", args)
     return HttpResponseRedirect(postURL)
@@ -321,10 +320,10 @@ def delete_step(request, courseId, lessonId, stepId):
     for substep in substeps:
         # args['currSubStep'] = substep
         # substep_deleted = delete_substep_files(user_id=request.user.id,
-        #                                    serverFilesFolder=UserProfile.objects.get(user=request.user.id), data=args)
+        #                                    user_profile=UserProfile.objects.get(user=request.user.id), data=args)
         substep.delete()
     step_deleted = delete_step_files(user_id=request.user.id,
-                                            serverFilesFolder=UserProfile.objects.get(user=request.user.id), data=args)
+                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
     step.delete()
     return HttpResponseRedirect(postURL)
 
@@ -345,7 +344,7 @@ def user_profile(request):
 def reorder_elements(request):
     if request.POST and request.is_ajax():
         args = url_to_args(request.META['HTTP_REFERER'])
-        args.update({"serverFilesFolder": UserProfile.objects.get(user=request.user.id)})
+        args.update({"user_profile": UserProfile.objects.get(user=request.user.id)})
         if "Course" in args and not "Lesson" in args:
             neworder = request.POST.getlist('ids[]')
             for i in range(len(neworder)):
@@ -364,7 +363,7 @@ def reorder_elements(request):
 @can_edit_page
 def show_course_struct(request, courseId):
     args = {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId)}
-    args.update({"serverFilesFolder": UserProfile.objects.get(user=request.user.id)})
+    args.update({"user_profile": UserProfile.objects.get(user=request.user.id)})
     args.update({"Recording": camera_curr_status})
     all_lessons = Lesson.objects.all().filter(from_course=courseId)
     args.update({"all_course_lessons": all_lessons})

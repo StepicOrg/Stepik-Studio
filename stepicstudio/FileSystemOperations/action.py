@@ -40,8 +40,6 @@ def substep_server_path(**kwargs):
 
 def add_file_to_test(**kwargs):
     folder_p, a = substep_server_path(**kwargs)
-    # if not os.path.exists(folder_p + file_p):
-    #     open(folder_p + file_p, "w")
     if not os.path.isdir(folder_p):
         os.makedirs(folder_p)
 
@@ -50,34 +48,17 @@ def add_file_to_test(**kwargs):
 
 #TODO CHANGE THIS SHIT! ASAP! HATE WINDOWS!
 def run_adobe_live():
-    # GlobalProcess = subprocess.Popen(ADOBE_LIVE_EXE_PATH, stdout=subprocess.PIPE)
-    # stdout, stderr = GlobalProcess.communicate()
-    # print(stdout)
-    #
-    # if not GlobalProcess.returncode:
-    #     return True
-    # else:
-    #     return False
-    p = [r"D:\stream_profile\stepic_run_camera.bat"]
-    global GlobalProcess
-    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-         "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
-    GlobalProcess = subprocess.Popen(p, shell=False)
-    print("From Run", GlobalProcess.pid)
-    # time.sleep(2)
+    # p = [r"D:\stream_profile\stepic_run_camera.bat"]
+    # global GlobalProcess
+    # p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
+    #      "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
+    # GlobalProcess = subprocess.Popen(p, shell=False)
+    # print("From Run", GlobalProcess.pid)
     return True
 
 def run_ffmpeg_recorder(path, filename):
     command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
                             r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 0  -preset ultrafast  -c:v libx264 '
-
-    # command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
-    #                         r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 2' \
-    #                         r' -c:v libx264 -qp 0 -preset ultrafast -profile:v high444 '
-    # command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
-    #                         r'Capture (3)":audio="Decklink Audio Capture (3)" -threads2 ' \
-    #                         r' -c:v libx264 '
-
     command += path + '\\' + filename
     proc = subprocess.Popen(command, shell=True)
     print("PID = ", proc.pid)
@@ -97,8 +78,6 @@ def stop_adobe_live():
     p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
          "/s", stop_path]
     subprocess.Popen(p, shell=False)
-    # print("From Stop", GlobalProcess.pid)
-    # os.kill(GlobalProcess.pid, signal.SIGTERM)
     if os.path.exists(stop_path):
         print("FILE EXIST!")
     else:
@@ -114,7 +93,6 @@ def stop_ffmpeg_recorder(proc):
         if including_parent:
             parent.kill()
 
-    #me = os.getpid()
     kill_proc_tree(proc.pid)
 
 
@@ -146,7 +124,7 @@ def files_txt_update(**kwargs):
 
 
 def search_as_files(args):
-    folder = args["serverFilesFolder"].serverFilesFolder
+    folder = args["user_profile"].serverFilesFolder
     course = args["Course"]
     file_status = [False] * (len(args["all_steps"]))
     for index, step in enumerate(args["all_steps"]):

@@ -9,6 +9,6 @@ def test(cov=True, verbose=False):
     if verbose:
         cmd += ' -v'
     if cov:
-        cmd += ' --cov-report term-missing --cov-config .coveragerc --cov stepic_studio'
+        cmd += ' --cov-report term-missing --cov-config .coveragerc --cov .'
 
     run(cmd, pty=True)
