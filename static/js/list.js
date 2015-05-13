@@ -64,12 +64,24 @@ $(document).ready(function(){
         });
     });
 
-// TODO: This code doesn't work in chrome. Fix it later. (08 Jan 2015)
+    function fader(el) {
+        el.fadeTo("fast", .5).removeAttr("href");
+    }
+
+
     $('.start-recording').on('click', function(){
-        var link = $(this).find("a").attr('href');
-        $(this).find("a").text("Starting...").click(function(){
+        $(this).text("Starting...").click(function(){
                 return false;
         });
+        var el = $(this);
+        setTimeout(fader, 0, el);
+    });
+
+
+    $('.stop-recording').on('click', function(){
+        $(this).text('Preparing...');
+        var el = $(this);
+        setTimeout(fader, 0, el);
     });
 
     setInterval(function() {

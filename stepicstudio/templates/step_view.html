@@ -19,8 +19,8 @@
             <br>
             {% endfor %}
         <br>
-        <div class="start-recording" ALIGN="CENTER">
-            <h1><a href={{ postUrl }}record/>Start Recording</a>
+        <div ALIGN="CENTER">
+            <h1><a href={{ postUrl }}record/ class="start-recording">Start Recording</a>
             </h1>
         </div>
         <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
@@ -28,7 +28,7 @@
             <div ALIGN = center>
             <h3> Recording started</h3>
             <br>
-            <h1><a href={{ postUrl }}stop/>Stop Recording</a>
+            <h1><a href={{ postUrl }}stop/ class="stop-recording">Stop Recording</a>
 
 {#            <div>Recorded: {{ StartTime }}</div>#}
             </h1>
