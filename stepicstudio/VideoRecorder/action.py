@@ -25,7 +25,7 @@ def start_recording(**kwargs: dict) -> True or False:
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
     server_status = True
     global process
-    process = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), SUBSTEP_PROFESSOR)
+    process = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
     print(process.pid)
     #TODO:Refactor!
 
@@ -36,7 +36,7 @@ def start_recording(**kwargs: dict) -> True or False:
     else:
         remote_ubuntu = None
     linux_obj = Screen_Recorder(to_linux_translate(substep_folder, username), remote_ubuntu)
-    linux_obj.run_screen_recorder()
+    linux_obj.run_screen_recorder(data['currSubStep'].name + SUBSTEP_PROFESSOR)
     global SS_LINUX_PATH, SS_WIN_PATH
     SS_LINUX_PATH = linux_obj.remote_path
     SS_WIN_PATH = substep_folder

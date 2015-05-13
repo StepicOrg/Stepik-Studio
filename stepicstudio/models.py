@@ -78,7 +78,7 @@ class SubStep(models.Model):
     @property
     def os_path(self):
         step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_PROFESSOR
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + SUBSTEP_PROFESSOR
 
 
 class UserProfile(models.Model):

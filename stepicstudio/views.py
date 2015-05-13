@@ -400,7 +400,7 @@ def video_view(request, substepId):
 def video_screen_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
     try:
-        path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + SUBSTEP_SCREEN
+        path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + substep.name + SUBSTEP_SCREEN
         file = FileWrapper(open(path, 'rb'))
         response = HttpResponse(file, content_type='video/mkv')
         response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
