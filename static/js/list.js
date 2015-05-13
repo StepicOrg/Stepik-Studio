@@ -35,12 +35,6 @@ $(document).ready(function(){
 
     $("#sortable").disableSelection();
 
-    $('.rename_button').on('click', function(e){
-        e.stopPropagation();
-        $(this).parent().parent().find("a").replaceWith('<form id="rename_lesson_form" action="/rename_lesson" method="post">' +
-        '<input type="text"></form> ');
-    });
-
     $(".lesson_info").on('click',function(){
         $(this).parent().find('.lesson_path').toggleClass('hiddenInfo');
         $(this).parent().find('.lesson_info_link').toggleClass('hiddenInfo');
@@ -69,7 +63,6 @@ $(document).ready(function(){
             }
         });
     });
-
 
     function fader(el) {
         el.fadeTo("fast", .5).removeAttr("href");
