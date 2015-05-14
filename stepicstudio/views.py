@@ -386,6 +386,7 @@ def view_stat(request, courseId):
 
 
 ###TODO: try catch works incorrectly. Should check for file size before return
+###TODO: hotfix here is bad
 def video_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
     try:
@@ -395,10 +396,25 @@ def video_view(request, substepId):
         return response
     except Exception as e:
         print(e)
+        # return HttpResponse("File to large. Please watch it on server.")
+    try:
+        substep = SubStep.objects.all().get(id=substepId)
+        path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_PROFESSOR)[1:]
+        file = FileWrapper(open(path, 'rb'))
+        print(path)
+        response = HttpResponse(file, content_type='video/TS')
+        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
+        return response
+    except Exception as e:
+        print(e)
         return HttpResponse("File to large. Please watch it on server.")
 
+
+
+###TODO: hotfix here is bad =(
 def video_screen_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
+    err = None
     try:
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + substep.name + SUBSTEP_SCREEN
         file = FileWrapper(open(path, 'rb'))
@@ -407,4 +423,14 @@ def video_screen_view(request, substepId):
         return response
     except Exception as e:
         print(e)
+        err = e
+        # return HttpResponse("File to large. Please watch it on server.")
+    try:
+        substep = SubStep.objects.all().get(id=substepId)
+        path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_SCREEN)[1:]
+        file = FileWrapper(open(path, 'rb'))
+        response = HttpResponse(file, content_type='video/ts')
+        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
+        return response
+    except Exception as e:
         return HttpResponse("File to large. Please watch it on server.")
