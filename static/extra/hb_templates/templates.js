@@ -1,6 +1,6 @@
-(function() {
-  var template = Handlebars.template, templates = Handlebars.templates = Handlebars.templates || {};
-templates['test'] = template({"1":function(depth0,helpers,partials,data) {
+this["JST"] = this["JST"] || {};
+
+this["JST"]["static/extra/hb_templates/test.handlebars"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
 
   return "       <li class=\"shoes\"><a href=\"/"
@@ -17,4 +17,3 @@ templates['test'] = template({"1":function(depth0,helpers,partials,data) {
     + ((stack1 = helpers.each.call(depth0,depth0,{"name":"each","hash":{},"fn":this.program(1, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "       </script>\n</ul>";
 },"useData":true});
-})();

@@ -2,11 +2,7 @@
 $(function  () {
 
     var shoesData = [{name:"Nike", price:199.00 }, {name:"Loafers", price:59.00 }, {name:"Wing Tip", price:259.00 }];
-    //var theTemplateScript = $("#shoe-template").html();
-    //var theTemplateScript = Handlebars.getTemplate('test');
-    //console.log(theTemplateScript);
-    //var theTemplate = Handlebars.compile (theTemplateScript);
-    var compiledTemplate = Handlebars.templates['test'];
+    var compiledTemplate = JST['static/extra/hb_templates/test.handlebars'];
     var html = compiledTemplate(shoesData);
     $("#field").append (html);
 });
