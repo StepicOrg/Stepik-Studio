@@ -399,9 +399,9 @@ def video_view(request, substepId):
         # return HttpResponse("File to large. Please watch it on server.")
     try:
         substep = SubStep.objects.all().get(id=substepId)
-        print(substep.os_path)
-        '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_PROFESSOR)[:1]
-        file = FileWrapper(open(substep.os_path, 'rb'))
+        path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_PROFESSOR)[:1]
+        file = FileWrapper(open(path, 'rb'))
+        print(path)
         response = HttpResponse(file, content_type='video/TS')
         response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
         return response
