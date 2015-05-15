@@ -43,6 +43,9 @@
             font-size: 22px;
         }
 
+        input {
+            font-size: 22px;
+        }
         .lesson_info {
             font-size: 0.7em;
             float: right;
@@ -50,6 +53,10 @@
             width: auto;
             color: #565656;
 
+        }
+
+        #id_name {
+            width:100%;
         }
 
         #rename-step-form {

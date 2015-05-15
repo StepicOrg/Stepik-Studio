@@ -6,12 +6,13 @@ from django.core.context_processors import csrf
 from stepicstudio.models import Course, Lesson, Step, SubStep, UserProfile, CameraStatus
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.VideoRecorder.action import *
-from stepicstudio.FileSystemOperations.action import search_as_files, is_safe_to_rename
+from stepicstudio.FileSystemOperations.action import search_as_files, rename_element_on_disk
 from stepicstudio.utils.utils import *
 import itertools
 from django.db.models import Max
 from stepicstudio.statistic import add_stat_info
 import json
+import copy
 import requests
 from wsgiref.util import FileWrapper
 from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
@@ -397,7 +398,6 @@ def video_view(request, substepId):
         return response
     except Exception as e:
         print(e)
-        # return HttpResponse("File to large. Please watch it on server.")
     try:
         substep = SubStep.objects.all().get(id=substepId)
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_PROFESSOR)[1:]
@@ -425,7 +425,6 @@ def video_screen_view(request, substepId):
     except Exception as e:
         print(e)
         err = e
-        # return HttpResponse("File to large. Please watch it on server.")
     try:
         substep = SubStep.objects.all().get(id=substepId)
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_SCREEN)[1:]
@@ -443,10 +442,20 @@ def rename_elem(request):
         if 'step' in rest_data['type']:
             StepToRename = Step.objects.all().get(id=rest_data['id'][0])
             print('Renaming:', StepToRename.os_path)
-            TmpStep = StepToRename
-            TmpStep.name = "NewName"
+            TmpStep = copy.copy(StepToRename)
+            TmpStep.name = rest_data['name_new'][0]
             print('Trying to', TmpStep.os_path)
-            is_safe_to_rename(StepToRename, TmpStep)
-        return HttpResponse("Ok")
+            if not camera_curr_status():
+                if rename_element_on_disk(StepToRename, TmpStep):
+                    StepToRename.delete()
+                    delete_files_on_server(StepToRename.os_path)
+                    TmpStep.save()
+                    return HttpResponse("Ok")
+                else:
+                    return Http404
+            else:
+                return Http404
+        else:
+            return Http404
     else:
         return Http404

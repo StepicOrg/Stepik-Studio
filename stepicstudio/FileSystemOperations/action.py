@@ -10,6 +10,7 @@ from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
 from STEPIC_STUDIO.settings import ADOBE_LIVE_EXE_PATH
 from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH
 import subprocess
+from distutils.dir_util import copy_tree
 import psutil
 
 GlobalProcess = None
@@ -168,5 +169,16 @@ def generate_xml(XMLpath, write_to_path, file_name):
     # ElementTree.tostring(tree, encoding='utf-16')
 
 
-def is_safe_to_rename(Obj1, Obj2):
-    pass
+def rename_element_on_disk(FromObj, ToObj):
+    print(os.path.isdir(FromObj.os_path), os.path.isdir(ToObj.os_path))
+    print("!!!"+FromObj.os_path + "!!!")
+    if os.path.isdir(FromObj.os_path) and not os.path.isdir(ToObj.os_path):
+        try:
+            ignore_func = shutil.ignore_patterns('.DS_Store', )
+            shutil.copytree(FromObj.os_path, ToObj.os_path, ignore=ignore_func)
+        except Exception as e:
+            print(e)
+        print("SAFE TO COPY")
+        return True
+    else:
+        return False

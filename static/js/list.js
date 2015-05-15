@@ -118,6 +118,7 @@ var elements_subscriptor = function() {
         elem = $(this);
         if (e.keyCode == 13 && !e.shiftKey) {
             e.preventDefault();
+            var name_new = elem.parents('.ui-state-default').find('#input-field-name').val();
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 type: "POST",
@@ -126,12 +127,16 @@ var elements_subscriptor = function() {
                 data: {
                     "id": elem.parents('.ui-state-default').attr('id'),
                     "type": 'step',
-                    "name_new": elem.parents('.ui-state-default').find('#input-field-name').val()
+                    "name_new": name_new
                 },
                 success: function (data) {
-                    elements_subscriptor();
-                    elem.parents('.ui-state-default').attr('id');
                     $('#cancel-rename').trigger( "click" );
+                    elements_subscriptor();
+                    alert(name_new);
+                    //elem.parents('.ui-state-default').find('.lesson_name').html(name_new);
+                },
+                error: function(request,status,errorThrown) {
+                    alert("Cant rename :" + status + " " + errorThrown);
                 }
             });
         }
