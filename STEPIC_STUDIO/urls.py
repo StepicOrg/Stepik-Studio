@@ -22,6 +22,8 @@ urlpatterns = patterns('',
     #url(r'^$', 'STEPIC_STUDIO.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
+    url(r'^rename_elem/$', 'stepicstudio.views.rename_elem'),
+
     url(r'^admin/', include(admin.site.urls)),
     url(r'^lol/', 'stepicstudio.views.video_view'),
 

@@ -52,6 +52,19 @@
 
         }
 
+        #rename-step-form {
+            width:100%;
+            height:auto;
+            margin:auto;
+            position:relative;
+
+        }
+
+        #input-field-name {
+            width:80%;
+            height: 40px;
+        }
+
         .lesson_info_link {
             /*padding-right: 20px;*/
 

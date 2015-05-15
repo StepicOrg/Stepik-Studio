@@ -15,7 +15,7 @@
             {% for S in Steps  %}
             <li data-lessonPosition ='{{ S.position }}' id="{{ S.pk }}" class="ui-state-default">
                 <span class="lesson_path hiddenInfo">Path: {{ Lesson.os_path }}</span>
-                <a class="lesson_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/"> {{ S.name }}</a>
+                <a class="lesson_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">{{ S.name }}</a>
                 <div class="lesson_info">
                         <span class="rename_button">rename</span>
                         <span>info</span>

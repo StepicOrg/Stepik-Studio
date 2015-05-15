@@ -166,3 +166,7 @@ def generate_xml(XMLpath, write_to_path, file_name):
     #     # <?xml version="1.0" encoding="UTF-16"?>
     tree.write(XMLpath, encoding="UTF-16", short_empty_elements=False)
     # ElementTree.tostring(tree, encoding='utf-16')
+
+
+def is_safe_to_rename(Obj1, Obj2):
+    pass

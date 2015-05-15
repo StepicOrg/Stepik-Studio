@@ -6,12 +6,12 @@ from django.core.context_processors import csrf
 from stepicstudio.models import Course, Lesson, Step, SubStep, UserProfile, CameraStatus
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.VideoRecorder.action import *
-from stepicstudio.FileSystemOperations.action import search_as_files
+from stepicstudio.FileSystemOperations.action import search_as_files, is_safe_to_rename
 from stepicstudio.utils.utils import *
 import itertools
 from django.db.models import Max
 from stepicstudio.statistic import add_stat_info
-import time
+import json
 import requests
 from wsgiref.util import FileWrapper
 from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
@@ -356,6 +356,7 @@ def reorder_elements(request):
                 l.save()
             #database.lock()
         files_update(**args)
+        return HttpResponse("Ok")
     else:
         return Http404
 
@@ -434,3 +435,18 @@ def video_screen_view(request, substepId):
         return response
     except Exception as e:
         return HttpResponse("File to large. Please watch it on server.")
+
+
+def rename_elem(request):
+    if request.POST and request.is_ajax():
+        rest_data = dict(request.POST.lists())
+        if 'step' in rest_data['type']:
+            StepToRename = Step.objects.all().get(id=rest_data['id'][0])
+            print('Renaming:', StepToRename.os_path)
+            TmpStep = StepToRename
+            TmpStep.name = "NewName"
+            print('Trying to', TmpStep.os_path)
+            is_safe_to_rename(StepToRename, TmpStep)
+        return HttpResponse("Ok")
+    else:
+        return Http404

@@ -1,5 +1,5 @@
 psutil==2.2.1
-django==1.7.1
+django >= 1.6.1
 paramiko==1.15.2
 pytest==2.7.0
 invoke==0.9.0
