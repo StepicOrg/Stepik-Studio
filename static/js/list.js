@@ -25,10 +25,23 @@ var cookie_csrf_updater = function(xhr){
                     xhr.setRequestHeader("X-CSRFToken", cookVal)
 };
 
-var elements_subscriptor = function() {
-        sortObj = $("#sortable");
 
-    $("#sortable").sortable({
+    function upd_deleted_el(new_name, deleted_element) {
+        if (new_name != null && new_name.length > 0) {
+            var jq_deleted = $(deleted_element);
+            var replace = $('<div/>').append(jq_deleted.clone());
+            $(replace).find('.lesson_name').html(new_name);
+            deleted_element = replace;
+        }
+        return deleted_element;
+    }
+
+
+var elements_subscriptor = function() {
+
+    sortObj = $("#sortable");
+
+    sortObj.sortable({
         stop : function(event, ui) {
             $.ajax({
                 beforeSend: cookie_csrf_updater,
@@ -45,7 +58,7 @@ var elements_subscriptor = function() {
 
     });
 
-    $("#sortable").disableSelection();
+    sortObj.disableSelection();
 
     var deleted_element;
 
@@ -60,9 +73,10 @@ var elements_subscriptor = function() {
             });
         });
 
-    $('#cancel-rename').off().live('click', function(){
+    $('#cancel-rename').off().live('click', function(event, new_name){
         $(this).fadeOut("fast",  function(){
-            $(this).parent().parent().parent().html(deleted_element);
+            deleted_element = upd_deleted_el(new_name, deleted_element);
+            $(this).parents('.input-step-name-field').html(deleted_element);
             elements_subscriptor();
         });
     });
@@ -118,6 +132,7 @@ var elements_subscriptor = function() {
         elem = $(this);
         if (e.keyCode == 13 && !e.shiftKey) {
             e.preventDefault();
+            row = elem.parents('.ui-state-default');
             var name_new = elem.parents('.ui-state-default').find('#input-field-name').val();
             $.ajax({
                 beforeSend: cookie_csrf_updater,
@@ -130,10 +145,8 @@ var elements_subscriptor = function() {
                     "name_new": name_new
                 },
                 success: function (data) {
-                    $('#cancel-rename').trigger( "click" );
+                    $('#cancel-rename').trigger( "click", name_new );
                     elements_subscriptor();
-                    alert(name_new);
-                    //elem.parents('.ui-state-default').find('.lesson_name').html(name_new);
                 },
                 error: function(request,status,errorThrown) {
                     alert("Cant rename :" + status + " " + errorThrown);
