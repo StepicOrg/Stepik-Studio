@@ -423,7 +423,8 @@ def video_screen_view(request, substepId):
         response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
         return response
     except Exception as e:
-        print(e)
+        pass
+        # print(e)
         err = e
     try:
         substep = SubStep.objects.all().get(id=substepId)

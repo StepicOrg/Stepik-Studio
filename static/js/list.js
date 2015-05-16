@@ -31,7 +31,7 @@ var cookie_csrf_updater = function(xhr){
             var jq_deleted = $(deleted_element);
             var replace = $('<div/>').append(jq_deleted.clone());
             $(replace).find('.lesson_name').html(new_name);
-            deleted_element = replace;
+            deleted_element = replace.html();
         }
         return deleted_element;
     }

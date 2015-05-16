@@ -170,12 +170,10 @@ def generate_xml(XMLpath, write_to_path, file_name):
 
 
 def rename_element_on_disk(FromObj, ToObj):
-    print(os.path.isdir(FromObj.os_path), os.path.isdir(ToObj.os_path))
-    print("!!!"+FromObj.os_path + "!!!")
     if os.path.isdir(FromObj.os_path) and not os.path.isdir(ToObj.os_path):
         try:
             ignore_func = shutil.ignore_patterns('.DS_Store', )
-            shutil.copytree(FromObj.os_path, ToObj.os_path, ignore=ignore_func)
+            os.rename(FromObj.os_path, ToObj.os_path)
             return True
         except Exception as e:
             print(e)
