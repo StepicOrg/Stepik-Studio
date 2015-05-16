@@ -176,9 +176,9 @@ def rename_element_on_disk(FromObj, ToObj):
         try:
             ignore_func = shutil.ignore_patterns('.DS_Store', )
             shutil.copytree(FromObj.os_path, ToObj.os_path, ignore=ignore_func)
+            return True
         except Exception as e:
             print(e)
-        print("SAFE TO COPY")
-        return True
+        return False
     else:
         return False
