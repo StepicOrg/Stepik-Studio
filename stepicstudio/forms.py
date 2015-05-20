@@ -13,11 +13,14 @@ def get_my_courses(userId):
 
 class LessonForm(forms.ModelForm):
 
-    def __init__(self, userId, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('userId')
+        self.from_course = kwargs.pop('from_course', 1)
         super(LessonForm, self).__init__(*args, **kwargs)
-        self.user = userId
+
+        print(args)
         self.fields['from_courseName'] = forms.ChoiceField(
-            choices=get_my_courses(userId))
+            choices=get_my_courses(self.user), initial=Course.objects.all().filter(id=self.from_course)[0].id)
 
     class Meta:
         model = Lesson
