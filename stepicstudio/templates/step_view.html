@@ -3,27 +3,27 @@
     {%  block content %}
 
         {% if Recording != True %}
-        <!--ADD BACK BUTTON -->
-        <br>this page is for Step "{{ Step.name }}":
-        <br>
-        <h3>
-        from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
-        </h3>
-                {% for SS in SubSteps  %}
-                {{SS.name}} |  <a target="_blank" href=/showcontent/{{ SS.id }}>Show </a> | <a target="_blank" href=/showscreencontent/{{ SS.id }}>Show screen</a>
-
-
-                <div class="delete_button right">
-                    <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
-                </div>
+            <!--ADD BACK BUTTON -->
+            <br>this page is for Step "{{ Step.name }}":
             <br>
-            {% endfor %}
-        <br>
-        <div ALIGN="CENTER">
-            <h1><a href={{ postUrl }}record/ class="start-recording">Start Recording</a>
-            </h1>
-        </div>
-        <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
+            <h3>
+            from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
+            </h3>
+                    {% for SS in SubSteps  %}
+                    {{SS.name}} |  <a target="_blank" href=/showcontent/{{ SS.id }}>Show </a> | <a target="_blank" href=/showscreencontent/{{ SS.id }}>Show screen</a>
+
+
+                    <div class="delete_button right">
+                        <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
+                    </div>
+                <br>
+                {% endfor %}
+            <br>
+            <div ALIGN="CENTER">
+                <h1><span class="start-recording">Start Recording </span>
+                </h1>
+            </div>
+            <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
         {% else %}
             <div ALIGN = center>
             <h3> Recording started</h3>

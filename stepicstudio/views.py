@@ -206,6 +206,16 @@ def add_step(request, courseId, lessonId):
 @login_required(login_url='/login/')
 @can_edit_page
 def show_step(request, courseId, lessonId, stepId):
+    if request.POST and request.is_ajax():
+        user_action = dict(request.POST.lists())['action'][0]
+        if user_action == "start":
+            # start_new_step_recording(request, courseId, lessonId, stepId)
+            return HttpResponse("Ok")
+        elif user_action == "stop":
+            # stop_recording(request, courseId, lessonId, stepId)
+            return HttpResponse("Ok")
+        else:
+            return Http404
     postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     args =  {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId),
                                                      "Lesson": Lesson.objects.all().get(id=lessonId),
@@ -216,11 +226,8 @@ def show_step(request, courseId, lessonId, stepId):
     return render_to_response("step_view.html", args)
 
 
-#TODO: ADD RERECORD FUNCTION HERE
-## TODO: ADD DECORATOR can_edit_page
 ## TODO: TOKEN at POSTrequest to statistic server is insecure
 @login_required(login_url='/login/')
-@can_edit_page
 def start_new_step_recording(request, courseId, lessonId, stepId):
     substep = SubStep()
     substep.from_step = stepId
@@ -251,8 +258,6 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
     except Exception as e:
         print('Error!!!: ', e)
 
-    return render_to_response("step_view.html", args)
-
 
 @login_required(login_url='/login')
 def recording_page(request, courseId, lessonId, stepId):
@@ -276,7 +281,6 @@ def stop_all_recording(request):
         return render_to_response("courses.html", args)
 
 @login_required(login_url="/login")
-@can_edit_page
 def stop_recording(request, courseId, lessonId, stepId):
         postURL = "/" +  COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
         args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
@@ -289,7 +293,6 @@ def stop_recording(request, courseId, lessonId, stepId):
         last_substep_time = SubStep.objects.all().filter(from_step=stepId).aggregate(Max('start_time'))['start_time__max']
         recorded_substep = SubStep.objects.all().filter(start_time=last_substep_time)[0]
         add_stat_info(recorded_substep.id)
-        return HttpResponseRedirect(postURL, args)
 
 
 

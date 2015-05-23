@@ -4,12 +4,8 @@
             text-align: center;
             font-size: 1.275em;
             color: #333333;
-            /*font-family: "Myriad Pro Light", "Gill Sans", "Gill Sans MT", Calibri, sans-serif;*/
-            /*font-weight:lighter;*/
             font-family: 'Lato', sans-serif;
             font-weight: 300;
-            /*font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",*/
-             /*Helvetica, Arial, "Lucida Grande", sans-serif;*/
 
         }
 
@@ -17,10 +13,8 @@
         #navcontainer
             {
             width: auto;
-            /*border-right: 1px solid #000;*/
             padding: 0 0 1em 0;
             margin-bottom: 1em;
-            /*background-color: #9adeae;*/
             color: #333;
             }
 
@@ -42,9 +36,6 @@
             {
             display: block;
             padding: 5px 5px 5px 0.5em;
-            /*border-left: 10px solid #c3d9cf;*/
-            /*border-right: 10px solid #acc4c4;*/
-            /*background-color: #99d49c;*/
             color: #141628;
             text-decoration: none;
             width: 100%;
@@ -122,13 +113,22 @@
             font-size: 22px;
         }
 
+        .stop-recording {
+            cursor: pointer;
+        }
+
+        .start-recording {
+            cursor: pointer;
+        }
+
         .lesson_info {
             font-size: 0.8em;
             display: inline-block;
             float: right;
             text-align: left;
-            width: auto;
+            width: 170px;
             color: #565656;
+            cursor: pointer;
 
         }
 
@@ -161,7 +161,8 @@
         }
 
         .lesson_path{
-            padding-right: 300px;
+            padding-right: auto;
+            display: inline-block;
         }
 
         .hiddenInfo {
@@ -174,6 +175,7 @@
 
         .delete_button {
             width: auto;
+
             cursor: pointer;
             padding-left: 5px;
         }

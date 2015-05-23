@@ -2,9 +2,6 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
 courseurlpatterns = patterns('',
-    url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/record/recording/', 'stepicstudio.views.recording_page'),
-    url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/stop/', 'stepicstudio.views.stop_recording'),
-    url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/record/', 'stepicstudio.views.start_new_step_recording'),
     url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
     url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/(?P<substepId>[0-9]+)/delete/','stepicstudio.views.remove_substep'),
     url(r'^lesson/(?P<lessonId>[0-9]+)/add_step/', 'stepicstudio.views.add_step'),

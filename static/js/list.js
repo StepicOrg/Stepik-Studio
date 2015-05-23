@@ -36,6 +36,16 @@ var cookie_csrf_updater = function(xhr){
         return deleted_element;
     }
 
+function record_started()
+{
+    $('.start-recording').removeClass('start-recording').addClass('stop-recording').text('Recording');
+}
+
+function record_stopped()
+{
+    $('.stop-recording').removeClass('stop-recording').addClass('start-recording').text('Start Recording');
+}
+
 
 var elements_subscriptor = function() {
 
@@ -86,11 +96,12 @@ var elements_subscriptor = function() {
         $(this).parent().find('.lesson_path').toggleClass('hiddenInfo');
         $(this).parent().find('.lesson_info_link').toggleClass('hiddenInfo');
         $(this).parent().find("a").toggleClass('hiddenInfo');
-    }).css('cursor','pointer');
+    })
 
-    $('.delete_button').on('click', function(){
+    $('.delete_button').on('click', function(event){
+        event.stopPropagation();
         var redir_url = $(this).find(".delete-url").data("urllink");
-        $(this).append("<div class='modal'> Confirm Dialog Box</div>");
+        $(this).append("<div class='modal'> Action can't be undone. Are you sure?</div>");
         $(this).find(".modal").dialog({
             resizable: false,
             modal: true,
@@ -101,7 +112,6 @@ var elements_subscriptor = function() {
                     "Yes": function () {
                     $(this).dialog('close');
                     window.location.replace(redir_url);
-                        console.log(redir_url)
                 },
                     "No": function () {
                     $(this).dialog('close');
@@ -118,12 +128,52 @@ var elements_subscriptor = function() {
         $(this).text("Starting...").click(function(){
                 return false;
         });
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: window.location.pathname,
+
+            data: {
+                "action": "start"
+            },
+            success: function(data){
+                alert("Started");
+                record_started();
+                elements_subscriptor();
+
+            },
+            error: function(data){
+                alert("Server Error!");
+            }
+
+        });
         var el = $(this);
         setTimeout(fader, 0, el);
     });
 
     $('.stop-recording').on('click', function(){
-        $(this).text('Preparing...');
+        $(this).text('Preparing...').click(function(){
+                return false;
+        });
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: window.location.pathname,
+
+            data: {
+                "action": "stop"
+            },
+            success: function(data){
+                alert("Stopped");
+                record_stopped();
+                elements_subscriptor();
+
+            },
+            error: function(data){
+                alert("Server Error!");
+            }
+
+        });
         var el = $(this);
         setTimeout(fader, 0, el);
     });
