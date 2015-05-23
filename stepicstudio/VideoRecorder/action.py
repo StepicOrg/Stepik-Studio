@@ -70,7 +70,7 @@ def files_update(**kwargs):
 
 
 #TODO: REMAKE! Wrong implementation
-def stop_cam_recording():
+def stop_cam_recording() -> None:
     camstat = CameraStatus.objects.get(id="1")
     camstat.status = False
     ssh_screencast_stop()
@@ -84,7 +84,7 @@ def stop_cam_recording():
     print(SS_LINUX_PATH, SS_WIN_PATH)
 
 
-def delete_files_associated(url_args):
+def delete_files_associated(url_args) -> True | False:
     lesson_id = int(url_args[url_args.index(COURSE_ULR_NAME)+3])
     folder_on_server = Lesson.objects.get(id=lesson_id).os_path
     return delete_files_on_server(folder_on_server)

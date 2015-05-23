@@ -13,6 +13,13 @@
 
         }
 
+        #header {
+            background: #d1e2cb;
+            position: relative;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
         .lesson_name {
             display:inline-block;
             white-space: nowrap;

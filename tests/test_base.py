@@ -76,10 +76,9 @@ class TestRecordings(object):
         db_camera = CameraStatus.objects.get(id="1")
         assert db_camera.status == False
 
-class Cleaner(object):
+class TestCleaner(object):
 
-    def delete_all_tmp_data(self):
-        try:
-            TestHelper.clean_all_test_objects()
-        except Exception as e:
-            assert e
+    def test_delete_all_tmp_data(self):
+        assert TestHelper.clean_all_test_objects() == True
+
+# TestHelper.clean_all_test_objects()

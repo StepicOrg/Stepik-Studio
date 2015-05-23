@@ -6,7 +6,7 @@ from django.core.context_processors import csrf
 from stepicstudio.models import Course, Lesson, Step, SubStep, UserProfile, CameraStatus
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.VideoRecorder.action import *
-from stepicstudio.FileSystemOperations.action import search_as_files, rename_element_on_disk
+from stepicstudio.FileSystemOperations.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
 import itertools
 from django.db.models import Max
@@ -72,8 +72,11 @@ def test_access(user_id, path_list):
         return False
 
 
+
 def index(request):
-    return login(request)
+    if request.user.username :
+        return HttpResponseRedirect('/loggedin/')
+    return HttpResponseRedirect("/login/")
 
 
 def login(request):
@@ -84,7 +87,7 @@ def login(request):
 
 def logout(request):
     auth.logout(request)
-    return render_to_response('base.html')
+    return HttpResponseRedirect("/login/")
 
 @login_required(login_url='/login/')
 def get_user_courses(request):
@@ -382,7 +385,7 @@ def show_course_struct(request, courseId):
         all_steps = itertools.chain(all_steps, steps)
     all_steps = list(all_steps)
     args.update({"all_steps": all_steps})
-    args = search_as_files(args)
+    args = search_as_files_and_update_info(args)
     args.update(csrf(request))
     return render_to_response("course_struct.html", args)
 

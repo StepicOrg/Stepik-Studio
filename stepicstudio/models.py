@@ -55,6 +55,7 @@ class Step(models.Model):
     from_lesson = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
     start_time = models.BigIntegerField(default=set_time_milisec)
+    duration = models.BigIntegerField(default=0)
 
     def __str__(self):
         return self.name + " from lesson id =" + str(self.from_lesson)
@@ -65,12 +66,14 @@ class Step(models.Model):
         return lesson.os_path + translate_non_alphanumerics(self.name) + "/"
 
 
+###TODO: use duration in SubStep instead of Step
 class SubStep(models.Model):
 
     name = models.CharField(max_length=400)
     from_step = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
     start_time = models.BigIntegerField(default=set_time_milisec)
+    duration = models.BigIntegerField(default=0)
 
     def __str__(self):
         return self.name + " from step id =" + str(self.from_step)

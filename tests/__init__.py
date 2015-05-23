@@ -6,7 +6,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'STEPIC_STUDIO.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
-from stepicstudio.models import UserProfile, Course, Lesson, Step, SubStep, CameraStatus
+from stepicstudio.models import UserProfile, Course, Lesson, Step, SubStep, CameraStatus, User
 from STEPIC_STUDIO.settings import TEST_SSH_ACC_USERNAME, TEST_SSH_ACC_PASS
 
 
@@ -61,7 +61,10 @@ class Helper(object):
                                      'data': self.created_obj, })
             self.created_obj.update({'user': user})
 
-
     def clean_all_test_objects(self):
-        for key, obj in self.created_obj.items():
-            obj.delete()
+        try:
+            for key, obj in self.created_obj.items():
+                obj.delete()
+            return True
+        except Exception as e:
+            return False
