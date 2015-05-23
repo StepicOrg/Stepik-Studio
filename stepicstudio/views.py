@@ -33,8 +33,6 @@ def can_edit_page(view_function):
 def cant_edit_course(user_id, course_id):
     courses_from_user_id = Course.objects.all().filter(editors=user_id)
     course = Course.objects.all().filter(id=course_id)[0]
-    print(course)
-    print(courses_from_user_id)
     if course in courses_from_user_id:
         return False
     else:
@@ -54,10 +52,7 @@ def test_access(user_id, path_list):
         step_id = path_list[path_list.index(STEP_URL_NAME)+1]
     else:
         step_id = None
-    print("NOW " + str(user_id) + " " + str(course_id))
-    print(cant_edit_course(user_id, course_id))
     if path_list[0] == COURSE_ULR_NAME and not cant_edit_course(user_id, course_id):
-        print(path_list)
         if lesson_id and not (str(Lesson.objects.all().get(id=lesson_id).from_course) == str(course_id)):
             print(lesson_id,  Lesson.objects.all().get(id=lesson_id).from_course, course_id )
             print("Error here 1 ")
@@ -104,6 +99,7 @@ def get_course_page(request, courseId):
     args = {'full_name': request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
                                                 "Lessons": lesson_list}
     args.update({"Recording": camera_curr_status})
+    print(UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen)
     return render_to_response("course_view.html", args)
 
 
@@ -121,7 +117,8 @@ def auth_view(request):
 
 def loggedin(request):
     if request.user.is_authenticated():
-        return render_to_response("loggedin.html", {'full_name': request.user.username, "Courses": Course.objects.all()})
+        say_hello = UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen
+        return render_to_response("loggedin.html", {'full_name': request.user.username, "Courses": Course.objects.all(), 'say_hello': say_hello})
     else:
         return HttpResponseRedirect("/login/")
 

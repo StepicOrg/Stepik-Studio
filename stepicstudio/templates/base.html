@@ -21,27 +21,30 @@
 
 </head>
 <body>
-    <header id="header">
-        <h3>Hello, and welcome to Stepic Studio.</h3>
-        <p>We missed you and hope you will bring joy of knowledge with your course!</p>
-    </header>
+    {% if say_hello == True %}
+        <header id="header">
+            <h3>Hello, and welcome to Stepic Studio.</h3>
+            <p>We missed you and hope you will bring joy of knowledge with your course!</p>
+        </header>
+    {% endif %}
     <div id="page">
         <div id = "left_controls">
             <div id = "sidebar">
                 {% block sidebar %}
-                <ul>
-                    <li>Logged as {{ full_name }}</li>
-                    <li><a href="/courses/">Courses list</a></li>
-                    <li><a href="/settings/">Settings</a></li>
-                    {%  if Course.id > 0 %}
-                    <li><a href="/course/{{ Course.id }}/structure">Structure</a> </li>
-                    <li><a href="/course/{{ Course.id }}/stat_info">Statistic</a></li>
-                    {% endif %}
-                    <li><a href="/logout/">Log out</a></li>
-                </ul>
+                    <div id="navcontainer">
+                    <ul id="navlist">
+                            <li>Logged as {{ full_name }}</li>
+                            <li><a href="/courses/">Courses list</a></li></li>
+                            <li><a href="/settings/">Settings</a></li>
+                        {%  if Course.id > 0 %}
+                            <li><a href="/course/{{ Course.id }}/structure">Structure</a></li>
+                            <li><a href="/course/{{ Course.id }}/stat_info">Statistic</a></li>
+                        {% endif %}
+                        <li><a href="/logout/">Log out</a></li>
+                    </ul>
+                    </div>
                 {% endblock %}
-                <div id = "sidebar" class="recorder">
-                    RECORDER:
+                 RECORDER:
                     {% block recorder %}
                         {% if Recording == True %}
                             <br>
@@ -54,12 +57,12 @@
                                 No Recodring.
                         {% endif %}
                     {% endblock %}
-                </div>
             </div>
 
 
         </div>
         <div id="content">
+
             {% block content %} {% endblock %}
             {% block controls %} {% endblock %}
         </div>

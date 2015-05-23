@@ -49,7 +49,7 @@ class StepForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Please use meaningful names', 'autofocus': 'autofocus'}),
         }
-        exclude = ('from_lesson', 'position', 'start_time')
+        exclude = ('from_lesson', 'position', 'start_time', 'duration')
 
     def step_save(self):
         ls = self.save()
@@ -63,7 +63,7 @@ class SubStepForm(forms.ModelForm):
     def __init__(self, userId, lessonId, stepId, *args, **kwargs):
         super(SubStepForm, self).__init__(*args, **kwargs)
         self.user = userId
-        #self.fields['from_lessonId'] = forms.ChoiceField(choices={(lessonId, "This lesson")})
+        self.fields['from_lessonId'] = forms.ChoiceField(choices={(lessonId, "This lesson")})
 
     class Meta:
         model = SubStep
