@@ -399,6 +399,7 @@ def view_stat(request, courseId):
 
 ###TODO: try catch works incorrectly. Should check for file size before return
 ###TODO: hotfix here is bad
+###TODO: This function is unsanfe, its possible to watch other users files
 def video_view(request, substepId):
     substep = SubStep.objects.all().get(id=substepId)
     try:

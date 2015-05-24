@@ -53,7 +53,9 @@
 
 
 
-
+        .show_screen {
+            cursor: pointer;
+        }
 
 
 

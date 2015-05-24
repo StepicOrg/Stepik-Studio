@@ -46,7 +46,6 @@ function record_stopped()
     $('.stop-recording').removeClass('stop-recording').addClass('start-recording').text('Start Recording');
 }
 
-
 var elements_subscriptor = function() {
 
     sortObj = $("#sortable");
@@ -212,6 +211,11 @@ var elements_subscriptor = function() {
 var func_listener = function(){
 
     elements_subscriptor();
+
+    $('.show_screen').click({
+
+    });
+
 
     setInterval(function() {
         var seconds = new Date().getTime() / 1000;
