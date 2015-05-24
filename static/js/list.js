@@ -36,18 +36,21 @@ var cookie_csrf_updater = function(xhr){
         return deleted_element;
     }
 
-function record_started()
+function record_started(callback)
 {
     $('.start-recording').removeClass('start-recording').addClass('stop-recording').text('Recording');
+    var curr_sec_from_epoch = new Date().getTime() / 1000;
+    $('.stop-recording').append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
+    callback();
 }
 
-function record_stopped()
+function record_stopped(callback)
 {
     $('.stop-recording').removeClass('stop-recording').addClass('start-recording').text('Start Recording');
+    callback();
 }
 
 var elements_subscriptor = function() {
-
     sortObj = $("#sortable");
 
     sortObj.sortable({
@@ -95,7 +98,7 @@ var elements_subscriptor = function() {
         $(this).parent().find('.lesson_path').toggleClass('hiddenInfo');
         $(this).parent().find('.lesson_info_link').toggleClass('hiddenInfo');
         $(this).parent().find("a").toggleClass('hiddenInfo');
-    })
+    });
 
     $('.delete_button').on('click', function(event){
         event.stopPropagation();
@@ -119,11 +122,12 @@ var elements_subscriptor = function() {
         });
     });
 
-    function fader(el) {
+    function fader(el,callback) {
         el.fadeTo("fast", .5).removeAttr("href");
+        callback();
     }
 
-    $('.start-recording').on('click', function(){
+    $('.start-recording').off().on('click', function(){
         $(this).text("Starting...").click(function(){
                 return false;
         });
@@ -136,36 +140,38 @@ var elements_subscriptor = function() {
                 "action": "start"
             },
             success: function(data){
-                alert("Started");
-                record_started();
-                elements_subscriptor();
+                var el = $(this);
+                setTimeout(fader, 0, el);
+                record_started(elements_subscriptor);
 
             },
             error: function(data){
                 alert("Server Error!");
             }
-
         });
-        var el = $(this);
-        setTimeout(fader, 0, el);
+                        //            var el = $(this);
+                //setTimeout(fader, 0, el);
     });
 
-    $('.stop-recording').on('click', function(){
+    $('.stop-recording').off().on('click', function(){
         $(this).text('Preparing...').click(function(){
                 return false;
         });
+        var el = $(this);
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend:function(jqXHR, settings) {
+                cookie_csrf_updater(jqXHR);
+                setTimeout(fader, 0, el);
+            },
             type: "POST",
             url: window.location.pathname,
+
 
             data: {
                 "action": "stop"
             },
             success: function(data){
-                alert("Stopped");
-                record_stopped();
-                elements_subscriptor();
+                record_stopped(elements_subscriptor);
 
             },
             error: function(data){
@@ -173,8 +179,6 @@ var elements_subscriptor = function() {
             }
 
         });
-        var el = $(this);
-        setTimeout(fader, 0, el);
     });
 
     $('#rename-step-form').off().on('keypress', function(e) {
@@ -211,10 +215,6 @@ var elements_subscriptor = function() {
 var func_listener = function(){
 
     elements_subscriptor();
-
-    $('.show_screen').click({
-
-    });
 
 
     setInterval(function() {

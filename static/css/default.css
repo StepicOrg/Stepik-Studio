@@ -57,7 +57,16 @@
             cursor: pointer;
         }
 
+        .substep-list {
+            margin: 5px 5px 15px 5px;
+            border-bottom: 1px dotted;
 
+        }
+
+        .substep-name {
+            display: inline-block;
+            width: 200px;
+        }
 
 
 

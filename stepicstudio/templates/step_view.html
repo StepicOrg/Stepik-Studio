@@ -9,14 +9,14 @@
             <h3>
             from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
             </h3>
-                    {% for SS in SubSteps  %}
-                    {{SS.name}} |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
+                {% for SS in SubSteps  %}
+                   <div class="substep-list"> <span class="substep-name"> {{SS.name}} </span> |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
                         <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a>
 
                     <div class="delete_button right">
                         <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
                     </div>
-                <br>
+                    </div>
                 {% endfor %}
             <br>
             <div ALIGN="CENTER">
