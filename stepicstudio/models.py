@@ -2,7 +2,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from stepicstudio.utils.extra import translate_non_alphanumerics
-from stepicstudio.const import COURSE_ULR_NAME, STEP_URL_NAME, SUBSTEP_URL_NAME, LESSON_URL_NAME, SUBSTEP_PROFESSOR
+from stepicstudio.const import COURSE_ULR_NAME, STEP_URL_NAME, SUBSTEP_URL_NAME, LESSON_URL_NAME, SUBSTEP_PROFESSOR, \
+    SUBSTEP_PROFESSOR_v1
 import time, datetime
 from django.utils.timezone import utc
 
@@ -76,6 +77,7 @@ class SubStep(models.Model):
     position = models.SmallIntegerField(default=0)
     start_time = models.BigIntegerField(default=set_time_milisec)
     duration = models.BigIntegerField(default=0)
+    screencast_duration = models.BigIntegerField(default=0)
 
     def __str__(self):
         return self.name + " from step id =" + str(self.from_step)
@@ -84,6 +86,15 @@ class SubStep(models.Model):
     def os_path(self):
         step = Step.objects.all().get(id=self.from_step)
         return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + SUBSTEP_PROFESSOR
+
+    @property
+    def os_path_v1(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_PROFESSOR_v1
+
+    @property
+    def os_path_all_variants(self):
+        return [self.os_path, self.os_path_v1]
 
 
 class UserProfile(models.Model):

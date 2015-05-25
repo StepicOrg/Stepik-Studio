@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 import xml.parsers.expat
 from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
 from STEPIC_STUDIO.settings import ADOBE_LIVE_EXE_PATH
-from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH
+from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH, FFPROBE_RUN_PATH
 import subprocess
 from distutils.dir_util import copy_tree
 import psutil
@@ -180,7 +180,7 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
         return False
 
 def get_length_in_sec(filename: str) -> int:
-    result = subprocess.Popen(["ffprobe", filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     duration_string = [x.decode("utf-8") for x in result.stdout.readlines() if "Duration" in x.decode('utf-8')][0]
     time = duration_string.replace(' ','').split(',')[0].replace('Duration:', '').split(':')
     return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2].split('.')[0])
@@ -194,4 +194,11 @@ def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:
     else:
         return get_length_in_sec(calc_path)
 
+
+def update_time_records(substep_list) -> None:
+    for substep in substep_list:
+        for substep_path in substep.os_path_all_variants:
+            if os.path.exists(substep_path):
+                substep.duration = get_length_in_sec(substep_path)
+                break
 

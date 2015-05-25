@@ -209,19 +209,20 @@ def show_step(request, courseId, lessonId, stepId):
     if request.POST and request.is_ajax():
         user_action = dict(request.POST.lists())['action'][0]
         if user_action == "start":
-            # start_new_step_recording(request, courseId, lessonId, stepId)
-            return HttpResponse("Ok")
+            if start_new_step_recording(request, courseId, lessonId, stepId):
+                return HttpResponse("Ok")
         elif user_action == "stop":
-            # stop_recording(request, courseId, lessonId, stepId)
-            return HttpResponse("Ok")
-        else:
-            return Http404
+            if stop_recording(request, courseId, lessonId, stepId):
+                return HttpResponse("Ok")
+        return Http404
     postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
+    all_Substeps = SubStep.objects.all().filter(from_step=stepId)
+    update_time_records(all_Substeps)
     args =  {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId),
                                                      "Lesson": Lesson.objects.all().get(id=lessonId),
                                                      "Step": Step.objects.get(id=stepId),
                                                      "postUrl": postURL,
-                                                     "SubSteps": SubStep.objects.all().filter(from_step=stepId), }
+                                                     "SubSteps": all_Substeps, }
     args.update({"Recording": camera_curr_status})
     return render_to_response("step_view.html", args)
 
@@ -249,6 +250,8 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
     if is_started:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
+    else:
+        return False
     try:
         print("sent data to stepic.mehanig.com")
         data = {'User': request.user.username, 'Name': substep.name, 'Duration': 'No data', 'priority':'1', 'status':'0',
@@ -257,7 +260,7 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
         print('STATISTIC STATUS:', r)
     except Exception as e:
         print('Error!!!: ', e)
-
+    return True
 
 @login_required(login_url='/login')
 def recording_page(request, courseId, lessonId, stepId):
