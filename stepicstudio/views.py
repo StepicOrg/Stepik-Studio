@@ -109,15 +109,20 @@ def auth_view(request):
     user = auth.authenticate(username = username, password = password)
 
     if user is not None:
+        say_hello = UserProfile.objects.get(user=user).is_ready_to_show_hello_screen
         auth.login(request, user)
-        return HttpResponseRedirect("/loggedin/")
+        if say_hello:
+            say_hello = '?message=hi'
+        else:
+            say_hello = ''
+        return HttpResponseRedirect("/loggedin/"+say_hello)
     else:
         return HttpResponseRedirect("/login/")
 
 
 def loggedin(request):
     if request.user.is_authenticated():
-        say_hello = UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen
+        say_hello = bool(request.GET.get('message'))
         return render_to_response("loggedin.html", {'full_name': request.user.username, "Courses": Course.objects.all(), 'say_hello': say_hello})
     else:
         return HttpResponseRedirect("/login/")
