@@ -182,7 +182,7 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
 def get_length_in_sec(filename: str) -> int:
     result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     duration_string = [x.decode("utf-8") for x in result.stdout.readlines() if "Duration" in x.decode('utf-8')][0]
-    time = duration_string.replace(' ','').split(',')[0].replace('Duration:', '').split(':')
+    time = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
     return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2].split('.')[0])
 
 def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:

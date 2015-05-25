@@ -172,6 +172,7 @@ var elements_subscriptor = function() {
             },
             success: function(data){
                 record_stopped(elements_subscriptor);
+                location.reload(true);
 
             },
             error: function(data){

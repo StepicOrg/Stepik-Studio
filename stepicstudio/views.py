@@ -296,6 +296,7 @@ def stop_recording(request, courseId, lessonId, stepId):
         last_substep_time = SubStep.objects.all().filter(from_step=stepId).aggregate(Max('start_time'))['start_time__max']
         recorded_substep = SubStep.objects.all().filter(start_time=last_substep_time)[0]
         add_stat_info(recorded_substep.id)
+        return True
 
 
 

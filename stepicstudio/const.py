@@ -16,4 +16,4 @@ FFMPEG_PATH = r'D:\VIDEO\ffmpeg\bin\ffmpeg.exe'
 if _platform == "linux" or _platform == "linux2" or _platform == "darwin":
     FFPROBE_RUN_PATH = 'ffprobe'
 else:
-    FFPROBE_RUN_PATH = r'D:\VIDEO\ffmpeg\bin\ffmpeg.exe'
+    FFPROBE_RUN_PATH = r'D:\VIDEO\ffmpeg\bin\ffprobe.exe'
