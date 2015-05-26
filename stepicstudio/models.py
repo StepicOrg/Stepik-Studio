@@ -58,7 +58,7 @@ class Step(models.Model):
     position = models.SmallIntegerField(default=0)
     start_time = models.BigIntegerField(default=set_time_milisec)
     duration = models.BigIntegerField(default=0)
-    duration = models.BigIntegerField(default=0)
+    is_fresh = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name + " from lesson id =" + str(self.from_lesson)

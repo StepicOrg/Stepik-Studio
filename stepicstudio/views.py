@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
+from django.core.urlresolvers import reverse
 from stepicstudio.models import Course, Lesson, Step, SubStep, UserProfile, CameraStatus
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.VideoRecorder.action import *
@@ -23,7 +24,7 @@ def can_edit_page(view_function):
         print("runing " + str(args[0].user.id) + str(kwargs['courseId']))
         # if cant_edit_course(args[0].user.id, kwargs['courseId']):
         if not access:
-            return HttpResponseRedirect("/login/")
+            return HttpResponseRedirect(reverse('stepicstudio.views.login'))
         else:
             print(args[0].user.id)
             return view_function(*args, **kwargs)
@@ -71,7 +72,7 @@ def test_access(user_id, path_list):
 def index(request):
     if request.user.username :
         return HttpResponseRedirect('/loggedin/')
-    return HttpResponseRedirect("/login/")
+    return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
 
 def login(request):
@@ -82,7 +83,7 @@ def login(request):
 
 def logout(request):
     auth.logout(request)
-    return HttpResponseRedirect("/login/")
+    return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
 @login_required(login_url='/login/')
 def get_user_courses(request):
@@ -117,7 +118,7 @@ def auth_view(request):
             say_hello = ''
         return HttpResponseRedirect("/loggedin/"+say_hello)
     else:
-        return HttpResponseRedirect("/login/")
+        return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
 
 def loggedin(request):
@@ -125,7 +126,7 @@ def loggedin(request):
         say_hello = bool(request.GET.get('message'))
         return render_to_response("loggedin.html", {'full_name': request.user.username, "Courses": Course.objects.all(), 'say_hello': say_hello})
     else:
-        return HttpResponseRedirect("/login/")
+        return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
 
 ##TODO: Implement correctly !!! REDECORATE WITH CAN_EDIT_PAGE
@@ -211,10 +212,12 @@ def add_step(request, courseId, lessonId):
 @login_required(login_url='/login/')
 @can_edit_page
 def show_step(request, courseId, lessonId, stepId):
+    step_obj = Step.objects.get(id=stepId)
     if request.POST and request.is_ajax():
         user_action = dict(request.POST.lists())['action'][0]
         if user_action == "start":
             if start_new_step_recording(request, courseId, lessonId, stepId):
+                step_obj.is_fresh = False
                 return HttpResponse("Ok")
         elif user_action == "stop":
             if stop_recording(request, courseId, lessonId, stepId):
@@ -222,7 +225,10 @@ def show_step(request, courseId, lessonId, stepId):
         return Http404
     postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     all_Substeps = SubStep.objects.all().filter(from_step=stepId)
-    update_time_records(all_Substeps)
+    summ_time = update_time_records(all_Substeps)
+    step_obj.is_fresh = True
+    step_obj.duration = summ_time
+    step_obj.save()
     args =  {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId),
                                                      "Lesson": Lesson.objects.all().get(id=lessonId),
                                                      "Step": Step.objects.get(id=stepId),
@@ -322,7 +328,6 @@ def remove_substep(request, courseId, lessonId, stepId, substepId):
     substep_deleted = delete_substep_files(user_id=request.user.id,
                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
     substep.delete()
-    #return render_to_response("step_view.html", args)
     return HttpResponseRedirect(postURL)
 
 @login_required(login_url="/login/")
@@ -338,21 +343,11 @@ def delete_step(request, courseId, lessonId, stepId):
                                                      "SubSteps": SubStep.objects.all().filter(from_step=stepId)}
     substeps = SubStep.objects.all().filter(from_step=stepId)
     for substep in substeps:
-        # args['currSubStep'] = substep
-        # substep_deleted = delete_substep_files(user_id=request.user.id,
-        #                                    user_profile=UserProfile.objects.get(user=request.user.id), data=args)
         substep.delete()
     step_deleted = delete_step_files(user_id=request.user.id,
                                             user_profile=UserProfile.objects.get(user=request.user.id), data=args)
     step.delete()
     return HttpResponseRedirect(postURL)
-
-
-### ADD DECORATOR can_edit_page ###
-@login_required(login_url='/login/')
-def rerecord_substep(request, courseId, lessonId, stepId, substepId):
-    pass
-
 
 @login_required(login_url='/login/')
 def user_profile(request):
@@ -444,7 +439,6 @@ def video_screen_view(request, substepId):
         return response
     except Exception as e:
         pass
-        # print(e)
         err = e
     try:
         substep = SubStep.objects.all().get(id=substepId)

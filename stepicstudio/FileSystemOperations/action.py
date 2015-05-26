@@ -134,14 +134,15 @@ def search_as_files_and_update_info(args: dict) -> dict:
     for index, step in enumerate(args["all_steps"]):
         for l in args["all_course_lessons"]:
             if step.from_lesson == l.pk and l.from_course == course.pk:
-                print(step.name)
                 path = folder + "/" + translate_non_alphanumerics(course.name)
                 path += "/" + translate_non_alphanumerics(l.name)
                 path += "/" + translate_non_alphanumerics(step.name)
                 if os.path.exists(path):
                     file_status[index] = True
-                    step.duration = calculate_folder_duration_in_sec(path)
-                    step.save()
+                    if not step.is_fresh:
+                        step.duration = calculate_folder_duration_in_sec(path)
+                        step.is_fresh = True
+                        step.save()
                 else:
                     pass
     ziped_list = zip(args["all_steps"], file_status)
@@ -194,11 +195,22 @@ def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:
     else:
         return get_length_in_sec(calc_path)
 
-
-def update_time_records(substep_list) -> None:
+"""
+Function user for updating duration in one substep and in whole stepfolders, returns int with summ seconds
+"""
+def update_time_records(substep_list, new_step_only=False, new_step_obj=None) -> int:
+    if new_step_only:
+        for substep_path in new_step_obj.os_path_all_variants:
+            if os.path.exists(substep_path):
+                new_step_obj.duration = get_length_in_sec(substep_path)
+                new_step_obj.save()
+    summ = 0
     for substep in substep_list:
         for substep_path in substep.os_path_all_variants:
             if os.path.exists(substep_path):
-                substep.duration = get_length_in_sec(substep_path)
+                if not new_step_only:
+                    substep.duration = get_length_in_sec(substep_path)
+                summ += substep.duration
+                substep.save()
                 break
-
+    return summ
