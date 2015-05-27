@@ -49,7 +49,7 @@ class StepForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Please use meaningful names', 'autofocus': 'autofocus'}),
         }
-        exclude = ('from_lesson', 'position', 'start_time', 'duration')
+        exclude = ('from_lesson', 'position', 'start_time', 'duration', 'is_fresh', 'text_data')
 
     def step_save(self):
         ls = self.save()
