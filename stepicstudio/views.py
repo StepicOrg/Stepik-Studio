@@ -222,9 +222,6 @@ def show_step(request, courseId, lessonId, stepId):
         elif user_action == "stop":
             if stop_recording(request, courseId, lessonId, stepId):
                 return HttpResponse("Ok")
-        elif user_action == "text_update":
-            print(dict(request.POST.lists())['text_data'][0])
-            return HttpResponse("Ok")
         return Http404
     postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     all_Substeps = SubStep.objects.all().filter(from_step=stepId)
