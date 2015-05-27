@@ -209,6 +209,10 @@ var elements_subscriptor = function() {
         }
     });
 
+    $('#edit-text').click(function() {
+        $('.form-edit-text').toggleClass('hiddenForm');
+    });
+
 
 };
 

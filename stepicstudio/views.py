@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, render
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
@@ -222,6 +222,9 @@ def show_step(request, courseId, lessonId, stepId):
         elif user_action == "stop":
             if stop_recording(request, courseId, lessonId, stepId):
                 return HttpResponse("Ok")
+        elif user_action == "text_update":
+            print(dict(request.POST.lists())['text_data'][0])
+            return HttpResponse("Ok")
         return Http404
     postURL = "/" + COURSE_ULR_NAME + "/" + courseId + "/" + LESSON_URL_NAME + "/"+lessonId+"/" + STEP_URL_NAME + "/" + stepId + "/"
     all_Substeps = SubStep.objects.all().filter(from_step=stepId)
@@ -235,7 +238,21 @@ def show_step(request, courseId, lessonId, stepId):
                                                      "postUrl": postURL,
                                                      "SubSteps": all_Substeps, }
     args.update({"Recording": camera_curr_status})
+    args.update(csrf(request))
     return render_to_response("step_view.html", args)
+
+###TODO: request.META is BAD! replace for AJAX requests!
+@login_required(login_url='/login')
+def notes(request, stepId):
+    if request.POST:
+        step_obj = Step.objects.get(id=stepId)
+        step_obj.text_data = dict(request.POST.lists())['note'][0]
+        step_obj.save()
+    args = {}
+    args.update(csrf(request))
+    return HttpResponseRedirect(request.META['HTTP_REFERER'], args)
+
+
 
 
 ## TODO: TOKEN at POSTrequest to statistic server is insecure

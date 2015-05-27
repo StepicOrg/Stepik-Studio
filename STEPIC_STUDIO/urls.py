@@ -43,6 +43,7 @@ urlpatterns = patterns('',
 
     # url(r'^course/(?P<courseId>[0-9]+)/add/lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
+    url(r'^notes/step/(?P<stepId>[0-9]+)/', 'stepicstudio.views.notes'),
 
 
 )

@@ -9,6 +9,9 @@
 
         }
 
+        .hiddenForm {
+            display: none;
+        }
 
         #navcontainer
             {
