@@ -1,36 +1,56 @@
 {%  extends "base.html" %}
+{% load app_filters %}
 {%  load static %}
     {%  block content %}
 
         {% if Recording != True %}
-        <!--ADD BACK BUTTON -->
-        <br>this page is for Step "{{ Step.name }}":
-        <br>
-        <h3>
-        from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
-        </h3>
-                {% for SS in SubSteps  %}
-                {{SS.name}} |  <a target="_blank" href=/showcontent/{{ SS.id }}>Show </a> | <a target="_blank" href=/showscreencontent/{{ SS.id }}>Show screen</a>
-
-
-                <div class="delete_button right">
-                    <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
-                </div>
+            <!--ADD BACK BUTTON -->
+            <br>this page is for Step "{{ Step.name }}":
             <br>
-            {% endfor %}
-        <br>
-        <div class="start-recording" ALIGN="CENTER">
-            <h1><a href={{ postUrl }}record/>Start Recording</a>
-            </h1>
-        </div>
-        <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
+            <h3>
+            from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
+            </h3>
+                {% for SS in SubSteps  %}
+                   <div class="substep-list"> <span class="substep-name"> {{SS.name}} </span>  |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
+                        <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a>
+                       | {% if SS.duration > 0 %} Duration: {{ SS.duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
+                    <div class="delete_button right">
+                        <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
+                    </div>
+                    </div>
+                {% endfor %}
+            <br>
+
+            <div ALIGN="CENTER">
+                <h1><span class="start-recording">Start Recording </span>
+                </h1>
+            </div>
+
+            <div>
+
+
+
+            <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
+
+
+
+            <p>Video Editing Notes:</p>
+            {{ Step.text_data | formatting_text}}
+            <input id = "edit-text" type="submit" value="Edit">
+            <div class="form-edit-text hiddenForm">
+                <form action="/notes/step/{{ Step.id }}/" method="POST">
+                    {% csrf_token %}
+                <textarea name="note" cols=120 rows=10>{{ Step.text_data }}
+                </textarea>
+                <input type="submit" value="Publish">
+                </form>
+            </div>
         {% else %}
             <div ALIGN = center>
             <h3> Recording started</h3>
             <br>
-            <h1><a href={{ postUrl }}stop/>Stop Recording</a>
+            <h1><a href={{ postUrl }}stop/ class="stop-recording">Stop Recording</a>
 
-{#            <div>Recorded: {{ StartTime }}</div>#}
             </h1>
             <div id = "timer" data-starttime="{{ StartTime }}">00:00</div>
             </div>

@@ -8,12 +8,20 @@ from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 #TODO: Make it Singleton
 class Screen_Recorder(object):
 
-    def __init__(self, path):
+    def __init__(self, path, remote_ubuntu=None):
+        self.path = path
+        self.remote_path = ''
+
+        if remote_ubuntu is not None:
+            global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
+            PROFESSOR_IP = remote_ubuntu['professor_ip']
+            UBUNTU_USERNAME = remote_ubuntu['ubuntu_username']
+            UBUNTU_PASSWORD = remote_ubuntu['ubuntu_password']
+            self.path = remote_ubuntu['ubuntu_folder_path'] + "/" + path
+
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(PROFESSOR_IP, username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
-        self.path = path
-        self.remote_path = ''
 
         host = PROFESSOR_IP
         transport = paramiko.Transport((host, 22))
@@ -28,8 +36,7 @@ class Screen_Recorder(object):
         else:
             return True
 
-    def run_screen_recorder(self):
-        #stdin, stdout, stderr = ssh.exec_command("uptime")
+    def run_screen_recorder(self, substepname=''):
         p_args = self.path.split('/')
         p_args = list(filter(None, p_args))
         self.remote_path = "/"
@@ -46,7 +53,7 @@ class Screen_Recorder(object):
 
         command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
                   '-pix_fmt yuv420p -vcodec libx264 -acodec pcm_s16le -preset ultrafast -threads 0 -af "volume=1dB" -y ' \
-                  + self.remote_path + SUBSTEP_SCREEN + ' 2< /dev/null &'
+                  + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
         print(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
 

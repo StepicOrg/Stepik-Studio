@@ -2,8 +2,10 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from stepicstudio.utils.extra import translate_non_alphanumerics
-from stepicstudio.const import COURSE_ULR_NAME, STEP_URL_NAME, SUBSTEP_URL_NAME, LESSON_URL_NAME, SUBSTEP_PROFESSOR
-import time
+from stepicstudio.const import COURSE_ULR_NAME, STEP_URL_NAME, SUBSTEP_URL_NAME, LESSON_URL_NAME, SUBSTEP_PROFESSOR, \
+    SUBSTEP_PROFESSOR_v1
+import time, datetime
+from django.utils.timezone import utc
 
 # Create your models here.
 
@@ -55,6 +57,9 @@ class Step(models.Model):
     from_lesson = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
     start_time = models.BigIntegerField(default=set_time_milisec)
+    duration = models.BigIntegerField(default=0)
+    is_fresh = models.BooleanField(default=False)
+    text_data = models.TextField(default='')
 
     def __str__(self):
         return self.name + " from lesson id =" + str(self.from_lesson)
@@ -65,12 +70,15 @@ class Step(models.Model):
         return lesson.os_path + translate_non_alphanumerics(self.name) + "/"
 
 
+###TODO: use duration in SubStep instead of Step
 class SubStep(models.Model):
 
     name = models.CharField(max_length=400)
     from_step = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
     start_time = models.BigIntegerField(default=set_time_milisec)
+    duration = models.BigIntegerField(default=0)
+    screencast_duration = models.BigIntegerField(default=0)
 
     def __str__(self):
         return self.name + " from step id =" + str(self.from_step)
@@ -78,17 +86,35 @@ class SubStep(models.Model):
     @property
     def os_path(self):
         step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_PROFESSOR
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + SUBSTEP_PROFESSOR
+
+    @property
+    def os_path_v1(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_PROFESSOR_v1
+
+    @property
+    def os_path_all_variants(self):
+        return [self.os_path, self.os_path_v1]
 
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
+    last_visit = models.DateTimeField(default="2000-10-25 14:30")
     serverIP = models.CharField(max_length=50)
     clientIP = models.CharField(max_length=50)
     serverFilesFolder = models.CharField(max_length=10000)
     clientFilesFolder = models.CharField(max_length=10000)
     recordVideo = models.BooleanField(default=True)
     recordScreen = models.BooleanField(default=True)
+
+    @property
+    def is_ready_to_show_hello_screen(self) -> True | False:
+        now = datetime.datetime.utcnow().replace(tzinfo=utc)
+        timediff = now - self.last_visit
+        if timediff.total_seconds() > 60*60*12:
+            return True
+        return False
 
 
 def create_user_profile(sender, instance, created, **kwargs):

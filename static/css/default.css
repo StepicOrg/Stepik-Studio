@@ -4,11 +4,96 @@
             text-align: center;
             font-size: 1.275em;
             color: #333333;
-            /*font-family: "Myriad Pro Light", "Gill Sans", "Gill Sans MT", Calibri, sans-serif;*/
-            /*font-weight:lighter;*/
-            font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
-             Helvetica, Arial, "Lucida Grande", sans-serif;
+            font-family: 'Lato', sans-serif;
+            font-weight: 300;
 
+        }
+
+        .hiddenForm {
+            display: none;
+        }
+
+        #navcontainer
+            {
+            width: auto;
+            padding: 0 0 1em 0;
+            margin-bottom: 1em;
+            color: #333;
+            }
+
+            #navcontainer ul
+            {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            border: none;
+            }
+
+            #navcontainer li
+            {
+            border-bottom: 1px solid #90bade;
+            margin: 0;
+            }
+
+            #navcontainer li a
+            {
+            display: block;
+            padding: 5px 5px 5px 0.5em;
+            color: #141628;
+            text-decoration: none;
+            width: 100%;
+            }
+
+            html>body #navcontainer li a { width: auto; }
+
+            #navcontainer li a:hover
+            {
+            border-left: 10px solid #7ed1b6;
+            border-right: 10px solid #aee0be;
+            background-color: #92d79f;
+            color: #fff;
+            }
+
+
+
+        .show_screen {
+            cursor: pointer;
+        }
+
+        .substep-list {
+            margin: 5px 5px 15px 5px;
+            border-bottom: 1px dotted;
+
+        }
+
+        .substep-name {
+            display: inline-block;
+            width: 200px;
+        }
+
+
+
+        #header {
+            background: #d1e2cb;
+            position: relative;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .lesson_name {
+            display:inline-block;
+            white-space: nowrap;
+            overflow:hidden !important;
+            text-overflow: ellipsis;
+            width: 70%;
+        }
+
+        #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+        #sortable li { margin: 0 3px 3px 3px;
+            font-size: 1.4em;
+            height: auto;
+            background: #FAFAFA;
+            border-width: 0px;
         }
 
         #page {
@@ -22,6 +107,7 @@
             float: left;
             width: 200px;
             border: 1px  solid #000;
+            margin-right: 10px;
         }
 
         #content {
@@ -37,21 +123,60 @@
             font-size: 22px;
         }
 
+        input {
+            font-size: 22px;
+        }
+
+        .stop-recording {
+            cursor: pointer;
+        }
+
+        .start-recording {
+            cursor: pointer;
+        }
+
         .lesson_info {
+            font-size: 0.8em;
+            display: inline-block;
             float: right;
             text-align: left;
-            width: auto;
+            width: 170px;
             color: #565656;
+            cursor: pointer;
 
         }
 
+
+        #id_name {
+            width:100%;
+        }
+
+        #rename-step-form {
+            width:100%;
+            height:auto;
+            margin:auto;
+            position:relative;
+
+        }
+
+        .input-step-name-field{
+            display: inline;
+            width:auto;
+        }
+
+        #input-field-name {
+            width:80%;
+            height: 40px;
+        }
+
         .lesson_info_link {
-            padding-right: 110px;
+            padding-right: 20px;
 
         }
 
         .lesson_path{
-            padding-right: 400px;
+            padding-right: auto;
+            display: inline-block;
         }
 
         .hiddenInfo {
@@ -64,8 +189,9 @@
 
         .delete_button {
             width: auto;
+
             cursor: pointer;
-            padding-left: 30px;
+            padding-left: 5px;
         }
 
         .right {
@@ -158,13 +284,6 @@
     background: #528446
 }
 
-
-
-
-    #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
-    #sortable li { margin: 0 3px 3px 3px; padding: 0.8em; padding-top: 0.1em; padding-left: 1.5em;  font-size: 1.4em; height: 18px; 
-        background: #FAFAFA; border-width: 0px;}
-    #sortable li span { position: absolute; margin-left: -1.3em; }
 
 
     /*D3.CSS*/

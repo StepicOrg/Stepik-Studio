@@ -1,15 +1,5 @@
-import pytest
-import os
-from django.test import TestCase
-
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'STEPIC_STUDIO.settings'
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
-
 import stepicstudio.VideoRecorder.action as VR
-
+from . import Helper
 
 class TestDBandAuth(object):
 
@@ -55,8 +45,40 @@ class TestDBandAuth(object):
         assert err is None
 
 
+#USE OF HELPER CLS HERE IS SAFE
+
 class TestPath(object):
 
     def test_windows_path_to_linux_for_ffmpeg_path(self):
-        assert VR.to_linux_translate('C:\_USERS\lol', 'tester') == '\lola'
-        assert VR.to_linux_translate('/_thisIs Bad Path/oop&s.mp4', '\_thisIs Bad Path\oops.mp4' )
+        assert VR.to_linux_translate('C:\_USERS\lol', 'tester') == '/home/stepic/VIDEO/STEPICSTUDIO/tester/'
+
+
+TestHelper = Helper()
+TestHelper.create_test_user(force_rewrite=True)
+from stepicstudio.models import CameraStatus
+
+
+class TestRecordings(object):
+
+    def test_start_recording(self):
+        request_args = TestHelper.helper_data
+        status = VR.start_recording(**request_args)
+        assert status
+
+    def test_recording_status(self):
+        db_camera = CameraStatus.objects.get(id="1")
+        assert db_camera.status == True
+
+    def test_stop_recording(self):
+        VR.stop_cam_recording()
+
+    def test_is_recording_stoped(self):
+        db_camera = CameraStatus.objects.get(id="1")
+        assert db_camera.status == False
+
+class TestCleaner(object):
+
+    def test_delete_all_tmp_data(self):
+        assert TestHelper.clean_all_test_objects() == True
+
+# TestHelper.clean_all_test_objects()
