@@ -23,6 +23,10 @@ class Course(models.Model):
         return self.name + " " + str(self.start_date)
 
     @property
+    def owner(self):
+        return self.editors
+
+    @property
     def os_path(self):
         user_id = self.editors
         user_folder = UserProfile.objects.all().get(user_id=user_id).serverFilesFolder
@@ -37,6 +41,10 @@ class Lesson(models.Model):
     name = models.CharField(max_length=400)
     from_course = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
+
+    @property
+    def owner(self):
+        return Course.objects.get(id=self.from_course).owner
 
     def __str__(self):
         return self.name + " from course id =" + str(self.from_course)
@@ -61,6 +69,10 @@ class Step(models.Model):
     is_fresh = models.BooleanField(default=False)
     text_data = models.TextField(default='')
 
+    @property
+    def owner(self):
+        return Lesson.objects.get(id=self.from_lesson).owner
+
     def __str__(self):
         return self.name + " from lesson id =" + str(self.from_lesson)
 
@@ -79,6 +91,10 @@ class SubStep(models.Model):
     start_time = models.BigIntegerField(default=set_time_milisec)
     duration = models.BigIntegerField(default=0)
     screencast_duration = models.BigIntegerField(default=0)
+
+    @property
+    def owner(self):
+        return Step.objects.get(id=self.from_step).owner
 
     def __str__(self):
         return self.name + " from step id =" + str(self.from_step)

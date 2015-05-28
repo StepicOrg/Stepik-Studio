@@ -1,5 +1,17 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from rest_framework import routers
+from stepicstudio import views
+
+
+
+"""
+API
+
+"""
+router = routers.SimpleRouter()
+router.register(r'users', views.UserViewSet)
+router.register(r'substep', views.SubstepViewSet, base_name='SubStep')
 
 courseurlpatterns = patterns('',
     url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
@@ -44,6 +56,7 @@ urlpatterns = patterns('',
     # url(r'^course/(?P<courseId>[0-9]+)/add/lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
     url(r'^notes/step/(?P<stepId>[0-9]+)/', 'stepicstudio.views.notes'),
-
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/', include(router.urls)),
 
 )

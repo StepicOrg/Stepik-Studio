@@ -15,7 +15,7 @@
                         <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a>
                        | {% if SS.duration > 0 %} Duration: {{ SS.duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
                     <div class="delete_button right">
-                        <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
+                        <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/" data-apilink="{{ SS.id }}"> Delete </div>
                     </div>
                     </div>
                 {% endfor %}

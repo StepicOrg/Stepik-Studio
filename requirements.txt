@@ -4,3 +4,7 @@ paramiko==1.15.2
 pytest==2.7.0
 invoke==0.9.0
 coverage==3.7.1
+requests == 2.7.0
+djangorestframework == 3.1.2
+markdown == 2.6.2
+django-filter == 0.10.0

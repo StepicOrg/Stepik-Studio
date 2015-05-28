@@ -17,6 +17,14 @@ import copy
 import requests
 from wsgiref.util import FileWrapper
 from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
+from rest_framework import viewsets, status
+from .serializers import UserSerializer, SubstepSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+
+
 
 def can_edit_page(view_function):
     def process_request(*args, **kwargs):
@@ -323,9 +331,6 @@ def stop_recording(request, courseId, lessonId, stepId):
         add_stat_info(recorded_substep.id)
         return True
 
-
-
-
 @login_required(login_url='/login/')
 @can_edit_page
 def remove_substep(request, courseId, lessonId, stepId, substepId):
@@ -413,8 +418,6 @@ def view_stat(request, courseId):
     args = {"full_name": request.user.username, "Course": Course.objects.all().get(id=courseId)}
     return render_to_response("stat.html", args)
 
-
-
 ###TODO: try catch works incorrectly. Should check for file size before return
 ###TODO: hotfix here is bad
 ###TODO: This function is unsanfe, its possible to watch other users files
@@ -438,8 +441,6 @@ def video_view(request, substepId):
     except Exception as e:
         print(e)
         return HttpResponse("File to large. Please watch it on server.")
-
-
 
 ###TODO: hotfix here is bad =(
 def video_screen_view(request, substepId):
@@ -488,3 +489,40 @@ def rename_elem(request):
             return Http404
     else:
         return Http404
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class IsOwnerOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.owner == request.user.id
+
+class ApiMixin(object):
+    permission_classes = (IsOwnerOrReadOnly,)
+
+class SubstepViewSet(ApiMixin, viewsets.ViewSet):
+
+    def get_object(self, pk):
+        try:
+            return SubStep.objects.get(pk=pk)
+        except SubStep.DoesNotExist:
+            raise Http404
+
+    def list(self, request):
+        queryset = SubStep.objects.all()
+        serializer = SubstepSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        queryset = SubStep.objects.all()
+        substep = get_object_or_404(queryset, pk=pk)
+        serializer = SubstepSerializer(substep)
+        return Response(serializer.data)
+
+    def delete(self, request, pk, format=None):
+        substep = self.get_object(pk)
+        substep.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
