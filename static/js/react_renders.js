@@ -26,10 +26,10 @@ var SubStep = React.createClass({
 
     handleClick: function(event) {
         var _this = this;
-        var delete_ajax_call = function (url) {
+        var delete_ajax_call = function () {
             $.ajax({
                 beforeSend: cookie_csrf_updater,
-                url: url,
+                url: _this.state.del_url,
                 type: 'DELETE',
                 success: function (result) {
                     _this.props.updateComponent(_this.props.obj);
@@ -39,7 +39,30 @@ var SubStep = React.createClass({
                 }
             })
         };
-        delete_ajax_call(this.state.del_url);
+        delete_ajax_call();
+    },
+
+    openDialog: function(e){
+        var _this = this;
+        e.preventDefault();
+        var $dialog = $('<div>').dialog({
+            title: 'Are you sure?',
+            width: 400,
+            close: function(e){
+              //React.unmountComponentAtNode(this);
+              $( this ).remove();
+            }
+        });
+        var deleteRecord = function (e) {
+            _this.handleClick();
+            $dialog.dialog('close');
+        };
+
+        var cancelEvent = function(e){
+            e.preventDefault();
+            $dialog.dialog('close');
+        };
+        React.render(<DialogContent closeDialog={cancelEvent} deleteRecord={deleteRecord}/>, $dialog[0])
     },
 
     render: function(){
@@ -57,7 +80,7 @@ var SubStep = React.createClass({
                      <a target="_blank" href={scr_file}><img onClick={this.downloadVideoScreen} src="/static/icons/display.svg"></img></a> |
                 </span>
                 <span className="delete_button right">
-                    <span onClick={this.handleClick} className='delete_button'>Delete</span>
+                    <span onClick= {this.openDialog} obj={this} data="NOOO">Delete</span>
                 </span>
             </div>
         );
@@ -150,116 +173,16 @@ var SubStepMAIN = React.createClass({
     }
 });
 
-var Confirm, Modal, Promise, button, confirm, div, h4, ref;
-
-Promise = $.Deferred;
-
-ref = React.DOM, div = ref.div, button = ref.button, h4 = ref.h4;
-
-Modal = React.createClass({
-  displayName: 'Modal',
-  backdrop: function() {
-    return div({
-      className: 'modal-backdrop in'
-    });
-  },
-  modal: function() {
-    return div({
-      className: 'modal in',
-      tabIndex: -1,
-      role: 'dialog',
-      'aria-hidden': false,
-      ref: 'modal',
-      style: {
-        display: 'block'
-      }
-    }, div({
-      className: 'modal-dialog'
-    }, div({
-      className: 'modal-content'
-    }, this.props.children)));
-  },
-  render: function() {
-    return div(null, this.backdrop(), this.modal());
-  }
-});
-
-Confirm = React.createClass({
-  displayName: 'Confirm',
-  getDefaultProps: function() {
-    return {
-      confirmLabel: 'OK',
-      abortLabel: 'Cancel'
-    };
-  },
-  abort: function() {
-    return this.promise.reject();
-  },
-  confirm: function() {
-    return this.promise.resolve();
-  },
-  componentDidMount: function() {
-    this.promise = new Promise();
-    return React.findDOMNode(this.refs.confirm).focus();
-  },
-  render: function() {
-    return React.createElement(Modal, null, div({
-      className: 'modal-header'
-    }, h4({
-      className: 'modal-title'
-    }, this.props.message)), this.props.description ? div({
-      className: 'modal-body'
-    }, this.props.description) : void 0, div({
-      className: 'modal-footer'
-    }, div({
-      className: 'text-right'
-    }, button({
-      role: 'abort',
-      type: 'button',
-      className: 'btn btn-default',
-      onClick: this.abort
-    }, this.props.abortLabel), ' ', button({
-      role: 'confirm',
-      type: 'button',
-      className: 'btn btn-primary',
-      ref: 'confirm',
-      onClick: this.confirm
-    }, this.props.confirmLabel))));
-  }
-});
-
-confirm = function(message, options) {
-  var cleanup, component, props, wrapper;
-  if (options == null) {
-    options = {};
-  }
-  props = $.extend({
-    message: message
-  }, options);
-  wrapper = document.body.appendChild(document.createElement('div'));
-  component = React.render(React.createElement(Confirm, props), wrapper);
-  cleanup = function() {
-    React.unmountComponentAtNode(wrapper);
-    return setTimeout(function() {
-      return wrapper.remove();
-    });
-  };
-  return component.promise.always(cleanup).promise();
-};
-
-$(function() {
-  return $('.removable').click(function() {
-    return confirm('Are you sure?', {
-      description: 'Would you like to remove this item from the list?',
-      confirmLabel: 'Yes',
-      abortLabel: 'No'
-    }).then((function(_this) {
-      return function() {
-        return $(_this).parent().remove();
-      };
-    })(this));
+var DialogContent = React.createClass({
+    render: function(){
+      return(
+      <div>
+            <button onClick = {this.props.deleteRecord}>Yes</button><span>________</span>
+            <button onClick = {this.props.closeDialog}>Cancel</button>
+      </div>
+      )
+    }
   });
-});
 
 
 var SubStepComponent = React.render(
