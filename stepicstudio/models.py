@@ -70,6 +70,10 @@ class Step(models.Model):
     text_data = models.TextField(default='')
 
     @property
+    def substep_list(self):
+        return SubStep.objects.all().filter(from_step=self.id)
+
+    @property
     def owner(self):
         return Lesson.objects.get(id=self.from_lesson).owner
 

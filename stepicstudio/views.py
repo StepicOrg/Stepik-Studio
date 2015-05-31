@@ -18,7 +18,7 @@ import requests
 from wsgiref.util import FileWrapper
 from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
 from rest_framework import viewsets, status
-from .serializers import UserSerializer, SubstepSerializer
+from .serializers import UserSerializer, SubstepSerializer, StepSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -434,7 +434,6 @@ def video_view(request, substepId):
         substep = SubStep.objects.all().get(id=substepId)
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_PROFESSOR)[1:]
         file = FileWrapper(open(path, 'rb'))
-        print(path)
         response = HttpResponse(file, content_type='video/TS')
         response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
         return response
@@ -525,4 +524,29 @@ class SubstepViewSet(ApiMixin, viewsets.ViewSet):
     def delete(self, request, pk, format=None):
         substep = self.get_object(pk)
         substep.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class StepViewSet(ApiMixin, viewsets.ViewSet):
+
+    def get_object(self, pk):
+        try:
+            return Step.objects.get(pk=pk)
+        except Step.DoesNotExist:
+            raise Http404
+
+    def list(self, request):
+        queryset = Step.objects.all()
+        serializer = SubstepSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        queryset = Step.objects.all()
+        step = get_object_or_404(queryset, pk=pk)
+        serializer = StepSerializer(step)
+        return Response(serializer.data)
+
+    def delete(self, request, pk, format=None):
+        step = self.get_object(pk)
+        step.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

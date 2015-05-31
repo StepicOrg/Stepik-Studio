@@ -12,6 +12,7 @@ API
 router = routers.SimpleRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'substep', views.SubstepViewSet, base_name='SubStep')
+router.register(r'step', views.StepViewSet, base_name='Step')
 
 courseurlpatterns = patterns('',
     url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),

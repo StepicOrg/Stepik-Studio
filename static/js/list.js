@@ -26,7 +26,7 @@ var cookie_csrf_updater = function(xhr){
 };
 
 
-    function upd_deleted_el(new_name, deleted_element) {
+function upd_deleted_el(new_name, deleted_element) {
         if (new_name != null && new_name.length > 0) {
             var jq_deleted = $(deleted_element);
             var replace = $('<div/>').append(jq_deleted.clone());
@@ -34,7 +34,7 @@ var cookie_csrf_updater = function(xhr){
             deleted_element = replace.html();
         }
         return deleted_element;
-    }
+}
 
 function record_started(callback)
 {
@@ -100,27 +100,41 @@ var elements_subscriptor = function() {
         $(this).parent().find("a").toggleClass('hiddenInfo');
     });
 
-    $('.delete_button').on('click', function(event){
-        event.stopPropagation();
-        var redir_url = $(this).find(".delete-url").data("urllink");
-        $(this).append("<div class='modal'> Action can't be undone. Are you sure?</div>");
-        $(this).find(".modal").dialog({
-            resizable: false,
-            modal: true,
-            title: "Delete?",
-            height: 250,
-            width: 400,
-            buttons: {
-                    "Yes": function () {
-                    $(this).dialog('close');
-                    window.location.replace(redir_url);
-                },
-                    "No": function () {
-                    $(this).dialog('close');
-                }
-            }
-        });
-    });
+    //$('.delete_button').on('click', function(event){
+    //    event.stopPropagation();
+    //    var redir_url = $(this).find(".delete-url").data("urllink");
+    //    var del_url = $(this).find(".delete-url").data("apilink");
+    //    var delete_ajax_call = function(url){
+    //        $.ajax({
+    //            beforeSend: cookie_csrf_updater,
+    //            url: url,
+    //            type:'DELETE',
+    //            success: function(result){
+    //            },
+    //            error: function(result){
+    //                console.log(result);
+    //            }
+    //        })
+    //    };
+    //
+    //    $(this).append("<div class='modal'> Action can't be undone. Are you sure?</div>");
+    //    $(this).find(".modal").dialog({
+    //        resizable: false,
+    //        modal: true,
+    //        title: "Delete?",
+    //        height: 250,
+    //        width: 400,
+    //        buttons: {
+    //                "Yes": function () {
+    //                $(this).dialog('close');
+    //                delete_ajax_call(del_url);
+    //            },
+    //                "No": function () {
+    //                $(this).dialog('close');
+    //            }
+    //        }
+    //    });
+    //});
 
     function fader(el,callback) {
         el.fadeTo("fast", .5).removeAttr("href");
@@ -237,6 +251,9 @@ var func_listener = function(){
 
 
 $(document).ready(func_listener);
+
+
+
 
 
 function rectime(sec) {

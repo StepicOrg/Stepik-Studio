@@ -14,16 +14,20 @@
                    <div class="substep-list"> <span class="substep-name"> {{SS.name}} </span>  |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
                         <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a>
                        | {% if SS.duration > 0 %} Duration: {{ SS.duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
-                    <div class="delete_button right">
-                        <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/" data-apilink="{{ SS.id }}"> Delete </div>
-                    </div>
+                        <div class="delete_button right">
+                            <div class="delete-url right" data-apilink="/api/substep/{{ SS.id }}/"> Delete </div>
+                        </div>
                     </div>
                 {% endfor %}
+            <div>
+                <div id="SubstepList" data_id={{ Step.id }}></div>
+            </div>
             <br>
 
             <div ALIGN="CENTER">
                 <h1><span class="start-recording">Start Recording </span>
                 </h1>
+            <div id="container2"> </div>
             </div>
 
             <div>
