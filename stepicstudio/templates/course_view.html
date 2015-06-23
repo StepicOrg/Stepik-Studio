@@ -23,7 +23,10 @@
             {% for L in Lessons  %}
             <li id="{{ L.position }}"  lessonID ="{{ L.id }}" class="ui-state-default">
                 <div class="listdiv">
-                    <a href="/course/{{ Course.id}}/lesson/{{ L.id  }}/"> {{ L.name }}</a><br>
+                    <a href="/course/{{ Course.id}}/lesson/{{ L.id  }}/"> {{ L.name }}</a>
+                    <div class="lesson_info">
+                        <span class="rename_button">rename</span>
+                    </div>
                 </div>
             </li>
 

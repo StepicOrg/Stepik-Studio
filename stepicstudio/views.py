@@ -17,16 +17,18 @@ import copy
 import requests
 from wsgiref.util import FileWrapper
 from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
+import logging
+
+logger = logging.getLogger('stepic_studio.views')
 
 def can_edit_page(view_function):
     def process_request(*args, **kwargs):
         access = test_access(args[0].user.id, list(filter(None, args[0].path.split("/"))))
-        print("runing " + str(args[0].user.id) + str(kwargs['courseId']))
-        # if cant_edit_course(args[0].user.id, kwargs['courseId']):
+        logger.debug("runing " + str(args[0].user.id) + str(kwargs['courseId']))
         if not access:
             return HttpResponseRedirect(reverse('stepicstudio.views.login'))
         else:
-            print(args[0].user.id)
+            logger.debug(args[0].user.id)
             return view_function(*args, **kwargs)
     return process_request
 
@@ -55,16 +57,16 @@ def test_access(user_id, path_list):
         step_id = None
     if path_list[0] == COURSE_ULR_NAME and not cant_edit_course(user_id, course_id):
         if lesson_id and not (str(Lesson.objects.all().get(id=lesson_id).from_course) == str(course_id)):
-            print(lesson_id,  Lesson.objects.all().get(id=lesson_id).from_course, course_id )
-            print("Error here 1 ")
+            logger.debug(lesson_id,  Lesson.objects.all().get(id=lesson_id).from_course, course_id )
+            logger.debug("Error here 1 ")
             return False
         if step_id and not (int(Step.objects.all().get(id=step_id).from_lesson) == int(lesson_id)):
-            print("Error here 2 ")
+            logger.debug("Error here 2 ")
             return False
         return True
     else:
 
-        print("bla3 ")
+        logger.debug("bla3 ")
         return False
 
 
@@ -100,7 +102,7 @@ def get_course_page(request, courseId):
     args = {'full_name': request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
                                                 "Lessons": lesson_list}
     args.update({"Recording": camera_curr_status})
-    print(UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen)
+    logger.debug(UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen)
     return render_to_response("course_view.html", args)
 
 
@@ -278,13 +280,13 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
     else:
         return False
     try:
-        print("sent data to stepic.mehanig.com")
+        logger.debug("sent data to stepic.mehanig.com")
         data = {'User': request.user.username, 'Name': substep.name, 'Duration': 'No data', 'priority':'1', 'status':'0',
                 'token': SECURE_KEY_FOR_STAT}
         r = requests.post(STATISTIC_URL, data=data)
-        print('STATISTIC STATUS:', r)
+        logger.debug('STATISTIC STATUS:', r)
     except Exception as e:
-        print('Error!!!: ', e)
+        logger.debug('Error!!!: ', e)
     return True
 
 @login_required(login_url='/login')
@@ -426,17 +428,17 @@ def video_view(request, substepId):
         response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
         return response
     except Exception as e:
-        print(e)
+        logger.debug(e)
     try:
         substep = SubStep.objects.all().get(id=substepId)
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_PROFESSOR)[1:]
         file = FileWrapper(open(path, 'rb'))
-        print(path)
+        logger.debug(path)
         response = HttpResponse(file, content_type='video/TS')
         response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
         return response
     except Exception as e:
-        print(e)
+        logger.debug(e)
         return HttpResponse("File to large. Please watch it on server.")
 
 
@@ -470,10 +472,10 @@ def rename_elem(request):
         rest_data = dict(request.POST.lists())
         if 'step' in rest_data['type']:
             StepToRename = Step.objects.all().get(id=rest_data['id'][0])
-            print('Renaming:', StepToRename.os_path)
+            logger.debug('Renaming:', StepToRename.os_path)
             TmpStep = copy.copy(StepToRename)
             TmpStep.name = rest_data['name_new'][0]
-            print('Trying to', TmpStep.os_path)
+            logger.debug('Trying to', TmpStep.os_path)
             if not camera_curr_status():
                 if rename_element_on_disk(StepToRename, TmpStep):
                     StepToRename.delete()

@@ -18,7 +18,6 @@ class LessonForm(forms.ModelForm):
         self.from_course = kwargs.pop('from_course', 1)
         super(LessonForm, self).__init__(*args, **kwargs)
 
-        print(args)
         self.fields['from_courseName'] = forms.ChoiceField(
             choices=get_my_courses(self.user), initial=Course.objects.all().filter(id=self.from_course)[0].id)
 
