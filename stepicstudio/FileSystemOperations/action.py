@@ -4,7 +4,7 @@ import shutil
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
 import xml.etree.ElementTree as ET
 from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
-from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH, FFPROBE_RUN_PATH
+from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH, FFPROBE_RUN_PATH, FFMPEGcommand
 import subprocess
 import psutil
 
@@ -58,8 +58,7 @@ def run_adobe_live() -> None:
     return True
 
 def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
-    command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
-                            r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 0  -preset ultrafast  -c:v libx264 '
+    command = FFMPEGcommand
     command += path + '\\' + filename
     proc = subprocess.Popen(command, shell=True)
     print("PID = ", proc.pid)
