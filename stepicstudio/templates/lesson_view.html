@@ -11,13 +11,18 @@
         from  <a href = {{ Course.url }}>{{ Course.name}}</a>
         </h3>
         <br>
+        <div id="draggableCheckbox">
+            <form>
+                Make Draggable <input id ="isDraggable" type="checkbox" value="Draggable">
+            </form>
+        </div>
         <ul id="sortable">
             {% for S in Steps  %}
-            <li data-lessonPosition ='{{ S.position }}' id="{{ S.pk }}" class="ui-state-default">
+            <li id ='{{ S.position }}' stepID="{{ S.pk }}" class="ui-state-default">
                 <span class="lesson_path hiddenInfo">Path: {{ Lesson.os_path }}</span>
-                <a class="lesson_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">{{ S.name }}</a>
+                <a class="step_name obj_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">{{ S.name }}</a>
                 <div class="lesson_info">
-                        <span class="rename_button">rename</span>
+                        <span class="rename_button step_rename">rename</span>
                         <span>info</span>
                         <span class="delete_button">
                             <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/delete/" width="20" height="20" id="delete_svg">
@@ -35,8 +40,7 @@
     {% block controls %}
         <a href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
         <div class="delete_button right">
-        <div class="delete-url" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/delete/">Delete lesson </div>
-{#        <a href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/delete/"=RIGHT> Detele This Lesson </a><br>#}
+            <div class="delete-url" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/delete/">Delete lesson </div>
         </div>
     {% endblock %}
 {% endif %}

@@ -376,18 +376,27 @@ def reorder_elements(request):
     if request.POST and request.is_ajax():
         args = url_to_args(request.META['HTTP_REFERER'])
         args.update({"user_profile": UserProfile.objects.get(user=request.user.id)})
-        if "Course" in args and not "Lesson" in args:
+        if request.POST.get('type') == 'lesson' or request.POST.get('type') == 'step':
             neworder = request.POST.getlist('ids[]')
             for i in range(len(neworder)):
+                print(neworder)
                 id = neworder[i]
                 if id == '':
                     break
-                l = Lesson.objects.get(id=id)
+                if request.POST.get('type') == 'lesson':
+                    l = Lesson.objects.get(id=id)
+                else:
+                    l = Step.objects.get(id=id)
                 l.position = i
                 l.save()
             #database.lock()
+        elif request.POST.get('type') == 'step':
+            print("OOO!")
+            print(args)
+            print(request.POST.getlist('ids[]'))
         files_update(**args)
         return HttpResponse("Ok")
+
     else:
         return Http404
 
@@ -470,16 +479,16 @@ def video_screen_view(request, substepId):
 def rename_elem(request):
     if request.POST and request.is_ajax():
         rest_data = dict(request.POST.lists())
+        logger.debug("Rename_elem POST data: %s", rest_data)
         if 'step' in rest_data['type']:
             StepToRename = Step.objects.all().get(id=rest_data['id'][0])
-            logger.debug('Renaming:', StepToRename.os_path)
+            logger.debug('Renaming: %s', StepToRename.os_path)
             TmpStep = copy.copy(StepToRename)
             TmpStep.name = rest_data['name_new'][0]
-            logger.debug('Trying to', TmpStep.os_path)
+            logger.debug('Trying to %s', TmpStep.os_path)
             if not camera_curr_status():
                 if rename_element_on_disk(StepToRename, TmpStep):
                     StepToRename.delete()
-                    delete_files_on_server(StepToRename.os_path)
                     TmpStep.save()
                     return HttpResponse("Ok")
                 else:

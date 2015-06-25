@@ -1,18 +1,16 @@
 import os
-import os.path
 import sys
-import signal
 import shutil
-import time
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
 import xml.etree.ElementTree as ET
-import xml.parsers.expat
 from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
-from STEPIC_STUDIO.settings import ADOBE_LIVE_EXE_PATH
 from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH, FFPROBE_RUN_PATH
 import subprocess
-from distutils.dir_util import copy_tree
 import psutil
+
+import logging
+
+logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
 GlobalProcess = None
 
@@ -56,6 +54,7 @@ def run_adobe_live() -> None:
          "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
     GlobalProcess = subprocess.Popen(p, shell=False)
     print("From Run", GlobalProcess.pid)
+    logger.debug("From Run", GlobalProcess.pid)
     return True
 
 def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
@@ -65,6 +64,7 @@ def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
     proc = subprocess.Popen(command, shell=True)
     print("PID = ", proc.pid)
     print(command)
+    logger.debug('PID:', proc.pid, " ", command)
     return proc
 
 #TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is bad, it doesn't support spaces and isn't safe
@@ -157,7 +157,7 @@ def delete_files_on_server(path: str) -> True | False:
         shutil.rmtree(path)
         return True
     else:
-        print(path + ' No folder was found and can\'t be deleted.(This is BAD!)')
+        logger.debug(path + ' No folder was found and can\'t be deleted.(This is BAD!)')
         return True
 
 @deprecated
@@ -175,7 +175,7 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
             os.rename(from_obj.os_path, to_obj.os_path)
             return True
         except Exception as e:
-            print(e)
+            logger.debug(e)
         return False
     else:
         return False

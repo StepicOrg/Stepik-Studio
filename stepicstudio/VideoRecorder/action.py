@@ -7,13 +7,17 @@ from stepicstudio.const import SUBSTEP_PROFESSOR
 import time
 from stepicstudio.ssh_connections import Screen_Recorder
 
+import logging
+
+logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
+
 SS_WIN_PATH = ""
 SS_LINUX_PATH = ""
 process = "'"
 
 def to_linux_translate(win_path: str, username: str) -> str:
     linux_path = '/home/stepic/VIDEO/STEPICSTUDIO/'+ username + "/" + '/'.join(win_path.split("/")[1:])
-    print("to_linux_translate() This is linux path ", linux_path)
+    logger.debug("to_linux_translate() This is linux path ", linux_path)
     return linux_path
 
 def start_recording(**kwargs: dict) -> True or False:
@@ -26,7 +30,7 @@ def start_recording(**kwargs: dict) -> True or False:
     server_status = True
     global process
     process = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
-    print(process.pid)
+    logger.debug(process.pid)
     #TODO:Refactor!
 
     screencast_status = ssh_screencast_start()
@@ -76,12 +80,12 @@ def stop_cam_recording() -> None:
     ssh_screencast_stop()
     camstat.save()
     global process
-    print('PROCESS PID TO STOP: ', process.pid)
+    logger.debug('PROCESS PID TO STOP: ', process.pid)
     stop_ffmpeg_recorder(process)
     ssh_obj = Screen_Recorder("D:")
     ssh_obj.stop_screen_recorder()
     ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
-    print(SS_LINUX_PATH, SS_WIN_PATH)
+    logger.debug(SS_LINUX_PATH, SS_WIN_PATH)
 
 
 def delete_files_associated(url_args) -> True | False:

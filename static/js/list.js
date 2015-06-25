@@ -1,10 +1,14 @@
-var global_html;
+var rename_step_f_tmplt;
+var rename_lesson_f_tmplt;
 
 $(function  () {
+    var context_tmplt_1 = [{name:'NoName'}];
+    var compiledTemplate_1 = JST['static/extra/hb_templates/renameStep.handlebars'];
+    rename_step_f_tmplt = compiledTemplate_1(context_tmplt_1);
 
-    var context_tmplt = [{name:'NoName'}];
-    var compiledTemplate = JST['static/extra/hb_templates/test.handlebars'];
-    global_html = compiledTemplate(context_tmplt);
+    var context_tmplt_2 = [{name:'NoName'}];
+    var compiledTemplate_2 = JST['static/extra/hb_templates/renameLesson.handlebars'];
+    rename_lesson_f_tmplt = compiledTemplate_2(context_tmplt_2);
 });
 
 var cookie_csrf_updater = function(xhr){
@@ -30,7 +34,7 @@ var cookie_csrf_updater = function(xhr){
         if (new_name != null && new_name.length > 0) {
             var jq_deleted = $(deleted_element);
             var replace = $('<div/>').append(jq_deleted.clone());
-            $(replace).find('.lesson_name').html(new_name);
+            $(replace).find('.obj_name').html(new_name);
             deleted_element = replace.html();
         }
         return deleted_element;
@@ -54,14 +58,22 @@ var elements_subscriptor = function() {
     sortObj = $("#sortable");
 
     sortObj.sortable({
+        start: function(e, ui) {
+            if (!$("#isDraggable").is(":checked")) {
+                window.location = $(ui.item[0]).find("a").attr('href');
+            }
+        },
         stop : function(event, ui) {
+            var reorderingSteps = $(ui.item[0]).find("a").hasClass('step_name');
+            var reorderingType = reorderingSteps ? "step" : "lesson";
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 //alert("in ajax");
                 type: "POST",
                 url: "/reorder_lists/",
 
-                data: {"order": $(this).sortable("toArray"), "ids": $(this).sortable("toArray", {attribute: 'lessonID'})},
+                data: {"type": reorderingType, "order": $(this).sortable("toArray"), "ids": $(this).sortable("toArray",
+                    {attribute: reorderingSteps ? 'stepID' : 'lessonID'})},
                 success: function(data){
                         //alert(data);
                 }
@@ -77,9 +89,17 @@ var elements_subscriptor = function() {
     $('.rename_button').off().on('click', function(e){
         e.stopPropagation();
         deleted_element = $(this).parent().parent().html();
-        var name = $(this).parents('.ui-state-default').find(".lesson_name").text();
+        var name = $(this).parents('.ui-state-default').find(".obj_name").text();
         $(this).fadeOut("fast",  function(){
-            $(this).parent().parent().html(global_html);
+            if ($(this).hasClass('step_rename')) {
+                $(this).parent().parent().html(rename_step_f_tmplt);
+            }
+            else if ($(this).hasClass('lesson_rename')) {
+                $(this).parent().parent().html(rename_lesson_f_tmplt);
+            }
+            else {
+                alert("TEMPLATE ERROR!");
+            }
             elements_subscriptor();
             $('#input-field-name').val(name);
             });
@@ -89,6 +109,7 @@ var elements_subscriptor = function() {
         $(this).fadeOut("fast",  function(){
             deleted_element = upd_deleted_el(new_name, deleted_element);
             $(this).parents('.input-step-name-field').html(deleted_element);
+            $(this).parents('.input-lesson-name-field').html(deleted_element);
             elements_subscriptor();
         });
     });
@@ -194,7 +215,7 @@ var elements_subscriptor = function() {
                 url: "/rename_elem/",
 
                 data: {
-                    "id": elem.parents('.ui-state-default').attr('id'),
+                    "id": elem.parents('.ui-state-default').attr('stepID'),
                     "type": 'step',
                     "name_new": name_new
                 },
@@ -212,8 +233,6 @@ var elements_subscriptor = function() {
     $('#edit-text').click(function() {
         $('.form-edit-text').toggleClass('hiddenForm');
     });
-
-
 };
 
 
