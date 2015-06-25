@@ -389,11 +389,6 @@ def reorder_elements(request):
                     l = Step.objects.get(id=id)
                 l.position = i
                 l.save()
-            #database.lock()
-        elif request.POST.get('type') == 'step':
-            print("OOO!")
-            print(args)
-            print(request.POST.getlist('ids[]'))
         files_update(**args)
         return HttpResponse("Ok")
 
@@ -480,15 +475,18 @@ def rename_elem(request):
     if request.POST and request.is_ajax():
         rest_data = dict(request.POST.lists())
         logger.debug("Rename_elem POST data: %s", rest_data)
-        if 'step' in rest_data['type']:
-            StepToRename = Step.objects.all().get(id=rest_data['id'][0])
-            logger.debug('Renaming: %s', StepToRename.os_path)
-            TmpStep = copy.copy(StepToRename)
+        if 'step' in rest_data['type'] or 'lesson' in rest_data['type']:
+            if 'step' in rest_data['type']:
+                ObjToRename = Step.objects.all().get(id=rest_data['id'][0])
+            else:
+                ObjToRename = Lesson.objects.all().get(id=rest_data['id'][0])
+            logger.debug('Renaming: %s', ObjToRename.os_path)
+            TmpStep = copy.copy(ObjToRename)
             TmpStep.name = rest_data['name_new'][0]
             logger.debug('Trying to %s', TmpStep.os_path)
             if not camera_curr_status():
-                if rename_element_on_disk(StepToRename, TmpStep):
-                    StepToRename.delete()
+                if rename_element_on_disk(ObjToRename, TmpStep):
+                    ObjToRename.delete()
                     TmpStep.save()
                     return HttpResponse("Ok")
                 else:

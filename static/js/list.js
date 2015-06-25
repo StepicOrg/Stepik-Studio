@@ -203,8 +203,9 @@ var elements_subscriptor = function() {
         });
     });
 
-    $('#rename-step-form').off().on('keypress', function(e) {
+    $('#rename-step-form, #rename-lesson-form').off().on('keypress', function(e) {
         elem = $(this);
+        var stepRenaming = (elem.attr("id") == "rename-step-form");
         if (e.keyCode == 13 && !e.shiftKey) {
             e.preventDefault();
             row = elem.parents('.ui-state-default');
@@ -215,8 +216,8 @@ var elements_subscriptor = function() {
                 url: "/rename_elem/",
 
                 data: {
-                    "id": elem.parents('.ui-state-default').attr('stepID'),
-                    "type": 'step',
+                    "id": stepRenaming ? elem.parents('.ui-state-default').attr('stepID') : elem.parents('.ui-state-default').attr('lessonID'),
+                    "type": stepRenaming ? 'step' : 'lesson',
                     "name_new": name_new
                 },
                 success: function (data) {
