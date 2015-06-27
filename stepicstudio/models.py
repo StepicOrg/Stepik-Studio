@@ -7,8 +7,6 @@ from stepicstudio.const import COURSE_ULR_NAME, STEP_URL_NAME, SUBSTEP_URL_NAME,
 import time, datetime
 from django.utils.timezone import utc
 
-# Create your models here.
-
 
 def set_time_milisec():
     return int(time.time() * 1000)
@@ -70,7 +68,7 @@ class Step(models.Model):
         return lesson.os_path + translate_non_alphanumerics(self.name) + "/"
 
 
-###TODO: use duration in SubStep instead of Step
+# TODO: use duration in SubStep instead of Step
 class SubStep(models.Model):
 
     name = models.CharField(max_length=400)
@@ -134,4 +132,5 @@ class StatInfo(models.Model):
     substep = models.BigIntegerField(default=0)
     substep_uuid = models.BigIntegerField(default=0)
     duration = models.IntegerField(default=0)
+
 

@@ -10,7 +10,6 @@ def get_my_courses(userId):
     return result
 
 
-
 class LessonForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -54,23 +53,3 @@ class StepForm(forms.ModelForm):
         ls = self.save()
         ls.save()
         return ls
-
-
-#NOT USED!!!INCORRECT
-class SubStepForm(forms.ModelForm):
-
-    def __init__(self, userId, lessonId, stepId, *args, **kwargs):
-        super(SubStepForm, self).__init__(*args, **kwargs)
-        self.user = userId
-        self.fields['from_lessonId'] = forms.ChoiceField(choices={(lessonId, "This lesson")})
-
-    class Meta:
-        model = SubStep
-        labels = {'name': 'Enter step name', }
-        exclude = ('from_lesson', 'position',)
-
-    def substep_save(self):
-        ls = self.save()
-        ls.save()
-        return ls
-

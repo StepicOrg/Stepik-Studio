@@ -67,4 +67,5 @@ class Helper(object):
                 obj.delete()
             return True
         except Exception as e:
+
             return False

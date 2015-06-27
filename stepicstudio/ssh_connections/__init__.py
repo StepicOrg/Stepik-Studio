@@ -1,12 +1,16 @@
 import paramiko
 import os
 from stat import S_ISDIR
+import logging
 from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
 from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 
-#TODO: Class should throw errors.
-#TODO: Make it Singleton
-class Screen_Recorder(object):
+logger = logging.getLogger('stepic_studio.views')
+
+
+# TODO: Class should throw errors.
+# TODO: Make it Singleton
+class ScreenRecorder(object):
 
     def __init__(self, path, remote_ubuntu=None):
         self.path = path
@@ -40,15 +44,15 @@ class Screen_Recorder(object):
         p_args = self.path.split('/')
         p_args = list(filter(None, p_args))
         self.remote_path = "/"
-        logger.debug("I TRY : ", self.remote_path)
+        logger.debug("I TRY : %s", self.remote_path)
         i = 0
         while i < len(p_args):
             self.remote_path = self.remote_path + p_args[i] + "/"
             if self.rexists(self.remote_path):
-                logger.debug("Exist run_screen_recorder()", self.remote_path)
+                logger.debug("Exist run_screen_recorder() %s", self.remote_path)
             else:
                 self.sftp.mkdir(self.remote_path)
-                logger.debug("Generated from run_screen_recorder()", self.remote_path)
+                logger.debug("Generated from run_screen_recorder() %s", self.remote_path)
             i += 1
 
         command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
@@ -56,7 +60,6 @@ class Screen_Recorder(object):
                   + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
         logger.debug(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
-
 
     def stop_screen_recorder(self):
         stdin, stdout, stderr = self.ssh.exec_command("pkill -f ffmpeg")
@@ -70,7 +73,7 @@ class Screen_Recorder(object):
             transport.connect(username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
             sftp = paramiko.SFTPClient.from_transport(transport)
 
-            #TODO: Refactor. New connection not needed
+            # TODO: Refactor. New connection not needed
             def download_dir(remote_dir, local_dir):
                 os.path.exists(local_dir) or os.makedirs(local_dir)
                 dir_items = sftp.listdir_attr(remote_dir)

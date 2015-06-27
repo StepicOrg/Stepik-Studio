@@ -2,9 +2,8 @@ import os
 import sys
 import shutil
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
-import xml.etree.ElementTree as ET
 from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
-from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH, FFPROBE_RUN_PATH, FFMPEGcommand
+from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand
 import subprocess
 import psutil
 
@@ -13,6 +12,7 @@ import logging
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
 GlobalProcess = None
+
 
 def substep_server_path(**kwargs: dict) -> (str, str):
     folder = kwargs["folder_path"]
@@ -45,47 +45,14 @@ def add_file_to_test(**kwargs: dict) -> None:
     return True
 
 
-#TODO CHANGE THIS SHIT! ASAP! HATE WINDOWS!
-@deprecated
-def run_adobe_live() -> None:
-    p = [r"D:\stream_profile\stepic_run_camera.bat"]
-    global GlobalProcess
-    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-         "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
-    GlobalProcess = subprocess.Popen(p, shell=False)
-    print("From Run", GlobalProcess.pid)
-    logger.debug("From Run", GlobalProcess.pid)
-    return True
-
 def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
     command = FFMPEGcommand
     command += path + '\\' + filename
     proc = subprocess.Popen(command, shell=True)
     print("PID = ", proc.pid)
     print(command)
-    logger.debug('PID:', proc.pid, " ", command)
+    logger.debug('PID: %s %s', proc.pid, command)
     return proc
-
-#TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is bad, it doesn't support spaces and isn't safe
-@deprecated
-def stop_adobe_live() -> None:
-    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-         "/s", r"C:\StepicServer\static\video\xml_settings.xml"]
-    tree = ET.parse(r"C:\StepicServer\static\video\xml_settings.xml")
-    root = tree.getroot()
-    stop_path = None
-    for elem in root.iter('path'):
-        stop_path = elem.text
-        print("stop_adobe_live():", elem.text)
-    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-         "/s", stop_path]
-    subprocess.Popen(p, shell=False)
-    if os.path.exists(stop_path):
-        print("FILE EXIST!")
-    else:
-        print(stop_path)
-        print("ERROR!!!!!!!!")
-        sys.exit(0)
 
 
 def stop_ffmpeg_recorder(proc: subprocess.Popen) -> None:
@@ -121,10 +88,6 @@ def delete_step_on_disc(**kwargs: dict) -> True | False:
     f_c_l_step = f_c_lesson + "/" + translate_non_alphanumerics(data["Step"].name)
     return delete_files_on_server(f_c_l_step)
 
-@deprecated
-def files_txt_update(**kwargs):
-    pass
-
 
 def search_as_files_and_update_info(args: dict) -> dict:
     folder = args["user_profile"].serverFilesFolder
@@ -150,22 +113,14 @@ def search_as_files_and_update_info(args: dict) -> dict:
     return args
 
 
-#TODO: Let's not check if it's fine? Return True anyway?
+# TODO: Let's not check if it's fine? Return True anyway?
 def delete_files_on_server(path: str) -> True | False:
     if os.path.exists(path):
         shutil.rmtree(path)
         return True
     else:
-        logger.debug(path + ' No folder was found and can\'t be deleted.(This is BAD!)')
+        logger.debug('%s No folder was found and can\'t be deleted.(This is BAD!)', path)
         return True
-
-@deprecated
-def generate_xml(xml_path: str, write_to_path: str, file_name: str) -> None:
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
-    for elem in root.iter('path'):
-        elem.text = write_to_path.replace("/", "\\") + "\\" + file_name.replace("/", "\\")
-    tree.write(xml_path, encoding="UTF-16", short_empty_elements=False)
 
 
 def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
@@ -179,11 +134,13 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
     else:
         return False
 
+
 def get_length_in_sec(filename: str) -> int:
     result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     duration_string = [x.decode("utf-8") for x in result.stdout.readlines() if "Duration" in x.decode('utf-8')][0]
     time = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
     return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2].split('.')[0])
+
 
 def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:
     sec = 0

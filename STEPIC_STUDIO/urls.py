@@ -2,12 +2,12 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
 courseurlpatterns = patterns('',
-    url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
-    url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/(?P<substepId>[0-9]+)/delete/','stepicstudio.views.remove_substep'),
-    url(r'^lesson/(?P<lessonId>[0-9]+)/add_step/', 'stepicstudio.views.add_step'),
-    url(r'^lesson/(?P<lessonId>[0-9]+)/delete/', 'stepicstudio.views.delete_lesson'),
-    url(r'^lesson/(?P<lessonId>[0-9]+)/step/(?P<stepId>[0-9]+)/', 'stepicstudio.views.show_step'),
-    url(r'^lesson/(?P<lessonId>[0-9]+)/', 'stepicstudio.views.show_lesson'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/(?P<substep_id>[0-9]+)/delete/','stepicstudio.views.remove_substep'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/add_step/', 'stepicstudio.views.add_step'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/delete/', 'stepicstudio.views.delete_lesson'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.show_step'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/', 'stepicstudio.views.show_lesson'),
 
     url(r'^structure', 'stepicstudio.views.show_course_struct'),
     url(r'^stat_info', 'stepicstudio.views.view_stat'),
@@ -30,20 +30,20 @@ urlpatterns = patterns('',
 
     url(r'^stop_recording/$', 'stepicstudio.views.stop_all_recording'),
 
-    url(r'^course/(?P<courseId>[0-9]+)/', include(courseurlpatterns)),
+    url(r'^course/(?P<course_id>[0-9]+)/', include(courseurlpatterns)),
 
     url(r'^courses/', 'stepicstudio.views.get_user_courses'),
 
     url(r'^add_lesson/', 'stepicstudio.views.add_lesson'),
 
-    url(r'^showcontent/(?P<substepId>[0-9]+)/', 'stepicstudio.views.video_view'),
-    url(r'^showscreencontent/(?P<substepId>[0-9]+)/', 'stepicstudio.views.video_screen_view'),
+    url(r'^showcontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_view'),
+    url(r'^showscreencontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_screen_view'),
     #
 
 
     # url(r'^course/(?P<courseId>[0-9]+)/add/lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
-    url(r'^notes/step/(?P<stepId>[0-9]+)/', 'stepicstudio.views.notes'),
+    url(r'^notes/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.notes'),
 
 
 )
