@@ -170,8 +170,6 @@ var elements_subscriptor = function() {
                 alert("Server Error!");
             }
         });
-                        //            var el = $(this);
-                //setTimeout(fader, 0, el);
     });
 
     $('.stop-recording').off().on('click', function(){

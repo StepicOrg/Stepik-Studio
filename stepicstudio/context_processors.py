@@ -1,4 +1,3 @@
-# from django.conf import settings
 from stepicstudio.state import CURRENT_TASKS_DICT
 
 def global_vars(request):
