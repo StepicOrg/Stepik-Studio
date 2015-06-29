@@ -2,19 +2,28 @@ import paramiko
 import os
 from stat import S_ISDIR
 import logging
+import time
 from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
 from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 
-logger = logging.getLogger('stepic_studio.views')
+logger = logging.getLogger('stepic_studio.ssh_connections.__init__')
 
 
-# TODO: Class should throw errors.
-# TODO: Make it Singleton
-class ScreenRecorder(object):
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class ScreenRecorder(metaclass=Singleton):
 
     def __init__(self, path, remote_ubuntu=None):
         self.path = path
         self.remote_path = ''
+        self.download_status = False
 
         if remote_ubuntu is not None:
             global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
@@ -63,6 +72,7 @@ class ScreenRecorder(object):
 
     def stop_screen_recorder(self):
         stdin, stdout, stderr = self.ssh.exec_command("pkill -f ffmpeg")
+        time.sleep(2)
 
     def get_file(self, from_dir, to_path):
         if not self.path:
@@ -75,6 +85,11 @@ class ScreenRecorder(object):
 
             # TODO: Refactor. New connection not needed
             def download_dir(remote_dir, local_dir):
+                def _download_status(done_bytes, all_bytes):
+                    if done_bytes == all_bytes:
+                        logger.debug("Screencast downloaded from: %s", from_dir)
+                        print("Screencast downloaded from: %s", from_dir)
+                        self.download_status = True
                 os.path.exists(local_dir) or os.makedirs(local_dir)
                 dir_items = sftp.listdir_attr(remote_dir)
                 for item in dir_items:
@@ -83,6 +98,38 @@ class ScreenRecorder(object):
                     if S_ISDIR(item.st_mode):
                         download_dir(remote_path, local_path)
                     else:
-                        sftp.get(remote_path, local_path)
+                        global download_status
+                        logger.debug('Starting downloading screencast from: %s', from_dir)
+                        print('Starting downloading screencast from: %s', from_dir)
+                        sftp.get(remote_path, local_path, _download_status)
             download_dir(from_dir, to_path)
             sftp.close()
+            return self.download_status
+
+def get_file_test():
+    global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
+    PROFESSOR_IP = '127.0.0.1'
+    UBUNTU_USERNAME = 'mehanig'
+    UBUNTU_PASSWORD = '1212x'
+    from_path1 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out1'
+    from_path2 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out2'
+    from_path3 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out3'
+    from_path4 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out4'
+    to_path1 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in1'
+    to_path2 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in2'
+    to_path3 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in3'
+    to_path4 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in4'
+
+    sc1 = ScreenRecorder("_dummy_")
+    sc2 = ScreenRecorder("2")
+    sc3 = ScreenRecorder("3")
+    sc4 = ScreenRecorder("4")
+    sc1.get_file(from_path1, to_path1)
+    sc2.get_file(from_path2, to_path2)
+    sc3.get_file(from_path3, to_path3)
+    sc4.get_file(from_path4, to_path4)
+
+
+
+if __name__ == '__main__':
+    get_file_test()

@@ -71,7 +71,7 @@ def delete_step_files(**kwargs):
 
 
 # TODO: REMAKE! Wrong implementation
-def stop_cam_recording() -> None:
+def stop_cam_recording() -> True | False:
     camstat = CameraStatus.objects.get(id="1")
     camstat.status = False
     ssh_screencast_stop()
@@ -81,8 +81,8 @@ def stop_cam_recording() -> None:
     stop_ffmpeg_recorder(process)
     ssh_obj = ScreenRecorder("_Dummy_")
     ssh_obj.stop_screen_recorder()
-    ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
     logger.debug("%s %s", SS_LINUX_PATH, SS_WIN_PATH)
+    return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
 
 
 def delete_files_associated(url_args) -> True | False:

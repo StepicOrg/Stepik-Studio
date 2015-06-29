@@ -1,8 +1,7 @@
 import os
-import sys
 import shutil
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
-from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
+from stepicstudio.utils.extra import translate_non_alphanumerics
 from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand
 import subprocess
 import psutil
@@ -162,6 +161,10 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
             if os.path.exists(substep_path):
                 new_step_obj.duration = get_length_in_sec(substep_path)
                 new_step_obj.save()
+        for substep_scr_path in new_step_obj.os_screencast_path_all_variants:
+            if os.path.exists(substep_scr_path):
+                new_step_obj.screencast_duration = get_length_in_sec(substep_scr_path)
+                new_step_obj.save()
     summ = 0
     for substep in substep_list:
         for substep_path in substep.os_path_all_variants:
@@ -169,6 +172,11 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
                 if not new_step_only:
                     substep.duration = get_length_in_sec(substep_path)
                 summ += substep.duration
-                substep.save()
                 break
+        for substep_scr_path in substep.os_screencast_path_all_variants:
+            if os.path.exists(substep_scr_path):
+                if not new_step_only:
+                    substep.screencast_duration = get_length_in_sec(substep_scr_path)
+                break
+        substep.save()
     return summ

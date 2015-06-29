@@ -1,24 +1,24 @@
-from django.shortcuts import render_to_response, render
+import itertools
+import copy
+from wsgiref.util import FileWrapper
+import logging
+
+from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
-from stepicstudio.models import Course, Lesson, Step, SubStep, UserProfile, CameraStatus
+from django.db.models import Max
+from django.template import RequestContext
+import requests
+
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.VideoRecorder.action import *
 from stepicstudio.FileSystemOperations.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
-import itertools
-from django.db.models import Max
 from stepicstudio.statistic import add_stat_info
-import json
-import copy
-from django.template import RequestContext
-import requests
-from wsgiref.util import FileWrapper
 from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
-import logging
 
 logger = logging.getLogger('stepicstudio.views')
 
@@ -341,13 +341,13 @@ def stop_recording(request, course_id, lesson_id, step_id):
                 "SubSteps": SubStep.objects.all().filter(from_step=step_id),
                 }
         args.update(csrf(request))
-        stop_cam_recording()
+        result = stop_cam_recording()
         args.update({"Recording": camera_curr_status})
         last_substep_time = SubStep.objects.all().filter(from_step=step_id)\
                                                  .aggregate(Max('start_time'))['start_time__max']
         recorded_substep = SubStep.objects.all().filter(start_time=last_substep_time)[0]
         add_stat_info(recorded_substep.id)
-        return True
+        return result
 
 
 @login_required(login_url='/login/')

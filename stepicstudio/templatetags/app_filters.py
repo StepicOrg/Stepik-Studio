@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
+
 @register.filter(name='sec_to_time')
 def sec_to_time(value):
     hour = value // 3600

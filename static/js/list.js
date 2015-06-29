@@ -152,6 +152,7 @@ var elements_subscriptor = function() {
         $(this).text("Starting...").click(function(){
                 return false;
         });
+        $(this).off();
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
@@ -176,6 +177,7 @@ var elements_subscriptor = function() {
         $(this).text('Preparing...').click(function(){
                 return false;
         });
+        $(this).off();
         var el = $(this);
         $.ajax({
             beforeSend:function(jqXHR, settings) {

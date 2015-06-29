@@ -71,7 +71,7 @@ class TestRecordings(object):
         assert db_camera.status == True
 
     def test_stop_recording(self):
-        VR.stop_cam_recording()
+        VR.stop_cam_recording() == True
 
     def test_is_recording_stoped(self):
         db_camera = CameraStatus.objects.get(id="1")

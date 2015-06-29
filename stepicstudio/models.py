@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from stepicstudio.utils.extra import translate_non_alphanumerics
 from stepicstudio.const import COURSE_ULR_NAME, STEP_URL_NAME, SUBSTEP_URL_NAME, LESSON_URL_NAME, SUBSTEP_PROFESSOR, \
-    SUBSTEP_PROFESSOR_v1
+    SUBSTEP_PROFESSOR_v1, SUBSTEP_SCREEN, SUBSTEP_SCREEN_v1
 import time, datetime
 from django.utils.timezone import utc
 
@@ -95,6 +95,24 @@ class SubStep(models.Model):
     def os_path_all_variants(self):
         return [self.os_path, self.os_path_v1]
 
+    @property
+    def os_screencast_path(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + SUBSTEP_SCREEN
+
+    @property
+    def os_screencast_path_v1(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_SCREEN_v1
+
+    @property
+    def os_screencast_path_all_variants(self):
+        return [self.os_screencast_path, self.os_screencast_path_v1]
+
+    @property
+    def is_videos_ok(self):
+        return self.screencast_duration - self.duration < 7 and self.screencast_duration > self.duration > 0
+
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
@@ -132,5 +150,3 @@ class StatInfo(models.Model):
     substep = models.BigIntegerField(default=0)
     substep_uuid = models.BigIntegerField(default=0)
     duration = models.IntegerField(default=0)
-
-

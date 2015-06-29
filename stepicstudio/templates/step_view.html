@@ -13,7 +13,9 @@
                 {% for SS in SubSteps  %}
                    <div class="substep-list"> <span class="substep-name"> {{SS.name}} </span>  |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
                         <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a>
-                       | {% if SS.duration > 0 %} Duration: {{ SS.duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
+                       | {% if SS.duration > 0 %} Video: {{ SS.duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
+                       | {% if SS.screencast_duration > 0 %} Screen: {{ SS.screencast_duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
+                       | {% if not SS.is_videos_ok %} ERROR!!! {% endif %}
                     <div class="delete_button right">
                         <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
                     </div>
@@ -40,7 +42,7 @@
             <div class="form-edit-text hiddenForm">
                 <form action="/notes/step/{{ Step.id }}/" method="POST">
                     {% csrf_token %}
-                <textarea name="note" cols=120 rows=10>{{ Step.text_data }}
+                <textarea name="note" cols=60 rows=10>{{ Step.text_data }}
                 </textarea>
                 <input type="submit" value="Publish">
                 </form>
