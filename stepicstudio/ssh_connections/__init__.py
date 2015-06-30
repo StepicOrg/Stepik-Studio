@@ -17,8 +17,8 @@ class Singleton(type):
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-
-class ScreenRecorder(metaclass=Singleton):
+# Actually Making it Singleton was bad idea
+class ScreenRecorder:
 
     def __init__(self, path, remote_ubuntu=None):
         self.path = path
