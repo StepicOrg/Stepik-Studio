@@ -106,30 +106,30 @@ class ScreenRecorder(metaclass=Singleton):
             sftp.close()
             return self.download_status
 
-def get_file_test():
-    global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
-    PROFESSOR_IP = '127.0.0.1'
-    UBUNTU_USERNAME = 'mehanig'
-    UBUNTU_PASSWORD = '1212x'
-    from_path1 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out1'
-    from_path2 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out2'
-    from_path3 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out3'
-    from_path4 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out4'
-    to_path1 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in1'
-    to_path2 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in2'
-    to_path3 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in3'
-    to_path4 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in4'
-
-    sc1 = ScreenRecorder("_dummy_")
-    sc2 = ScreenRecorder("2")
-    sc3 = ScreenRecorder("3")
-    sc4 = ScreenRecorder("4")
-    sc1.get_file(from_path1, to_path1)
-    sc2.get_file(from_path2, to_path2)
-    sc3.get_file(from_path3, to_path3)
-    sc4.get_file(from_path4, to_path4)
-
-
-
-if __name__ == '__main__':
-    get_file_test()
+# def get_file_test():
+#     global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
+#     PROFESSOR_IP = '127.0.0.1'
+#     UBUNTU_USERNAME = 'mehanig'
+#     UBUNTU_PASSWORD = '123121234151451451451451341234fsdfgafgasdggg'
+#     from_path1 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out1'
+#     from_path2 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out2'
+#     from_path3 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out3'
+#     from_path4 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/out4'
+#     to_path1 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in1'
+#     to_path2 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in2'
+#     to_path3 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in3'
+#     to_path4 = '/Users/mehanig/CODE/TESTER_FOLDER/__SSH_TESTER/in4'
+#
+#     sc1 = ScreenRecorder("_dummy_")
+#     sc2 = ScreenRecorder("2")
+#     sc3 = ScreenRecorder("3")
+#     sc4 = ScreenRecorder("4")
+#     sc1.get_file(from_path1, to_path1)
+#     sc2.get_file(from_path2, to_path2)
+#     sc3.get_file(from_path3, to_path3)
+#     sc4.get_file(from_path4, to_path4)
+#
+#
+#
+# if __name__ == '__main__':
+#     get_file_test()
