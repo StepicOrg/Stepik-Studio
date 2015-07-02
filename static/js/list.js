@@ -1,5 +1,6 @@
 var rename_step_f_tmplt;
 var rename_lesson_f_tmplt;
+var rename_substep_tmplt_f_tmplt;
 
 $(function  () {
     var context_tmplt_1 = [{name:'NoName'}];
@@ -9,6 +10,10 @@ $(function  () {
     var context_tmplt_2 = [{name:'NoName'}];
     var compiledTemplate_2 = JST['static/extra/hb_templates/renameLesson.handlebars'];
     rename_lesson_f_tmplt = compiledTemplate_2(context_tmplt_2);
+
+    var context_tmplt_3 = [{name:'NoName'}];
+    var compiledTemplate_3 = JST['static/extra/hb_templates/renameSubstepTemplate.handlebars'];
+    rename_substep_tmplt_f_tmplt = compiledTemplate_3(context_tmplt_3);
 });
 
 var cookie_csrf_updater = function(xhr){
@@ -88,14 +93,18 @@ var elements_subscriptor = function() {
 
     $('.rename_button').off().on('click', function(e){
         e.stopPropagation();
-        deleted_element = $(this).parent().parent().html();
         var name = $(this).parents('.ui-state-default').find(".obj_name").text();
         $(this).fadeOut("fast",  function(){
             if ($(this).hasClass('step_rename')) {
+                deleted_element = $(this).parent().parent().html();
                 $(this).parent().parent().html(rename_step_f_tmplt);
             }
             else if ($(this).hasClass('lesson_rename')) {
+                deleted_element = $(this).parent().parent().html();
                 $(this).parent().parent().html(rename_lesson_f_tmplt);
+            } else if ($(this).hasClass('substep_tmpl_rename')) {
+                deleted_element = $(this).parent().html();
+                $(this).parent().html(rename_substep_tmplt_f_tmplt);
             }
             else {
                 alert("TEMPLATE ERROR!");
@@ -108,8 +117,11 @@ var elements_subscriptor = function() {
     $('#cancel-rename').off().live('click', function(event, new_name){
         $(this).fadeOut("fast",  function(){
             deleted_element = upd_deleted_el(new_name, deleted_element);
+            console.log('deleted_element:' , deleted_element);
+            console.log('new_element:', new_name);
             $(this).parents('.input-step-name-field').html(deleted_element);
             $(this).parents('.input-lesson-name-field').html(deleted_element);
+            $(this).parents('.rename-substep-template-field').html(deleted_element);
             elements_subscriptor();
         });
     });
@@ -219,6 +231,32 @@ var elements_subscriptor = function() {
                     "id": stepRenaming ? elem.parents('.ui-state-default').attr('stepID') : elem.parents('.ui-state-default').attr('lessonID'),
                     "type": stepRenaming ? 'step' : 'lesson',
                     "name_new": name_new
+                },
+                success: function (data) {
+                    $('#cancel-rename').trigger( "click", name_new );
+                    elements_subscriptor();
+                },
+                error: function(request,status,errorThrown) {
+                    alert("Cant rename :" + status + " " + errorThrown);
+                }
+            });
+        }
+    });
+
+    $('#rename-substep-template-form').off().on('keypress', function(e) {
+        elem = $(this);
+        var stepRenaming = (elem.attr("id") == "rename-step-form");
+        if (e.keyCode == 13 && !e.shiftKey) {
+            e.preventDefault();
+            var name_new = elem.find('#input-field-name').val();
+            console.log(name_new);
+            $.ajax({
+                beforeSend: cookie_csrf_updater,
+                type: "POST",
+                url: "update_substep_template/",
+
+                data: {
+                    "template": name_new
                 },
                 success: function (data) {
                     $('#cancel-rename').trigger( "click", name_new );

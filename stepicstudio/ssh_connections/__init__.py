@@ -18,7 +18,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 # Actually Making it Singleton was bad idea
-class ScreenRecorder:
+class ScreenRecorder(object):
 
     def __init__(self, path, remote_ubuntu=None):
         self.path = path

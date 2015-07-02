@@ -1,4 +1,5 @@
 from django.db import models
+import re
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from stepicstudio.utils.extra import translate_non_alphanumerics
@@ -123,6 +124,7 @@ class UserProfile(models.Model):
     clientFilesFolder = models.CharField(max_length=10000)
     recordVideo = models.BooleanField(default=True)
     recordScreen = models.BooleanField(default=True)
+    substep_template = models.CharField(max_length=120, default='SubStep$idfrom$stepid')
 
     @property
     def is_ready_to_show_hello_screen(self) -> True | False:

@@ -1,5 +1,6 @@
 import itertools
 import copy
+import re
 from wsgiref.util import FileWrapper
 import logging
 
@@ -22,6 +23,7 @@ from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
 
 logger = logging.getLogger('stepicstudio.views')
 
+
 def can_edit_page(view_function):
     def process_request(*args, **kwargs):
         access = test_access(args[0].user.id, list(filter(None, args[0].path.split("/"))))
@@ -33,6 +35,7 @@ def can_edit_page(view_function):
             return view_function(*args, **kwargs)
     return process_request
 
+
 def cant_edit_course(user_id, course_id):
     courses_from_user_id = Course.objects.all().filter(editors=user_id)
     course = Course.objects.all().filter(id=course_id)[0]
@@ -40,7 +43,6 @@ def cant_edit_course(user_id, course_id):
         return False
     else:
         return True
-
 
 
 # TODO: Add substep checks
@@ -178,7 +180,7 @@ def show_lesson(request, course_id, lesson_id):
 
 @login_required(login_url='/login/')
 @can_edit_page
-def delete_lesson(request, lesson_id):
+def delete_lesson(request, course_id, lesson_id):
     lesson_obj = Lesson.objects.get(id=lesson_id)
     redirect_to_course_page = request.path.split("/")
     if not delete_files_associated(redirect_to_course_page):
@@ -216,6 +218,14 @@ def add_step(request, course_id, lesson_id):
     return render_to_response("create_step.html", args, context_instance=RequestContext(request))
 
 
+def to_custom_name(substep_name, user_name_template):
+    m = re.search(r'Step(\d+)from(\d+)', substep_name)
+    ss_id, s_id = (m.group(1), m.group(2))
+    tmp = re.sub(r'(\$id)', re.escape(ss_id), user_name_template)
+    fin = re.sub(r'(\$stepid)', re.escape(s_id), tmp)
+    return fin
+
+
 @login_required(login_url='/login/')
 @can_edit_page
 def show_step(request, course_id, lesson_id, step_id):
@@ -232,7 +242,7 @@ def show_step(request, course_id, lesson_id, step_id):
         return Http404
     post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" +\
                STEP_URL_NAME + "/" + step_id + "/"
-    all_substeps = SubStep.objects.all().filter(from_step=step_id)
+    all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('name')
     summ_time = update_time_records(all_substeps)
     step_obj.is_fresh = True
     step_obj.duration = summ_time
@@ -243,6 +253,7 @@ def show_step(request, course_id, lesson_id, step_id):
             "Step": Step.objects.get(id=step_id),
             "postUrl": post_url,
             "SubSteps": all_substeps,
+            "tmpl_name": UserProfile.objects.get(user=request.user.id).substep_template
             }
     args.update({"Recording": camera_curr_status})
     args.update(csrf(request))
@@ -259,6 +270,23 @@ def notes(request, step_id):
     args = {}
     args.update(csrf(request))
     return HttpResponseRedirect(request.META['HTTP_REFERER'], args)
+
+
+# TODO: user_id probably dont needed
+@login_required(login_url='/login')
+def update_substep_tmpl(request):
+    if request.POST:
+        # print(dict(request.POST.lists())['template'][0])
+        try:
+            new_name = (dict(request.POST.lists())['template'][0])
+            profile = UserProfile.objects.get(user=request.user.id)
+            profile.substep_template = new_name
+            profile.save()
+        except Exception as e:
+            return Http404
+    args = {}
+    args.update(csrf(request))
+    return HttpResponse("Ok")
 
 
 # TODO: TOKEN at POSTrequest to statistic server is insecure

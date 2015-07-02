@@ -19,6 +19,7 @@ urlpatterns = patterns('',
     url(r'^rename_elem/$', 'stepicstudio.views.rename_elem'),
 
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^settings/update_substep_template/', 'stepicstudio.views.update_substep_tmpl'),
     url(r'^settings/', 'stepicstudio.views.user_profile'),
 
     url(r'^$', 'stepicstudio.views.index'),
@@ -44,6 +45,5 @@ urlpatterns = patterns('',
     # url(r'^course/(?P<courseId>[0-9]+)/add/lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
     url(r'^notes/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.notes'),
-
 
 )

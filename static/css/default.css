@@ -163,6 +163,22 @@
 
         }
 
+        .substep_tmpl_rename {
+            float: right ;
+            border: 1px dashed;
+            padding: 0px 0px 0px 0px;
+            margin: 0px 10px 0px 0px;
+        }
+
+        .template_name {
+            border: 1px dashed;
+            font-weight: bold;
+        }
+
+        .helper-text {
+            font-size: 0.7em;
+        }
+
         .input-step-name-field, .input-lesson-name-field {
             display: inline;
             width:auto;
