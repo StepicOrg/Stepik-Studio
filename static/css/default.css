@@ -101,7 +101,7 @@
         }
 
         #page {
-            width: 1050px;
+            width: 1150px;
             text-align: left;
             margin: 10px auto 20px auto;
             background-color: #489b14;
@@ -116,7 +116,7 @@
 
         #content {
             float: left;
-            width:800px;
+            width: 900px;
             border: 1px solid #35af44;
             padding: 10px;
 

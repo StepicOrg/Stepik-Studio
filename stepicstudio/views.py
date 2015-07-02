@@ -333,6 +333,14 @@ def start_new_step_recording(request, course_id, lesson_id, step_id):
 
 
 @login_required(login_url='/login')
+def montage(request, substep_id):
+    start_subtep_montage(substep_id)
+    args = {}
+    args.update(csrf(request))
+    return HttpResponse("Ok")
+
+
+@login_required(login_url='/login')
 def recording_page(request, course_id, lesson_id, step_id):
     post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" + \
                STEP_URL_NAME + "/" + step_id + "/"

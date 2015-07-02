@@ -12,7 +12,8 @@
             </h3>
                 {% for SS in SubSteps  %}
                        <div class="substep-list"> <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}} </span>  |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
-                            <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a>
+                            <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a> |
+                            <a target="_blank" href=/create_montage/{{ SS.id }}><img src="/static/icons/Film_strip_Silhouette_24.png"></a>
                            | {% if SS.duration > 0 %} Video: {{ SS.duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
                            | {% if SS.screencast_duration > 0 %} Screen: {{ SS.screencast_duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
                            | {% if not SS.is_videos_ok %} ERROR!!! {% endif %}

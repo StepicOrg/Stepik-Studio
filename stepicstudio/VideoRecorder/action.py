@@ -58,6 +58,11 @@ def start_recording(**kwargs: dict) -> True or False:
         return False
 
 
+def start_subtep_montage(substep_id):
+    video_path_list = SubStep.objects.get(id=substep_id).os_path_all_variants
+    screencast_path_list = SubStep.objects.get(id=substep_id).os_screencast_path_all_variants
+    run_ffmpeg_raw_montage(video_path_list, screencast_path_list)
+
 def delete_substep_files(**kwargs):
     folder_path = kwargs["user_profile"].serverFilesFolder
     data = kwargs["data"]

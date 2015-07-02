@@ -2,7 +2,7 @@ import os
 import shutil
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
 from stepicstudio.utils.extra import translate_non_alphanumerics
-from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand
+from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand, FFMPEG_PATH
 import subprocess
 import psutil
 
@@ -44,6 +44,7 @@ def add_file_to_test(**kwargs: dict) -> None:
     return True
 
 
+# TODO: Remake with pexpect
 def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
     command = FFMPEGcommand
     command += path + '\\' + filename
@@ -52,6 +53,21 @@ def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
     print(command)
     logger.debug('PID: %s %s', proc.pid, command)
     return proc
+
+
+def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list):
+    try:
+        video_path = [i for i in video_path_list if os.path.exists(i)][0]
+        screencast_path = [i for i in screencast_path_list if os.path.exists(i)][0]
+        to_folder_path = os.path.dirname(screencast_path)
+        filename_to_create = os.path.basename(os.path.normpath(os.path.splitext(screencast_path)[0]))+'_Raw_Montage.mp4'
+        command = r' ffmpeg -i ' + video_path + r' -i ' + screencast_path + r' -filter_complex \
+        "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
+        [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
+        amerge,pan=stereo:c0<c0+c1:c1<c1+c0" ' + to_folder_path + "/" + filename_to_create
+        proc = subprocess.Popen(command, shell=True)
+    except Exception as e:
+        logger.debug('run_ffmepg_raw_mongage: Error')
 
 
 def stop_ffmpeg_recorder(proc: subprocess.Popen) -> None:
