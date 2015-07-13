@@ -276,7 +276,6 @@ def notes(request, step_id):
 @login_required(login_url='/login')
 def update_substep_tmpl(request):
     if request.POST:
-        # print(dict(request.POST.lists())['template'][0])
         try:
             new_name = (dict(request.POST.lists())['template'][0])
             profile = UserProfile.objects.get(user=request.user.id)
@@ -335,9 +334,9 @@ def start_new_step_recording(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login')
 def montage(request, substep_id):
     start_subtep_montage(substep_id)
-    args = {}
+    args = {'go_back': request.META['HTTP_REFERER']}
     args.update(csrf(request))
-    return HttpResponse("Ok")
+    return render_to_response("montage_page.html", args, context_instance=RequestContext(request))
 
 
 @login_required(login_url='/login')
@@ -402,6 +401,10 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
 
     substep_deleted = delete_substep_files(user_id=request.user.id,
                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
+    if not substep_deleted:
+        args = {'go_back': request.META['HTTP_REFERER']}
+        args.update(csrf(request))
+        return render_to_response("file_in_use.html", args, context_instance=RequestContext(request))
     substep.delete()
     return HttpResponseRedirect(post_url)
 
@@ -418,10 +421,14 @@ def delete_step(request, course_id, lesson_id, step_id):
                                                      "postUrl": post_url,
                                                      "SubSteps": SubStep.objects.all().filter(from_step=step_id)}
     substeps = SubStep.objects.all().filter(from_step=step_id)
-    for substep in substeps:
-        substep.delete()
     step_deleted = delete_step_files(user_id=request.user.id,
                                      user_profile=UserProfile.objects.get(user=request.user.id), data=args)
+    if not step_deleted:
+        args = {'go_back': request.META['HTTP_REFERER']}
+        args.update(csrf(request))
+        return render_to_response("file_in_use.html", args, context_instance=RequestContext(request))
+    for substep in substeps:
+        substep.delete()
     step.delete()
     return HttpResponseRedirect(post_url)
 
@@ -441,7 +448,6 @@ def reorder_elements(request):
         if request.POST.get('type') == 'lesson' or request.POST.get('type') == 'step':
             neworder = request.POST.getlist('ids[]')
             for i in range(len(neworder)):
-                print(neworder)
                 id = neworder[i]
                 if id == '':
                     break
@@ -486,6 +492,7 @@ def view_stat(request, course_id):
 # TODO: try catch works incorrectly. Should check for file size before return
 # TODO: hotfix here is bad
 # TODO: This function is unsanfe, its possible to watch other users files
+@login_required(login_url="/login/")
 def video_view(request, substep_id):
     substep = SubStep.objects.all().get(id=substep_id)
     try:
@@ -507,7 +514,9 @@ def video_view(request, substep_id):
         logger.debug(e)
         return HttpResponse("File to large. Please watch it on server.")
 
+
 # TODO: hotfix here is bad =(
+@login_required(login_url="/login/")
 def video_screen_view(request, substep_id):
     substep = SubStep.objects.all().get(id=substep_id)
     try:
@@ -528,6 +537,18 @@ def video_screen_view(request, substep_id):
     except Exception as e:
         logger.debug(e)
         return HttpResponse("File to large. Please watch it on server.")
+
+
+def show_montage(request, substep_id):
+    try:
+        substep = SubStep.objects.all().get(id=substep_id)
+        path = substep.os_automontage_path
+        file = FileWrapper(open(path, 'rb'))
+        response = HttpResponse(file, content_type='video/ts')
+        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+"Raw_montage.mp4"
+        return response
+    except Exception as e:
+        return HttpResponse("Unknown Error =(")
 
 
 def rename_elem(request):

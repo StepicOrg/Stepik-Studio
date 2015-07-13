@@ -40,7 +40,8 @@ urlpatterns = patterns('',
     url(r'^showcontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_view'),
     url(r'^showscreencontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_screen_view'),
     #
-     url(r'^create_montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.montage'),
+    url(r'^create_montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.montage'),
+    url(r'^show_montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.show_montage'),
 
     # url(r'^course/(?P<courseId>[0-9]+)/add/lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),

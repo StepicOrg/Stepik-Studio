@@ -59,19 +59,33 @@ def start_recording(**kwargs: dict) -> True or False:
 
 
 def start_subtep_montage(substep_id):
-    video_path_list = SubStep.objects.get(id=substep_id).os_path_all_variants
-    screencast_path_list = SubStep.objects.get(id=substep_id).os_screencast_path_all_variants
+    substep = SubStep.objects.get(id=substep_id)
+    video_path_list = substep.os_path_all_variants
+    screencast_path_list = substep.os_screencast_path_all_variants
+    substep.is_locked = True
+    substep.save()
     run_ffmpeg_raw_montage(video_path_list, screencast_path_list)
+    SubStep.is_locked = False
+    substep.save()
+
+
 
 def delete_substep_files(**kwargs):
     folder_path = kwargs["user_profile"].serverFilesFolder
     data = kwargs["data"]
+    if data["currSubStep"].is_locked:
+        return False
     return delete_substep_on_disc(folder_path=folder_path, data=data)
 
 
 def delete_step_files(**kwargs):
     folder_path = kwargs["user_profile"].serverFilesFolder
     data = kwargs["data"]
+    substeps = SubStep.objects.all().filter(from_step=data['Step'].id)
+    for ss in substeps:
+        print(ss.name)
+        if ss.is_locked:
+            return False
     return delete_step_on_disc(folder_path=folder_path, data=data)
 
 

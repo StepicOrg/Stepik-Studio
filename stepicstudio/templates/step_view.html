@@ -11,12 +11,12 @@
             from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
             </h3>
                 {% for SS in SubSteps  %}
-                       <div class="substep-list"> <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}} </span>  |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
-                            <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a> |
-                            <a target="_blank" href=/create_montage/{{ SS.id }}><img src="/static/icons/Film_strip_Silhouette_24.png"></a>
-                           | {% if SS.duration > 0 %} Video: {{ SS.duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
-                           | {% if SS.screencast_duration > 0 %} Screen: {{ SS.screencast_duration | sec_to_time}}  {% else %} File Corrupted! {% endif %}
-                           | {% if not SS.is_videos_ok %} ERROR!!! {% endif %}
+                       <div class="substep-list"> <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}} <a target="_blank" href=/create_montage/{{ SS.id }}>AutoMontage</a> </span>  |  <a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a> |
+                            <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a> {% if SS.automontage_exist > 0 %}|
+                            <a target="_blank" href=/show_montage/{{ SS.id }}/><img src="/static/icons/Film_strip_Silhouette_24.png"></a> {% endif %}
+                           | {% if SS.duration > 0 %} V: {{ SS.duration | sec_to_time}}  {% else %} Err! {% endif %}
+                           | {% if SS.screencast_duration > 0 %} Scr: {{ SS.screencast_duration | sec_to_time}}  {% else %} Err! {% endif %}
+                           | {% if not SS.is_videos_ok %} Err! {% endif %}
                             <div class="delete_button right">
                                 <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
                             </div>

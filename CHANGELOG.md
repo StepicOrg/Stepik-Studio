@@ -4,7 +4,9 @@ This project adheres to [Mikhail Mehanig](https://github.com/mehanig/stepic_serv
 
 ## [Unreleased][unreleased]
 ### Added
-- Automatically merge 2 videos in one (left and right), but no link added for downloading this file yet
+- Automatically merge 2 videos in one (left and right)
+- .is_locked for substep added
+- Blocking for deletion added
 
 ### Changed
 - Default name for substep is user-customizable, default template for displaying is SubStep1from111 (was Step1from111)
