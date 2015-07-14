@@ -1,20 +1,17 @@
 import os
-import os.path
-import sys
-import signal
 import shutil
-import time
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
-import xml.etree.ElementTree as ET
-import xml.parsers.expat
-from stepicstudio.utils.extra import translate_non_alphanumerics, deprecated
-from STEPIC_STUDIO.settings import ADOBE_LIVE_EXE_PATH
-from stepicstudio.const import SUBSTEP_PROFESSOR, FFMPEG_PATH, FFPROBE_RUN_PATH
+from stepicstudio.utils.extra import translate_non_alphanumerics
+from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand, FFMPEG_PATH
 import subprocess
-from distutils.dir_util import copy_tree
 import psutil
 
+import logging
+
+logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
+
 GlobalProcess = None
+
 
 def substep_server_path(**kwargs: dict) -> (str, str):
     folder = kwargs["folder_path"]
@@ -47,46 +44,30 @@ def add_file_to_test(**kwargs: dict) -> None:
     return True
 
 
-#TODO CHANGE THIS SHIT! ASAP! HATE WINDOWS!
-@deprecated
-def run_adobe_live() -> None:
-    p = [r"D:\stream_profile\stepic_run_camera.bat"]
-    global GlobalProcess
-    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-         "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
-    GlobalProcess = subprocess.Popen(p, shell=False)
-    print("From Run", GlobalProcess.pid)
-    return True
-
+# TODO: Remake with pexpect
 def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
-    command = FFMPEG_PATH + r' -f dshow -video_size 1920x1080 -rtbufsize 702000k -framerate 25 -i video="Decklink Video ' \
-                            r'Capture (3)":audio="Decklink Audio Capture (3)" -threads 0  -preset ultrafast  -c:v libx264 '
+    command = FFMPEGcommand
     command += path + '\\' + filename
     proc = subprocess.Popen(command, shell=True)
     print("PID = ", proc.pid)
     print(command)
+    logger.debug('PID: %s %s', proc.pid, command)
     return proc
 
-#TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is bad, it doesn't support spaces and isn't safe
-@deprecated
-def stop_adobe_live() -> None:
-    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-         "/s", r"C:\StepicServer\static\video\xml_settings.xml"]
-    tree = ET.parse(r"C:\StepicServer\static\video\xml_settings.xml")
-    root = tree.getroot()
-    stop_path = None
-    for elem in root.iter('path'):
-        stop_path = elem.text
-        print("stop_adobe_live():", elem.text)
-    p = [r"C:\Program Files (x86)\Adobe\Flash Media Live Encoder 3.2\FMLECmd.exe",
-         "/s", stop_path]
-    subprocess.Popen(p, shell=False)
-    if os.path.exists(stop_path):
-        print("FILE EXIST!")
-    else:
-        print(stop_path)
-        print("ERROR!!!!!!!!")
-        sys.exit(0)
+
+def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list):
+    try:
+        video_path = [i for i in video_path_list if os.path.exists(i)][0]
+        screencast_path = [i for i in screencast_path_list if os.path.exists(i)][0]
+        to_folder_path = os.path.dirname(screencast_path)
+        filename_to_create = os.path.basename(os.path.dirname(screencast_path))+'_Raw_Montage.mp4'
+        command = FFMPEG_PATH + r' -i ' + video_path + r' -i ' + screencast_path + r' -filter_complex \
+        "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
+        [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
+        amerge,pan=stereo:c0<c0+c1:c1<c1+c0" ' + to_folder_path + "/" + filename_to_create + " -y"
+        proc = subprocess.Popen(command, shell=True)
+    except Exception as e:
+        logger.debug('run_ffmepg_raw_mongage: Error')
 
 
 def stop_ffmpeg_recorder(proc: subprocess.Popen) -> None:
@@ -111,6 +92,8 @@ def delete_substep_on_disc(**kwargs: dict) -> True | False:
         return False
     else:
         shutil.rmtree(f_c_l_s_substep)
+        while os.path.exists(f_c_l_s_substep):
+            pass
         return True
 
 
@@ -121,10 +104,6 @@ def delete_step_on_disc(**kwargs: dict) -> True | False:
     f_c_lesson = f_course + "/" + translate_non_alphanumerics(data["Lesson"].name)
     f_c_l_step = f_c_lesson + "/" + translate_non_alphanumerics(data["Step"].name)
     return delete_files_on_server(f_c_l_step)
-
-@deprecated
-def files_txt_update(**kwargs):
-    pass
 
 
 def search_as_files_and_update_info(args: dict) -> dict:
@@ -151,22 +130,14 @@ def search_as_files_and_update_info(args: dict) -> dict:
     return args
 
 
-#TODO: Let's not check if it's fine? Return True anyway?
+# TODO: Let's not check if it's fine? Return True anyway?
 def delete_files_on_server(path: str) -> True | False:
     if os.path.exists(path):
         shutil.rmtree(path)
         return True
     else:
-        print(path + ' No folder was found and can\'t be deleted.(This is BAD!)')
+        logger.debug('%s No folder was found and can\'t be deleted.(This is BAD!)', path)
         return True
-
-@deprecated
-def generate_xml(xml_path: str, write_to_path: str, file_name: str) -> None:
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
-    for elem in root.iter('path'):
-        elem.text = write_to_path.replace("/", "\\") + "\\" + file_name.replace("/", "\\")
-    tree.write(xml_path, encoding="UTF-16", short_empty_elements=False)
 
 
 def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
@@ -175,16 +146,18 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
             os.rename(from_obj.os_path, to_obj.os_path)
             return True
         except Exception as e:
-            print(e)
+            logger.debug(e)
         return False
     else:
         return False
+
 
 def get_length_in_sec(filename: str) -> int:
     result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     duration_string = [x.decode("utf-8") for x in result.stdout.readlines() if "Duration" in x.decode('utf-8')][0]
     time = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
     return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2].split('.')[0])
+
 
 def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:
     sec = 0
@@ -204,6 +177,10 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
             if os.path.exists(substep_path):
                 new_step_obj.duration = get_length_in_sec(substep_path)
                 new_step_obj.save()
+        for substep_scr_path in new_step_obj.os_screencast_path_all_variants:
+            if os.path.exists(substep_scr_path):
+                new_step_obj.screencast_duration = get_length_in_sec(substep_scr_path)
+                new_step_obj.save()
     summ = 0
     for substep in substep_list:
         for substep_path in substep.os_path_all_variants:
@@ -211,6 +188,11 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
                 if not new_step_only:
                     substep.duration = get_length_in_sec(substep_path)
                 summ += substep.duration
-                substep.save()
                 break
+        for substep_scr_path in substep.os_screencast_path_all_variants:
+            if os.path.exists(substep_scr_path):
+                if not new_step_only:
+                    substep.screencast_duration = get_length_in_sec(substep_scr_path)
+                break
+        substep.save()
     return summ

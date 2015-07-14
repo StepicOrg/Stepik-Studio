@@ -1,6 +1,7 @@
 import stepicstudio.VideoRecorder.action as VR
 from . import Helper
 
+
 class TestDBandAuth(object):
 
     def test_db_reachable(self):
@@ -70,11 +71,12 @@ class TestRecordings(object):
         assert db_camera.status == True
 
     def test_stop_recording(self):
-        VR.stop_cam_recording()
+        VR.stop_cam_recording() == True
 
     def test_is_recording_stoped(self):
         db_camera = CameraStatus.objects.get(id="1")
         assert db_camera.status == False
+
 
 class TestCleaner(object):
 

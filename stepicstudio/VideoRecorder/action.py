@@ -5,16 +5,22 @@ from stepicstudio.const import *
 from stepicstudio.ssh_connections.screencast import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
 import time
-from stepicstudio.ssh_connections import Screen_Recorder
+from stepicstudio.ssh_connections import ScreenRecorder
+
+import logging
+
+logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
 SS_WIN_PATH = ""
 SS_LINUX_PATH = ""
 process = "'"
 
+
 def to_linux_translate(win_path: str, username: str) -> str:
     linux_path = '/home/stepic/VIDEO/STEPICSTUDIO/'+ username + "/" + '/'.join(win_path.split("/")[1:])
-    print("to_linux_translate() This is linux path ", linux_path)
+    logger.debug("to_linux_translate() This is linux path %s", linux_path)
     return linux_path
+
 
 def start_recording(**kwargs: dict) -> True or False:
     user_id = kwargs["user_id"]
@@ -26,16 +32,16 @@ def start_recording(**kwargs: dict) -> True or False:
     server_status = True
     global process
     process = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
-    print(process.pid)
-    #TODO:Refactor!
+    logger.debug("Started with PID: %s:", process.pid)
 
+    # TODO:Refactor!
     screencast_status = ssh_screencast_start()
 
     if 'remote_ubuntu' in kwargs:
         remote_ubuntu = kwargs['remote_ubuntu']
     else:
         remote_ubuntu = None
-    linux_obj = Screen_Recorder(to_linux_translate(substep_folder, username), remote_ubuntu)
+    linux_obj = ScreenRecorder(to_linux_translate(substep_folder, username), remote_ubuntu)
     linux_obj.run_screen_recorder(data['currSubStep'].name)
     global SS_LINUX_PATH, SS_WIN_PATH
     SS_LINUX_PATH = linux_obj.remote_path
@@ -51,37 +57,51 @@ def start_recording(**kwargs: dict) -> True or False:
     else:
         return False
 
+
+def start_subtep_montage(substep_id):
+    substep = SubStep.objects.get(id=substep_id)
+    video_path_list = substep.os_path_all_variants
+    screencast_path_list = substep.os_screencast_path_all_variants
+    substep.is_locked = True
+    substep.save()
+    run_ffmpeg_raw_montage(video_path_list, screencast_path_list)
+    SubStep.is_locked = False
+    substep.save()
+
+
+
 def delete_substep_files(**kwargs):
     folder_path = kwargs["user_profile"].serverFilesFolder
     data = kwargs["data"]
+    if data["currSubStep"].is_locked:
+        return False
     return delete_substep_on_disc(folder_path=folder_path, data=data)
 
 
 def delete_step_files(**kwargs):
     folder_path = kwargs["user_profile"].serverFilesFolder
     data = kwargs["data"]
+    substeps = SubStep.objects.all().filter(from_step=data['Step'].id)
+    for ss in substeps:
+        print(ss.name)
+        if ss.is_locked:
+            return False
     return delete_step_on_disc(folder_path=folder_path, data=data)
 
 
-
-def files_update(**kwargs):
-    files_txt_update(**kwargs)
-    return True
-
-
-#TODO: REMAKE! Wrong implementation
-def stop_cam_recording() -> None:
+# TODO: REMAKE! Wrong implementation
+def stop_cam_recording() -> True | False:
     camstat = CameraStatus.objects.get(id="1")
     camstat.status = False
     ssh_screencast_stop()
     camstat.save()
     global process
-    print('PROCESS PID TO STOP: ', process.pid)
+    logger.debug('PROCESS PID TO STOP: %s', process.pid)
     stop_ffmpeg_recorder(process)
-    ssh_obj = Screen_Recorder("D:")
+    ssh_obj = ScreenRecorder("_Dummy_")
     ssh_obj.stop_screen_recorder()
-    ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
-    print(SS_LINUX_PATH, SS_WIN_PATH)
+    logger.debug("%s %s", SS_LINUX_PATH, SS_WIN_PATH)
+    return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
 
 
 def delete_files_associated(url_args) -> True | False:

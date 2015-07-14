@@ -1,13 +1,11 @@
 from django.db import models
+import re
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
-from stepicstudio.utils.extra import translate_non_alphanumerics
-from stepicstudio.const import COURSE_ULR_NAME, STEP_URL_NAME, SUBSTEP_URL_NAME, LESSON_URL_NAME, SUBSTEP_PROFESSOR, \
-    SUBSTEP_PROFESSOR_v1
+from stepicstudio.utils.extra import translate_non_alphanumerics, file_exist
+from stepicstudio.const import *
 import time, datetime
 from django.utils.timezone import utc
-
-# Create your models here.
 
 
 def set_time_milisec():
@@ -70,7 +68,6 @@ class Step(models.Model):
         return lesson.os_path + translate_non_alphanumerics(self.name) + "/"
 
 
-###TODO: use duration in SubStep instead of Step
 class SubStep(models.Model):
 
     name = models.CharField(max_length=400)
@@ -79,6 +76,7 @@ class SubStep(models.Model):
     start_time = models.BigIntegerField(default=set_time_milisec)
     duration = models.BigIntegerField(default=0)
     screencast_duration = models.BigIntegerField(default=0)
+    is_locked = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name + " from step id =" + str(self.from_step)
@@ -97,6 +95,33 @@ class SubStep(models.Model):
     def os_path_all_variants(self):
         return [self.os_path, self.os_path_v1]
 
+    @property
+    def os_screencast_path(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + SUBSTEP_SCREEN
+
+    @property
+    def os_screencast_path_v1(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_SCREEN_v1
+
+    @property
+    def os_screencast_path_all_variants(self):
+        return [self.os_screencast_path, self.os_screencast_path_v1]
+
+    @property
+    def is_videos_ok(self):
+        return self.screencast_duration - self.duration < 7 and self.screencast_duration > self.duration > 0
+
+    @property
+    def os_automontage_path(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + FAST_MONTAGE
+
+    @property
+    def automontage_exist(self):
+        return file_exist(self.os_automontage_path)
+
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
@@ -107,6 +132,7 @@ class UserProfile(models.Model):
     clientFilesFolder = models.CharField(max_length=10000)
     recordVideo = models.BooleanField(default=True)
     recordScreen = models.BooleanField(default=True)
+    substep_template = models.CharField(max_length=120, default='SubStep$idfrom$stepid')
 
     @property
     def is_ready_to_show_hello_screen(self) -> True | False:
@@ -121,6 +147,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
 
+# Some magic here?
 post_save.connect(create_user_profile, sender=User)
 
 
@@ -134,4 +161,3 @@ class StatInfo(models.Model):
     substep = models.BigIntegerField(default=0)
     substep_uuid = models.BigIntegerField(default=0)
     duration = models.IntegerField(default=0)
-

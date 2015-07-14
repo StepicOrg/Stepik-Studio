@@ -1,10 +1,19 @@
-var global_html;
+var rename_step_f_tmplt;
+var rename_lesson_f_tmplt;
+var rename_substep_tmplt_f_tmplt;
 
 $(function  () {
+    var context_tmplt_1 = [{name:'NoName'}];
+    var compiledTemplate_1 = JST['static/extra/hb_templates/renameStep.handlebars'];
+    rename_step_f_tmplt = compiledTemplate_1(context_tmplt_1);
 
-    var context_tmplt = [{name:'NoName'}];
-    var compiledTemplate = JST['static/extra/hb_templates/test.handlebars'];
-    global_html = compiledTemplate(context_tmplt);
+    var context_tmplt_2 = [{name:'NoName'}];
+    var compiledTemplate_2 = JST['static/extra/hb_templates/renameLesson.handlebars'];
+    rename_lesson_f_tmplt = compiledTemplate_2(context_tmplt_2);
+
+    var context_tmplt_3 = [{name:'NoName'}];
+    var compiledTemplate_3 = JST['static/extra/hb_templates/renameSubstepTemplate.handlebars'];
+    rename_substep_tmplt_f_tmplt = compiledTemplate_3(context_tmplt_3);
 });
 
 var cookie_csrf_updater = function(xhr){
@@ -30,7 +39,7 @@ var cookie_csrf_updater = function(xhr){
         if (new_name != null && new_name.length > 0) {
             var jq_deleted = $(deleted_element);
             var replace = $('<div/>').append(jq_deleted.clone());
-            $(replace).find('.lesson_name').html(new_name);
+            $(replace).find('.obj_name').html(new_name);
             deleted_element = replace.html();
         }
         return deleted_element;
@@ -54,14 +63,22 @@ var elements_subscriptor = function() {
     sortObj = $("#sortable");
 
     sortObj.sortable({
+        start: function(e, ui) {
+            if (!$("#isDraggable").is(":checked")) {
+                window.location = $(ui.item[0]).find("a").attr('href');
+            }
+        },
         stop : function(event, ui) {
+            var reorderingSteps = $(ui.item[0]).find("a").hasClass('step_name');
+            var reorderingType = reorderingSteps ? "step" : "lesson";
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 //alert("in ajax");
                 type: "POST",
                 url: "/reorder_lists/",
 
-                data: {"order": $(this).sortable("toArray"), "ids": $(this).sortable("toArray", {attribute: 'lessonID'})},
+                data: {"type": reorderingType, "order": $(this).sortable("toArray"), "ids": $(this).sortable("toArray",
+                    {attribute: reorderingSteps ? 'stepID' : 'lessonID'})},
                 success: function(data){
                         //alert(data);
                 }
@@ -76,10 +93,22 @@ var elements_subscriptor = function() {
 
     $('.rename_button').off().on('click', function(e){
         e.stopPropagation();
-        deleted_element = $(this).parent().parent().html();
-        var name = $(this).parents('.ui-state-default').find(".lesson_name").text();
+        var name = $(this).parents('.ui-state-default').find(".obj_name").text();
         $(this).fadeOut("fast",  function(){
-            $(this).parent().parent().html(global_html);
+            if ($(this).hasClass('step_rename')) {
+                deleted_element = $(this).parent().parent().html();
+                $(this).parent().parent().html(rename_step_f_tmplt);
+            }
+            else if ($(this).hasClass('lesson_rename')) {
+                deleted_element = $(this).parent().parent().html();
+                $(this).parent().parent().html(rename_lesson_f_tmplt);
+            } else if ($(this).hasClass('substep_tmpl_rename')) {
+                deleted_element = $(this).parent().html();
+                $(this).parent().html(rename_substep_tmplt_f_tmplt);
+            }
+            else {
+                alert("TEMPLATE ERROR!");
+            }
             elements_subscriptor();
             $('#input-field-name').val(name);
             });
@@ -88,7 +117,11 @@ var elements_subscriptor = function() {
     $('#cancel-rename').off().live('click', function(event, new_name){
         $(this).fadeOut("fast",  function(){
             deleted_element = upd_deleted_el(new_name, deleted_element);
+            console.log('deleted_element:' , deleted_element);
+            console.log('new_element:', new_name);
             $(this).parents('.input-step-name-field').html(deleted_element);
+            $(this).parents('.input-lesson-name-field').html(deleted_element);
+            $(this).parents('.rename-substep-template-field').html(deleted_element);
             elements_subscriptor();
         });
     });
@@ -131,6 +164,7 @@ var elements_subscriptor = function() {
         $(this).text("Starting...").click(function(){
                 return false;
         });
+        $(this).off();
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
@@ -149,14 +183,13 @@ var elements_subscriptor = function() {
                 alert("Server Error!");
             }
         });
-                        //            var el = $(this);
-                //setTimeout(fader, 0, el);
     });
 
     $('.stop-recording').off().on('click', function(){
         $(this).text('Preparing...').click(function(){
                 return false;
         });
+        $(this).off();
         var el = $(this);
         $.ajax({
             beforeSend:function(jqXHR, settings) {
@@ -182,8 +215,9 @@ var elements_subscriptor = function() {
         });
     });
 
-    $('#rename-step-form').off().on('keypress', function(e) {
+    $('#rename-step-form, #rename-lesson-form').off().on('keypress', function(e) {
         elem = $(this);
+        var stepRenaming = (elem.attr("id") == "rename-step-form");
         if (e.keyCode == 13 && !e.shiftKey) {
             e.preventDefault();
             row = elem.parents('.ui-state-default');
@@ -194,9 +228,35 @@ var elements_subscriptor = function() {
                 url: "/rename_elem/",
 
                 data: {
-                    "id": elem.parents('.ui-state-default').attr('id'),
-                    "type": 'step',
+                    "id": stepRenaming ? elem.parents('.ui-state-default').attr('stepID') : elem.parents('.ui-state-default').attr('lessonID'),
+                    "type": stepRenaming ? 'step' : 'lesson',
                     "name_new": name_new
+                },
+                success: function (data) {
+                    $('#cancel-rename').trigger( "click", name_new );
+                    elements_subscriptor();
+                },
+                error: function(request,status,errorThrown) {
+                    alert("Cant rename :" + status + " " + errorThrown);
+                }
+            });
+        }
+    });
+
+    $('#rename-substep-template-form').off().on('keypress', function(e) {
+        elem = $(this);
+        var stepRenaming = (elem.attr("id") == "rename-step-form");
+        if (e.keyCode == 13 && !e.shiftKey) {
+            e.preventDefault();
+            var name_new = elem.find('#input-field-name').val();
+            console.log(name_new);
+            $.ajax({
+                beforeSend: cookie_csrf_updater,
+                type: "POST",
+                url: "update_substep_template/",
+
+                data: {
+                    "template": name_new
                 },
                 success: function (data) {
                     $('#cancel-rename').trigger( "click", name_new );
@@ -212,8 +272,6 @@ var elements_subscriptor = function() {
     $('#edit-text').click(function() {
         $('.form-edit-text').toggleClass('hiddenForm');
     });
-
-
 };
 
 

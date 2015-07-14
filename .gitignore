@@ -11,3 +11,4 @@ settings.py
 
 
 /staticfiles
+/static/jquery1.8.3

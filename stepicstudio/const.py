@@ -1,4 +1,5 @@
 from sys import platform as _platform
+from STEPIC_STUDIO.settings import __PROFESSOR_IP, __FFMPEG_PATH , __FFPROBE_RUN_PATH, __FFMPEG_COMM_PART
 
 COURSE_ULR_NAME = 'course'
 LESSON_URL_NAME = 'lesson'
@@ -9,11 +10,14 @@ SUBSTEP_PROFESSOR = '_Professor.TS'
 SUBSTEP_PROFESSOR_v1 = 'Professor.TS'
 SUBSTEP_SCREEN = '_Screen.mkv'
 SUBSTEP_SCREEN_v1 = 'Screen.mkv'
+FAST_MONTAGE = '_Raw_Montage.mp4'
 ##PROFESSOR_IP = '172.21.202.96'
-PROFESSOR_IP = '172.21.202.109'
-FFMPEG_PATH = r'D:\VIDEO\ffmpeg\bin\ffmpeg.exe'
+PROFESSOR_IP = __PROFESSOR_IP
+FFMPEG_PATH = __FFMPEG_PATH
 
 if _platform == "linux" or _platform == "linux2" or _platform == "darwin":
     FFPROBE_RUN_PATH = 'ffprobe'
 else:
-    FFPROBE_RUN_PATH = r'D:\VIDEO\ffmpeg\bin\ffprobe.exe'
+    FFPROBE_RUN_PATH = __FFPROBE_RUN_PATH
+
+FFMPEGcommand = FFMPEG_PATH + __FFMPEG_COMM_PART
