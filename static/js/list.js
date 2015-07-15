@@ -148,7 +148,6 @@ var elements_subscriptor = function() {
         } else if (isInstanceName(_ss_name)) {
             _name = _ss_name;
         }
-        console.log('name:',_name,'s:',_s_name,'ss:',_ss_name);
         $(this).append("<div class='modal'> Action can't be undone. Are you sure?</div>");
         $(this).find(".modal").dialog({
             resizable: false,
