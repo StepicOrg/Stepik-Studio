@@ -44,7 +44,6 @@ def add_file_to_test(**kwargs: dict) -> None:
     return True
 
 
-# TODO: Remake with pexpect
 def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
     command = FFMPEGcommand
     command += path + '\\' + filename

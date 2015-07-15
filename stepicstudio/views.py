@@ -242,7 +242,7 @@ def show_step(request, course_id, lesson_id, step_id):
         return Http404
     post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" +\
                STEP_URL_NAME + "/" + step_id + "/"
-    all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('name')
+    all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
     summ_time = update_time_records(all_substeps)
     step_obj.is_fresh = True
     step_obj.duration = summ_time
@@ -289,6 +289,7 @@ def update_substep_tmpl(request):
 
 
 # TODO: TOKEN at POSTrequest to statistic server is insecure
+# TODO: Off by one error here with substep naming need fix ( no Step1From** will be created)
 @login_required(login_url='/login/')
 def start_new_step_recording(request, course_id, lesson_id, step_id):
     substep = SubStep()

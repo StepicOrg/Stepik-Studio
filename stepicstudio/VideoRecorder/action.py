@@ -65,7 +65,7 @@ def start_subtep_montage(substep_id):
     substep.is_locked = True
     substep.save()
     run_ffmpeg_raw_montage(video_path_list, screencast_path_list)
-    SubStep.is_locked = False
+    substep.is_locked = False
     substep.save()
 
 
