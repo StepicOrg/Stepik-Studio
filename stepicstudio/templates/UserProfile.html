@@ -1,10 +1,16 @@
 {%  extends "base.html" %}
 {% block content %}
-    username: {{ settings.user }} <br>
-    server IP-addres: {{ settings.serverIP }} <br>
-    client IP-addres: {{ settings.clientIP }} <br>
-    File Path on server: {{ settings.serverFilesFolder }} <br>
-    Screencast folder on client: {{ settings.clientFilesFolder }} <br>
-    Record video from camera: {{ settings.recordVideo }} <br>
-    Record screencast:{{ settings.recordScreen }} <br>
+    <ul>
+        <li>username: {{ settings.user }}</li>
+        <li>server IP-addres: {{ settings.serverIP }}</li>
+        <li>client IP-addres: {{ settings.clientIP }}</li>
+        <li>File Path on server: {{ settings.serverFilesFolder }}</li>
+        <li>Screencast folder on client: {{ settings.clientFilesFolder }}</li>
+        <li>Record video from camera: {{ settings.recordVideo }}</li>
+        <li>Record screencast:{{ settings.recordScreen }} </li>
+        <li><div>User SubStep Template: <br>
+            <span class="helper-text">(should contain $id and $stepid for templating)</span> </div>
+            <span class="obj_name template_name">{{ settings.substep_template }}</span>
+            <span class="rename_button substep_tmpl_rename">change naming template</span> </li>
+    </ul>
 {%  endblock %}

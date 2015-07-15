@@ -1,4 +1,5 @@
 import warnings
+import os
 
 #TODO: Replace no_letters_or_digits to only allowed characters
 def translate_non_alphanumerics(to_translate, translate_to=u'_'):
@@ -15,3 +16,7 @@ def deprecated(func):
     new_func.__doc__ = func.__doc__
     new_func.__dict__.update(func.__dict__)
     return new_func
+
+
+def file_exist(path):
+    return os.path.exists(path)
