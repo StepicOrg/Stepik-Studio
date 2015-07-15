@@ -2,6 +2,10 @@ var rename_step_f_tmplt;
 var rename_lesson_f_tmplt;
 var rename_substep_tmplt_f_tmplt;
 
+function isInstanceName(value){
+  return !(value == null || value == ' ' || value =='  ' || value == '' || value == undefined);
+}
+
 $(function  () {
     var context_tmplt_1 = [{name:'NoName'}];
     var compiledTemplate_1 = JST['static/extra/hb_templates/renameStep.handlebars'];
@@ -136,11 +140,20 @@ var elements_subscriptor = function() {
     $('.delete_button').on('click', function(event){
         event.stopPropagation();
         var redir_url = $(this).find(".delete-url").data("urllink");
+        var _ss_name = $(this).parents('.substep-list').find('.substep-name').text().split(/ /)[0];
+        var _s_name = $(this).parents('.ui-state-default').find('.step_name').text();
+        var _name = undefined;
+        if (isInstanceName(_s_name)){
+            _name = _s_name;
+        } else if (isInstanceName(_ss_name)) {
+            _name = _ss_name;
+        }
+        console.log('name:',_name,'s:',_s_name,'ss:',_ss_name);
         $(this).append("<div class='modal'> Action can't be undone. Are you sure?</div>");
         $(this).find(".modal").dialog({
             resizable: false,
             modal: true,
-            title: "Delete?",
+            title: _name,
             height: 250,
             width: 400,
             buttons: {
