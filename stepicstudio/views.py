@@ -80,8 +80,10 @@ def index(request):
     return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
 
-def login(request):
+def login(request, **kwargs):
     c = {}
+    if 'error' in kwargs.keys():
+        c.update({'error': True})
     c.update(csrf(request))
     return render_to_response("login.html", c, context_instance=RequestContext(request))
 
@@ -125,8 +127,7 @@ def auth_view(request):
             say_hello = ''
         return HttpResponseRedirect("/loggedin/"+say_hello)
     else:
-        return HttpResponseRedirect(reverse('stepicstudio.views.login'))
-
+        return login(request, error=True)
 
 def loggedin(request):
     if request.user.is_authenticated():
