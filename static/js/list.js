@@ -51,7 +51,7 @@ var cookie_csrf_updater = function(xhr){
 
 function record_started(callback)
 {
-    $('.start-recording').removeClass('start-recording').addClass('stop-recording').text('Recording');
+    $('.start-recording').removeClass('start-recording').addClass('stop-recording').text('Recording. Press here to stop.');
     var curr_sec_from_epoch = new Date().getTime() / 1000;
     $('.stop-recording').append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
     callback();
