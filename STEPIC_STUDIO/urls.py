@@ -34,6 +34,7 @@ urlpatterns = patterns('',
     url(r'^course/(?P<course_id>[0-9]+)/', include(courseurlpatterns)),
 
     url(r'^courses/', 'stepicstudio.views.get_user_courses'),
+    url(r'^unlock_all/', 'stepicstudio.views.clear_all_locked_substeps'),
 
     url(r'^add_lesson/', 'stepicstudio.views.add_lesson'),
 

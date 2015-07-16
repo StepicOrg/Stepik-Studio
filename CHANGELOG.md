@@ -4,6 +4,10 @@ This project adheres to [Mikhail Mehanig](https://github.com/mehanig/stepic_serv
 
 ## [Unreleased][unreleased]
 ###
+### Added
+- Locking for files if AutoMontage is in process
+- Left menu status bar
+- Unlock all files button in settings
 
 ## [0.1.1] - 2015-07-16
 ### Added

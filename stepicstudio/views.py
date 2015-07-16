@@ -20,6 +20,7 @@ from stepicstudio.FileSystemOperations.action import search_as_files_and_update_
 from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
 from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
+from stepicstudio.state import CURRENT_TASKS_DICT
 
 logger = logging.getLogger('stepicstudio.views')
 
@@ -241,8 +242,18 @@ def show_step(request, course_id, lesson_id, step_id):
             if stop_recording(request, course_id, lesson_id, step_id):
                 return HttpResponse("Ok")
         return Http404
-    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" +\
-               STEP_URL_NAME + "/" + step_id + "/"
+
+    to_del = set()
+    for task in CURRENT_TASKS_DICT.keys():
+        if task.poll() == 0:
+            ss_id = CURRENT_TASKS_DICT[task]
+            ss = SubStep.objects.get(id=ss_id)
+            ss.is_locked = False
+            ss.save()
+            to_del.add(task)
+    for t in to_del:
+        del CURRENT_TASKS_DICT[t]
+
     all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
     summ_time = update_time_records(all_substeps)
     step_obj.is_fresh = True
@@ -252,7 +263,7 @@ def show_step(request, course_id, lesson_id, step_id):
             "Course": Course.objects.all().get(id=course_id),
             "Lesson": Lesson.objects.all().get(id=lesson_id),
             "Step": Step.objects.get(id=step_id),
-            "postUrl": post_url,
+            "postUrl": request.path,
             "SubSteps": all_substeps,
             "tmpl_name": UserProfile.objects.get(user=request.user.id).substep_template
             }
@@ -579,3 +590,13 @@ def rename_elem(request):
             return Http404
     else:
         return Http404
+
+
+def clear_all_locked_substeps(request):
+    all_locked = SubStep.objects.all().filter(is_locked=True)
+    for ss in all_locked:
+        ss.is_locked = False
+        ss.save()
+    return render_to_response("UserProfile.html", {"full_name": request.user.username,
+                                                   "settings": UserProfile.objects.get(user_id=request.user.id),
+                                                   }, context_instance=RequestContext(request))
