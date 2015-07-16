@@ -5,6 +5,7 @@ from stepicstudio.utils.extra import translate_non_alphanumerics
 from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand, FFMPEG_PATH
 import subprocess
 import psutil
+from stepicstudio.state import CURRENT_TASKS_DICT
 
 import logging
 
@@ -54,7 +55,7 @@ def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
     return proc
 
 
-def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list):
+def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, substep_id):
     try:
         video_path = [i for i in video_path_list if os.path.exists(i)][0]
         screencast_path = [i for i in screencast_path_list if os.path.exists(i)][0]
@@ -65,6 +66,8 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list):
         [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
         amerge,pan=stereo:c0<c0+c1:c1<c1+c0" ' + to_folder_path + "/" + filename_to_create + " -y"
         proc = subprocess.Popen(command, shell=True)
+        CURRENT_TASKS_DICT.update({proc: substep_id})
+
     except Exception as e:
         logger.debug('run_ffmepg_raw_mongage: Error')
 

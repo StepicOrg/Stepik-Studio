@@ -64,9 +64,7 @@ def start_subtep_montage(substep_id):
     screencast_path_list = substep.os_screencast_path_all_variants
     substep.is_locked = True
     substep.save()
-    run_ffmpeg_raw_montage(video_path_list, screencast_path_list)
-    substep.is_locked = False
-    substep.save()
+    run_ffmpeg_raw_montage(video_path_list, screencast_path_list, substep_id)
 
 
 
