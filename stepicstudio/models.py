@@ -132,7 +132,7 @@ class UserProfile(models.Model):
     clientFilesFolder = models.CharField(max_length=10000)
     recordVideo = models.BooleanField(default=True)
     recordScreen = models.BooleanField(default=True)
-    substep_template = models.CharField(max_length=120, default='SubStep$idfrom$stepid')
+    substep_template = models.CharField(max_length=120, default='Step$id_part$stepid')
 
     @property
     def is_ready_to_show_hello_screen(self) -> True | False:
