@@ -1,0 +1,35 @@
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>SockJs Testing page</title>
+    <script src="tornado_static/js_libs/sockjs.min.js"></script>
+</head>
+
+    <script>
+
+         //var conn = new SockJS('//' + window.location.host + '/ws');
+         var conn = new SockJS('http://127.0.0.1:10666/ws');
+         console.log('//' + window.location.host + '/ws');
+         conn.onmessage = function(e){
+             if (e.type === 'message' && e.data==="done"){
+                 //$('#notReady').text("READY! Grab your file!");
+             } else if (e.type === 'message') {
+                  console.log(e);  
+               //$('#status-current').text(e.data.frame + ' of ' + e.data.all_frames);
+                 //$('#status-percent').text("That's " + Math.floor(e.data.frame*100 / e.data.all_frames) + "%" );
+             }
+         };
+        conn.onopen = function(e){
+            conn.send("I Opened connection")
+         }
+    </script>
+</head>
+<body>
+
+
+    <h2>Conversion in progress</h2>
+    <footer>
+        <div id="footer"></div>
+    </footer>
+</body>
+</html>
