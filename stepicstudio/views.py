@@ -525,7 +525,7 @@ def video_view(request, substep_id):
         return response
     except Exception as e:
         logger.debug(e)
-        return HttpResponse("File to large. Please watch it on server.")
+        return HttpResponse("File too large or missing. Please look for it on the server.")
 
 
 # TODO: hotfix here is bad =(
