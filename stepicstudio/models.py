@@ -111,7 +111,7 @@ class SubStep(models.Model):
 
     @property
     def is_videos_ok(self):
-        return self.screencast_duration - self.duration < 7 and self.screencast_duration > self.duration > 0
+        return self.screencast_duration - self.duration < 7 and self.screencast_duration > 0 and self.duration > 0
 
     @property
     def os_automontage_path(self):
