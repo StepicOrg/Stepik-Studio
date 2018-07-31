@@ -17,9 +17,9 @@
                                |<a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a>|
                                 <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a> {% if SS.automontage_exist %}|
                                 <a target="_blank" href=/show_montage/{{ SS.id }}/><img src="/static/icons/Film_strip_Silhouette_24.png"></a> {% endif %}
-                               |{% if SS.duration > 0 %} V: {{ SS.duration | sec_to_time}}  {% else %} Err! {% endif %}
-                               |{% if SS.screencast_duration > 0 %} Scr: {{ SS.screencast_duration | sec_to_time}}  {% else %} Err! {% endif %}
-                               |{% if not SS.is_videos_ok %} Err! {% endif %}
+                               | V: {% if SS.duration > 0 %} {{ SS.duration | sec_to_time}} {% else %} Err! {% endif %}
+                               | Scr: {% if SS.screencast_duration > 0 %} {{ SS.screencast_duration | sec_to_time}} {% else %} Err! {% endif %}
+                               | {% if not SS.is_videos_ok %} Err! {% endif %}
                                 <div class="delete_button right">
                                     <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
                                 </div>
