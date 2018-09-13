@@ -5,7 +5,7 @@ from wsgiref.util import FileWrapper
 import logging
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect, Http404, HttpResponse
+from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
@@ -34,6 +34,7 @@ def can_edit_page(view_function):
         else:
             logger.debug(args[0].user.id)
             return view_function(*args, **kwargs)
+
     return process_request
 
 
@@ -49,20 +50,21 @@ def cant_edit_course(user_id, course_id):
 # TODO: Add substep checks
 def test_access(user_id, path_list):
     if COURSE_ULR_NAME in path_list:
-        course_id = path_list[path_list.index(COURSE_ULR_NAME)+1]
+        course_id = path_list[path_list.index(COURSE_ULR_NAME) + 1]
     else:
         course_id = None
     if LESSON_URL_NAME in path_list:
-        lesson_id = path_list[path_list.index(LESSON_URL_NAME)+1]
+        lesson_id = path_list[path_list.index(LESSON_URL_NAME) + 1]
     else:
         lesson_id = None
     if STEP_URL_NAME in path_list:
-        step_id = path_list[path_list.index(STEP_URL_NAME)+1]
+        step_id = path_list[path_list.index(STEP_URL_NAME) + 1]
     else:
         step_id = None
     if path_list[0] == COURSE_ULR_NAME and not cant_edit_course(user_id, course_id):
         if lesson_id and not (str(Lesson.objects.all().get(id=lesson_id).from_course) == str(course_id)):
-            logger.debug("Testing Access: %s %s %s", lesson_id,  Lesson.objects.all().get(id=lesson_id).from_course, course_id)
+            logger.debug("Testing Access: %s %s %s", lesson_id, Lesson.objects.all().get(id=lesson_id).from_course,
+                         course_id)
             logger.debug("Error here 1 ")
             return False
         if step_id and not (int(Step.objects.all().get(id=step_id).from_lesson) == int(lesson_id)):
@@ -107,7 +109,7 @@ def get_course_page(request, course_id):
     lesson_list = [l for l in Lesson.objects.all().filter(from_course=course_id)]
     lesson_list.sort(key=lambda lesson: lesson.position)
     args = {'full_name': request.user.username, "Course": Course.objects.all().filter(id=course_id)[0],
-                                                "Lessons": lesson_list}
+            "Lessons": lesson_list}
     args.update({"Recording": camera_curr_status})
     logger.debug("Let's show hello screend :%s",
                  UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen)
@@ -126,9 +128,10 @@ def auth_view(request):
             say_hello = '?message=hi'
         else:
             say_hello = ''
-        return HttpResponseRedirect("/loggedin/"+say_hello)
+        return HttpResponseRedirect("/loggedin/" + say_hello)
     else:
         return login(request, error=True)
+
 
 def loggedin(request):
     if request.user.is_authenticated():
@@ -157,7 +160,7 @@ def add_lesson(request):
             last_saved = Lesson.objects.get(id=saved_lesson.pk)
             last_saved.from_course = from_course
             last_saved.save()
-            return HttpResponseRedirect('/course/'+from_course+"/")
+            return HttpResponseRedirect('/course/' + from_course + "/")
     else:
         form = LessonForm(userId=request.user.id, from_course=_id)
 
@@ -192,7 +195,7 @@ def delete_lesson(request, course_id, lesson_id):
             substep.delete()
         step.delete()
     lesson_obj.delete()
-    return HttpResponseRedirect('/'+'/'.join(redirect_to_course_page[1:3])+'/')
+    return HttpResponseRedirect('/' + '/'.join(redirect_to_course_page[1:3]) + '/')
 
 
 # IMPLEMENT CORRECTLY
@@ -212,8 +215,9 @@ def add_step(request, course_id, lesson_id):
     else:
         form = StepForm(request.user.id, lesson_id)
 
-    args = {"full_name": request.user.username, "postUrl": "/" + COURSE_ULR_NAME + "/"+course_id+"/" + LESSON_URL_NAME
-            + "/"+lesson_id+"/add_step/"}
+    args = {"full_name": request.user.username,
+            "postUrl": "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME
+                       + "/" + lesson_id + "/add_step/"}
     args.update({"Recording": camera_curr_status})
     args.update(csrf(request))
     args['form'] = form
@@ -238,10 +242,13 @@ def show_step(request, course_id, lesson_id, step_id):
             if start_new_step_recording(request, course_id, lesson_id, step_id):
                 step_obj.is_fresh = False
                 return HttpResponse("Ok")
+            else:
+                return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to developers.")
         elif user_action == "stop":
             if stop_recording(request, course_id, lesson_id, step_id):
                 return HttpResponse("Ok")
-        return Http404
+            else:
+                return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to developers.")
 
     to_del = set()
     for task in CURRENT_TASKS_DICT.keys():
@@ -290,11 +297,14 @@ def update_substep_tmpl(request):
     if request.POST:
         try:
             new_name = (dict(request.POST.lists())['template'][0])
+            if '$id' not in new_name and '$stepid' not in new_name:
+                return HttpResponseBadRequest("Template should include '$id' and '$stepid' elements.")
             profile = UserProfile.objects.get(user=request.user.id)
             profile.substep_template = new_name
             profile.save()
         except Exception as e:
-            return Http404
+            logger.error("Error while update substep template: %s", str(e))
+            return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to developers.")
     args = {}
     args.update(csrf(request))
     return HttpResponse("Ok")
@@ -307,12 +317,12 @@ def start_new_step_recording(request, course_id, lesson_id, step_id):
     substep = SubStep()
     substep.from_step = step_id
     substep_index = len(SubStep.objects.all().filter(from_step=step_id)) + 1
-    substep.name = "Step"+str(substep_index)+"from"+str(substep.from_step)
+    substep.name = "Step" + str(substep_index) + "from" + str(substep.from_step)
     while SubStep.objects.filter(name=substep.name).count():
         substep_index += 1
-        substep.name = "Step"+str(substep_index)+"from"+str(substep.from_step)
+        substep.name = "Step" + str(substep_index) + "from" + str(substep.from_step)
     substep.save()
-    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" +\
+    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/" + lesson_id + "/" + \
                STEP_URL_NAME + "/" + step_id + "/"
     args = {"full_name": request.user.username,
             "Course": Course.objects.all().filter(id=course_id)[0],
@@ -327,21 +337,9 @@ def start_new_step_recording(request, course_id, lesson_id, step_id):
     if is_started:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
+        return True
     else:
         return False
-    try:
-        logger.debug("sent data to stepic.mehanig.com")
-        data = {'User': request.user.username,
-                'Name': substep.name,
-                'Duration': 'No data',
-                'priority': '1',
-                'status': '0',
-                'token': SECURE_KEY_FOR_STAT}
-        r = requests.post(STATISTIC_URL, data=data)
-        logger.debug('STATISTIC STATUS: %s', r)
-    except Exception as e:
-        logger.debug('Error!!!: %s', e)
-    return True
 
 
 @login_required(login_url='/login')
@@ -354,7 +352,7 @@ def montage(request, substep_id):
 
 @login_required(login_url='/login')
 def recording_page(request, course_id, lesson_id, step_id):
-    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" + \
+    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/" + lesson_id + "/" + \
                STEP_URL_NAME + "/" + step_id + "/"
     args = {"full_name": request.user.username,
             "Course": Course.objects.all().filter(id=course_id)[0],
@@ -371,46 +369,46 @@ def recording_page(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login')
 @can_edit_page
 def stop_all_recording(request):
-        args = {"full_name": request.user.username }
-        args.update(csrf(request))
-        stop_cam_recording()
-        args.update({"Recording": camera_curr_status})
-        return render_to_response("courses.html", args, context_instance=RequestContext(request))
+    args = {"full_name": request.user.username}
+    args.update(csrf(request))
+    stop_cam_recording()
+    args.update({"Recording": camera_curr_status})
+    return render_to_response("courses.html", args, context_instance=RequestContext(request))
 
 
 @login_required(login_url="/login")
 def stop_recording(request, course_id, lesson_id, step_id):
-        post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" + \
-                   STEP_URL_NAME + "/" + step_id + "/"
-        args = {"full_name": request.user.username,
-                "Course": Course.objects.all().filter(id=course_id)[0],
-                "postUrl": post_url, "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
-                "Step": Step.objects.all().filter(id=step_id)[0],
-                "SubSteps": SubStep.objects.all().filter(from_step=step_id),
-                }
-        args.update(csrf(request))
-        result = stop_cam_recording()
-        args.update({"Recording": camera_curr_status})
-        last_substep_time = SubStep.objects.all().filter(from_step=step_id)\
-                                                 .aggregate(Max('start_time'))['start_time__max']
-        recorded_substep = SubStep.objects.all().filter(start_time=last_substep_time)[0]
-        add_stat_info(recorded_substep.id)
-        return result
+    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/" + lesson_id + "/" + \
+               STEP_URL_NAME + "/" + step_id + "/"
+    args = {"full_name": request.user.username,
+            "Course": Course.objects.all().filter(id=course_id)[0],
+            "postUrl": post_url, "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
+            "Step": Step.objects.all().filter(id=step_id)[0],
+            "SubSteps": SubStep.objects.all().filter(from_step=step_id),
+            }
+    args.update(csrf(request))
+    stop_cam_status = stop_cam_recording()
+    args.update({"Recording": camera_curr_status})
+    last_substep_time = SubStep.objects.all().filter(from_step=step_id) \
+        .aggregate(Max('start_time'))['start_time__max']
+    recorded_substep = SubStep.objects.all().filter(start_time=last_substep_time)[0]
+    add_stat_info(recorded_substep.id)
+    return stop_cam_status
 
 
 @login_required(login_url='/login/')
 @can_edit_page
 def remove_substep(request, course_id, lesson_id, step_id, substep_id):
     substep = SubStep.objects.get(id=substep_id)
-    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/" +\
+    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/" + lesson_id + "/" + \
                STEP_URL_NAME + "/" + step_id + "/"
     args = {"full_name": request.user.username,
-                                                     "Course": Course.objects.all().filter(id=course_id)[0],
-                                                     "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
-                                                     "Step": Step.objects.all().filter(id=step_id)[0],
-                                                     "postUrl": post_url,
-                                                     "SubSteps": SubStep.objects.all().filter(from_step=step_id),
-                                                     "currSubStep": substep}
+            "Course": Course.objects.all().filter(id=course_id)[0],
+            "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
+            "Step": Step.objects.all().filter(id=step_id)[0],
+            "postUrl": post_url,
+            "SubSteps": SubStep.objects.all().filter(from_step=step_id),
+            "currSubStep": substep}
 
     substep_deleted = delete_substep_files(user_id=request.user.id,
                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
@@ -426,13 +424,13 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
 @can_edit_page
 def delete_step(request, course_id, lesson_id, step_id):
     step = Step.objects.all().get(id=step_id)
-    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/"+lesson_id+"/"
+    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/" + lesson_id + "/"
     args = {"full_name": request.user.username,
-                                                     "Course": Course.objects.all().filter(id=course_id)[0],
-                                                     "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
-                                                     "Step": Step.objects.all().filter(id=step_id)[0],
-                                                     "postUrl": post_url,
-                                                     "SubSteps": SubStep.objects.all().filter(from_step=step_id)}
+            "Course": Course.objects.all().filter(id=course_id)[0],
+            "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
+            "Step": Step.objects.all().filter(id=step_id)[0],
+            "postUrl": post_url,
+            "SubSteps": SubStep.objects.all().filter(from_step=step_id)}
     substeps = SubStep.objects.all().filter(from_step=step_id)
     step_deleted = delete_step_files(user_id=request.user.id,
                                      user_profile=UserProfile.objects.get(user=request.user.id), data=args)
@@ -511,7 +509,7 @@ def video_view(request, substep_id):
     try:
         file = FileWrapper(open(substep.os_path, 'rb'))
         response = HttpResponse(file, content_type='video/TS')
-        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
+        response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_PROFESSOR
         return response
     except Exception as e:
         logger.debug(e)
@@ -521,7 +519,7 @@ def video_view(request, substep_id):
         file = FileWrapper(open(path, 'rb'))
         logger.debug(path)
         response = HttpResponse(file, content_type='video/TS')
-        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_PROFESSOR
+        response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_PROFESSOR
         return response
     except Exception as e:
         logger.debug(e)
@@ -536,7 +534,7 @@ def video_screen_view(request, substep_id):
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + substep.name + SUBSTEP_SCREEN
         file = FileWrapper(open(path, 'rb'))
         response = HttpResponse(file, content_type='video/mkv')
-        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
+        response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_SCREEN
         return response
     except Exception as e:
         logger.debug(e)
@@ -545,7 +543,7 @@ def video_screen_view(request, substep_id):
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_SCREEN)[1:]
         file = FileWrapper(open(path, 'rb'))
         response = HttpResponse(file, content_type='video/ts')
-        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+SUBSTEP_SCREEN
+        response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_SCREEN
         return response
     except Exception as e:
         logger.debug(e)
@@ -558,7 +556,7 @@ def show_montage(request, substep_id):
         path = substep.os_automontage_path
         file = FileWrapper(open(path, 'rb'))
         response = HttpResponse(file, content_type='video/ts')
-        response['Content-Disposition'] = 'inline; filename='+substep.name+"_"+"Raw_montage.mp4"
+        response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + "Raw_montage.mp4"
         return response
     except Exception as e:
         return HttpResponse("Unknown Error =(")
@@ -573,17 +571,21 @@ def rename_elem(request):
                 obj_to_rename = Step.objects.all().get(id=rest_data['id'][0])
             else:
                 obj_to_rename = Lesson.objects.all().get(id=rest_data['id'][0])
+
             logger.debug('Renaming: %s', obj_to_rename.os_path)
             tmp_step = copy.copy(obj_to_rename)
             tmp_step.name = rest_data['name_new'][0]
             logger.debug('Trying to %s', tmp_step.os_path)
+
             if not camera_curr_status():
-                if rename_element_on_disk(obj_to_rename, tmp_step):
+                status = rename_element_on_disk(obj_to_rename, tmp_step)
+                if status is True:
                     obj_to_rename.delete()
                     tmp_step.save()
                     return HttpResponse("Ok")
                 else:
-                    return Http404
+                    return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to "
+                                                   "developers.")
             else:
                 return Http404
         else:
@@ -600,3 +602,10 @@ def clear_all_locked_substeps(request):
     return render_to_response("UserProfile.html", {"full_name": request.user.username,
                                                    "settings": UserProfile.objects.get(user_id=request.user.id),
                                                    }, context_instance=RequestContext(request))
+
+
+def error500_handler(request):
+    logger.error("Unknown internal server error (5xx)")
+    args = {'go_back': request.META['HTTP_REFERER']}
+    args.update(csrf(request))
+    return render_to_response("internal_error.html", args, context_instance=RequestContext(request))

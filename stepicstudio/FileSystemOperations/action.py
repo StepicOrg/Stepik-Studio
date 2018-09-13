@@ -45,14 +45,24 @@ def add_file_to_test(**kwargs: dict) -> None:
     return True
 
 
-def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
+def run_ffmpeg_recorder(path: str, filename: str) -> True | False:
     command = FFMPEGcommand
     command += path + '\\' + filename
-    proc = subprocess.Popen(command, shell=True)
-    print("PID = ", proc.pid)
-    print(command)
-    logger.debug('PID: %s %s', proc.pid, command)
-    return proc
+
+    try:
+        global process
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # process still running when returncode is None
+        if process.returncode is not None or process.returncode != 0:
+            _, error = process.communicate()
+            logger.error("Cannot exec ffmpeg command (%s): %s", process.returncode, error)
+            return False
+    except Exception as e:
+        logger.error("Cannot exec ffmpeg command: %s", str(e))
+        return False
+
+    logger.info('Successful starting ffmpeg (PID: %s; FFMPEG command: %s)', process.pid, command)
+    return True
 
 
 def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, substep_id):
@@ -72,6 +82,7 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, su
         logger.debug('run_ffmepg_raw_mongage: Error')
 
 
+# TODO: problems with stopping ffmpeg process
 def stop_ffmpeg_recorder(proc: subprocess.Popen) -> None:
     def kill_proc_tree(pid, including_parent=True):
         parent = psutil.Process(pid)
@@ -148,9 +159,15 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
             os.rename(from_obj.os_path, to_obj.os_path)
             return True
         except Exception as e:
-            logger.debug(e)
-        return False
+            logger.error('Cannot rename element on disk: %s', str(e))
+            return False
     else:
+        if not os.path.isdir(from_obj.os_path):
+            logger.error("Cannot rename non-existent file: %s doesn't exist", from_obj.os_path)
+
+        if os.path.isdir(to_obj.os_path):
+            logger.error("File with name '%s' already exists", to_obj.name)
+
         return False
 
 

@@ -57,6 +57,12 @@ function record_started(callback)
     callback();
 }
 
+function record_start_failed(callback)
+{
+    $('.start-recording').text('Start Recording');
+    callback();
+}
+
 function record_stopped(callback)
 {
     $('.stop-recording').removeClass('stop-recording').addClass('start-recording').text('Start Recording');
@@ -192,7 +198,8 @@ var elements_subscriptor = function() {
 
             },
             error: function(data){
-                alert("Server Error!");
+                alert(data.responseText);
+                record_start_failed(elements_subscriptor);
             }
         });
     });
@@ -221,7 +228,7 @@ var elements_subscriptor = function() {
 
             },
             error: function(data){
-                alert("Server Error!");
+                alert(data.responseText);
             }
 
         });
@@ -248,8 +255,8 @@ var elements_subscriptor = function() {
                     $('#cancel-rename').trigger( "click", name_new );
                     elements_subscriptor();
                 },
-                error: function(request,status,errorThrown) {
-                    alert("Cant rename :" + status + " " + errorThrown);
+                error: function(request, status, errorThrown) {
+                    alert(request.responseText);
                 }
             });
         }
@@ -257,8 +264,8 @@ var elements_subscriptor = function() {
 
     $('#rename-substep-template-form').off().on('keypress', function(e) {
         elem = $(this);
-        var stepRenaming = (elem.attr("id") == "rename-step-form");
-        if (e.keyCode == 13 && !e.shiftKey) {
+        var stepRenaming = (elem.attr("id") === "rename-step-form");
+        if (e.keyCode === 13 && !e.shiftKey) {
             e.preventDefault();
             var name_new = elem.find('#input-field-name').val();
             console.log(name_new);
@@ -274,8 +281,8 @@ var elements_subscriptor = function() {
                     $('#cancel-rename').trigger( "click", name_new );
                     elements_subscriptor();
                 },
-                error: function(request,status,errorThrown) {
-                    alert("Cant rename :" + status + " " + errorThrown);
+                error: function(request, status, errorThrown) {
+                    alert(request.responseText);
                 }
             });
         }

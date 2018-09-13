@@ -29,33 +29,42 @@ def start_recording(**kwargs: dict) -> True or False:
     data = kwargs["data"]
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
-    server_status = True
-    global process
-    process = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
-    logger.debug("Started with PID: %s:", process.pid)
-
-    # TODO:Refactor!
-    screencast_status = ssh_screencast_start()
 
     if 'remote_ubuntu' in kwargs:
         remote_ubuntu = kwargs['remote_ubuntu']
     else:
         remote_ubuntu = None
-    linux_obj = ScreenRecorder(to_linux_translate(substep_folder, username), remote_ubuntu)
-    linux_obj.run_screen_recorder(data['currSubStep'].name)
-    global SS_LINUX_PATH, SS_WIN_PATH
-    SS_LINUX_PATH = linux_obj.remote_path
-    SS_WIN_PATH = substep_folder
+
+    # checking SSH connection to linux tab
+    screencast_status = ssh_screencast_start(remote_ubuntu)
+    if screencast_status is False:
+        return False
+
+    # checking ffmpeg execution possibility and start if possible
+    # TODO: checking execution possibility without starting ffmpeg
+    ffmpeg_status = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
+    if ffmpeg_status is False:
+        return False
+
+    try:
+        linux_obj = ScreenRecorder(to_linux_translate(substep_folder, username), remote_ubuntu)
+        linux_obj.run_screen_recorder(data['currSubStep'].name)
+        global SS_LINUX_PATH, SS_WIN_PATH
+        SS_LINUX_PATH = linux_obj.remote_path
+        SS_WIN_PATH = substep_folder
+    except Exception as e:
+        global process
+        stop_ffmpeg_recorder(process)
+        logger.error("Cannot execute remote ffmpeg: %s", str(e))
+        return False
 
     db_camera = CameraStatus.objects.get(id="1")
-    if server_status and screencast_status:
-        if not db_camera.status:
-            db_camera.status = True
-            db_camera.start_time = int(round(time.time() * 1000))
-            db_camera.save()
-        return True
-    else:
-        return False
+    if not db_camera.status:
+        db_camera.status = True
+        db_camera.start_time = int(round(time.time() * 1000))
+        db_camera.save()
+
+    return True
 
 
 def start_subtep_montage(substep_id):
@@ -95,7 +104,12 @@ def stop_cam_recording() -> True | False:
     camstat.save()
     global process
     logger.debug('PROCESS PID TO STOP: %s', process.pid)
-    stop_ffmpeg_recorder(process)
+
+    try:
+        stop_ffmpeg_recorder(process)
+    except Exception as e:
+        logger.error("Cannot stop remote ffmpeg screen recorder: %s", str(e))
+
     ssh_obj = ScreenRecorder("_Dummy_")
     ssh_obj.stop_screen_recorder()
     logger.debug("%s %s", SS_LINUX_PATH, SS_WIN_PATH)

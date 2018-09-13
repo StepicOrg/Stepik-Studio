@@ -71,8 +71,12 @@ class ScreenRecorder(object):
         stdin, stdout, stderr = self.ssh.exec_command(command)
 
     def stop_screen_recorder(self):
-        stdin, stdout, stderr = self.ssh.exec_command("pkill -f ffmpeg")
-        time.sleep(2)
+        command = "pkill -f ffmpeg"
+        stdin, stdout, stderr = self.ssh.exececommand(command)
+        exit_status = stdout.channel.recv_exit_status()
+        if exit_status > 0:
+            raise RuntimeError("Cannot execute command {0} [returned code: {1}]".format(command, exit_status))
+        # time.sleep(2)
 
     def get_file(self, from_dir, to_path):
         if not self.path:
