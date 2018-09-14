@@ -8,7 +8,7 @@ from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 logger = logging.getLogger('stepic_studio.ssh_connections.screencast')
 
 
-def ssh_screencast_start(remote_ubuntu) -> InternalOperationResult:
+def ssh_screencast_start(remote_ubuntu=None) -> InternalOperationResult:
     if remote_ubuntu is not None:
         global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
         PROFESSOR_IP = remote_ubuntu['professor_ip']
@@ -17,6 +17,7 @@ def ssh_screencast_start(remote_ubuntu) -> InternalOperationResult:
 
     try:
         ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=PROFESSOR_IP, username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
         ssh.close()
     except Exception as e:

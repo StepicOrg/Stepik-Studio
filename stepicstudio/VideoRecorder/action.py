@@ -8,6 +8,7 @@ import time
 from stepicstudio.ssh_connections import ScreenRecorder
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from STEPIC_STUDIO.settings import LINUX_DIR
 
 import logging
 
@@ -15,11 +16,10 @@ logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
 SS_WIN_PATH = ""
 SS_LINUX_PATH = ""
-process = "'"
 
 
 def to_linux_translate(win_path: str, username: str) -> str:
-    linux_path = '/home/stepic/VIDEO/STEPICSTUDIO/'+ username + "/" + '/'.join(win_path.split("/")[1:])
+    linux_path = LINUX_DIR + username + "/" + '/'.join(win_path.split("/")[1:])
     logger.debug("to_linux_translate() This is linux path %s", linux_path)
     return linux_path
 
@@ -55,8 +55,7 @@ def start_recording(**kwargs: dict) ->InternalOperationResult:
         SS_LINUX_PATH = linux_obj.remote_path
         SS_WIN_PATH = substep_folder
     except Exception as e:
-        global process
-        stop_ffmpeg_recorder(process)
+        stop_ffmpeg_recorder()
         message = "Cannot execute remote ffmpeg: {0}".format(str(e))
         logger.error("Cannot execute remote ffmpeg: %s", str(e))
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
@@ -105,11 +104,9 @@ def stop_cam_recording() -> True | False:
     camstat.status = False
     ssh_screencast_stop()
     camstat.save()
-    global process
-    logger.debug('PROCESS PID TO STOP: %s', process.pid)
 
     try:
-        stop_ffmpeg_recorder(process)
+        stop_ffmpeg_recorder()
     except Exception as e:
         logger.error("Cannot stop remote ffmpeg screen recorder: %s", str(e))
 

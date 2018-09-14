@@ -341,9 +341,7 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
     if recording_status.status is ExecutionStatus.SUCCESS:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
-        return InternalOperationResult(ExecutionStatus.SUCCESS)
-    else:
-        return recording_status
+    return recording_status
 
 
 @login_required(login_url='/login')

@@ -13,7 +13,7 @@ import logging
 
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
-GlobalProcess = None
+process = "'"
 
 
 def substep_server_path(**kwargs: dict) -> (str, str):
@@ -44,8 +44,6 @@ def add_file_to_test(**kwargs: dict) -> None:
     if not os.path.isdir(folder_p):
         os.makedirs(folder_p)
 
-    return True
-
 
 def run_ffmpeg_recorder(path: str, filename: str) -> InternalOperationResult:
     command = FFMPEGcommand
@@ -55,7 +53,7 @@ def run_ffmpeg_recorder(path: str, filename: str) -> InternalOperationResult:
         global process
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # process still running when returncode is None
-        if process.returncode is not None or process.returncode != 0:
+        if process.returncode is not None and process.returncode != 0:
             _, error = process.communicate()
             message = "Cannot exec ffmpeg command ({0}): {1}".format(process.returncode, error)
             logger.error(message)
@@ -87,7 +85,9 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, su
 
 
 # TODO: problems with stopping ffmpeg process
-def stop_ffmpeg_recorder(proc: subprocess.Popen) -> None:
+def stop_ffmpeg_recorder() -> None:
+    global process
+
     def kill_proc_tree(pid, including_parent=True):
         parent = psutil.Process(pid)
         for child in parent.children(recursive=True):
@@ -95,7 +95,7 @@ def stop_ffmpeg_recorder(proc: subprocess.Popen) -> None:
         if including_parent:
             parent.kill()
 
-    kill_proc_tree(proc.pid)
+    kill_proc_tree(process.pid)
 
 
 def delete_substep_on_disc(**kwargs: dict) -> True | False:
@@ -159,12 +159,12 @@ def delete_files_on_server(path: str) -> True | False:
 
 def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperationResult:
     if os.path.isdir(to_obj.os_path):
-        message = "File with name {0} already exists".format(to_obj.name)
+        message = "File with name '{0}' already exists".format(to_obj.name)
         logger.error(message)
         return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR, message)
 
     if not os.path.isdir(from_obj.os_path):
-        message = "Cannot rename non-existent file: {0} doesn't exist".format(from_obj.os_path)
+        message = "Cannot rename non-existent file: '{0}' doesn't exist".format(from_obj.os_path)
         logger.error(message)
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
