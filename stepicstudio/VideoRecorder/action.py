@@ -39,13 +39,13 @@ def start_recording(**kwargs: dict) ->InternalOperationResult:
 
     # checking SSH connection to linux tab
     screencast_status = ssh_screencast_start(remote_ubuntu)
-    if screencast_status is not ExecutionStatus.SUCCESS:
+    if screencast_status.status is not ExecutionStatus.SUCCESS:
         return screencast_status
 
     # checking ffmpeg execution possibility and start if possible
     # TODO: checking execution possibility without starting ffmpeg
     ffmpeg_status = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
-    if ffmpeg_status is not ExecutionStatus.SUCCESS:
+    if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         return ffmpeg_status
 
     try:
