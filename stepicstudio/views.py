@@ -28,11 +28,9 @@ logger = logging.getLogger('stepicstudio.views')
 def can_edit_page(view_function):
     def process_request(*args, **kwargs):
         access = test_access(args[0].user.id, list(filter(None, args[0].path.split("/"))))
-        logger.debug("running %s %s ", str(args[0].user.id), str(kwargs['course_id']))
         if not access:
             return HttpResponseRedirect(reverse('stepicstudio.views.login'))
         else:
-            logger.debug(args[0].user.id)
             return view_function(*args, **kwargs)
 
     return process_request
@@ -63,17 +61,11 @@ def test_access(user_id, path_list):
         step_id = None
     if path_list[0] == COURSE_ULR_NAME and not cant_edit_course(user_id, course_id):
         if lesson_id and not (str(Lesson.objects.all().get(id=lesson_id).from_course) == str(course_id)):
-            logger.debug("Testing Access: %s %s %s", lesson_id, Lesson.objects.all().get(id=lesson_id).from_course,
-                         course_id)
-            logger.debug("Error here 1 ")
             return False
         if step_id and not (int(Step.objects.all().get(id=step_id).from_lesson) == int(lesson_id)):
-            logger.debug("Error here 2 ")
             return False
         return True
     else:
-
-        logger.debug("Error here 3")
         return False
 
 
@@ -111,8 +103,6 @@ def get_course_page(request, course_id):
     args = {'full_name': request.user.username, "Course": Course.objects.all().filter(id=course_id)[0],
             "Lessons": lesson_list}
     args.update({"Recording": camera_curr_status})
-    logger.debug("Let's show hello screend :%s",
-                 UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen)
     return render_to_response("course_view.html", args, context_instance=RequestContext(request))
 
 
@@ -151,7 +141,7 @@ def add_lesson(request):
         try:
             _id = url_arr[url_arr.index('course') + 1]
         except Exception as e:
-            logger.debug(e)
+            logger.error(e)
     if request.POST:
         form = LessonForm(request.POST, userId=request.user.id)
         if form.is_valid():
@@ -514,17 +504,16 @@ def video_view(request, substep_id):
         response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_PROFESSOR
         return response
     except Exception as e:
-        logger.debug(e)
+        logger.error(e)
     try:
         substep = SubStep.objects.all().get(id=substep_id)
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_PROFESSOR)[1:]
         file = FileWrapper(open(path, 'rb'))
-        logger.debug(path)
         response = HttpResponse(file, content_type='video/TS')
         response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_PROFESSOR
         return response
     except Exception as e:
-        logger.debug(e)
+        logger.error(e)
         return HttpResponse("File too large or missing. Please look for it on the server.")
 
 
@@ -539,7 +528,7 @@ def video_screen_view(request, substep_id):
         response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_SCREEN
         return response
     except Exception as e:
-        logger.debug(e)
+        logger.error(e)
     try:
         substep = SubStep.objects.all().get(id=substep_id)
         path = '/'.join((list(filter(None, substep.os_path.split("/"))))[:-1]) + "/" + str(SUBSTEP_SCREEN)[1:]
@@ -548,7 +537,7 @@ def video_screen_view(request, substep_id):
         response['Content-Disposition'] = 'inline; filename=' + substep.name + "_" + SUBSTEP_SCREEN
         return response
     except Exception as e:
-        logger.debug(e)
+        logger.error(e)
         return HttpResponse("File to large. Please watch it on server.")
 
 
@@ -567,7 +556,6 @@ def show_montage(request, substep_id):
 def rename_elem(request):
     if request.POST and request.is_ajax():
         rest_data = dict(request.POST.lists())
-        logger.debug("Rename_elem POST data: %s", rest_data)
         if 'step' in rest_data['type'] or 'lesson' in rest_data['type']:
             if 'step' in rest_data['type']:
                 obj_to_rename = Step.objects.all().get(id=rest_data['id'][0])
@@ -577,7 +565,6 @@ def rename_elem(request):
             logger.debug('Renaming: %s', obj_to_rename.os_path)
             tmp_step = copy.copy(obj_to_rename)
             tmp_step.name = rest_data['name_new'][0]
-            logger.debug('Trying to %s', tmp_step.os_path)
 
             if not camera_curr_status():
                 rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
