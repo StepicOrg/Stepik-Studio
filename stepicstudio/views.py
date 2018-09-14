@@ -239,13 +239,17 @@ def show_step(request, course_id, lesson_id, step_id):
     if request.POST and request.is_ajax():
         user_action = dict(request.POST.lists())['action'][0]
         if user_action == "start":
-            if start_new_step_recording(request, course_id, lesson_id, step_id):
+            start_status = start_new_step_recording(request, course_id, lesson_id, step_id)
+            if start_status.status is ExecutionStatus.SUCCESS:
                 step_obj.is_fresh = False
                 return HttpResponse("Ok")
-            else:
+            elif start_status.status is ExecutionStatus.FIXABLE_ERROR:
+                return HttpResponseServerError(start_status.message)
+            elif start_status.status is ExecutionStatus.FATAL_ERROR:
                 return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to developers.")
         elif user_action == "stop":
-            if stop_recording(request, course_id, lesson_id, step_id):
+            stop_status = stop_recording(request, course_id, lesson_id, step_id)
+            if stop_status:
                 return HttpResponse("Ok")
             else:
                 return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to developers.")
@@ -313,7 +317,7 @@ def update_substep_tmpl(request):
 # TODO: TOKEN at POSTrequest to statistic server is insecure
 # TODO: Off by one error here with substep naming need fix ( no Step1From** will be created)
 @login_required(login_url='/login/')
-def start_new_step_recording(request, course_id, lesson_id, step_id):
+def start_new_step_recording(request, course_id, lesson_id, step_id) -> InternalOperationResult:
     substep = SubStep()
     substep.from_step = step_id
     substep_index = len(SubStep.objects.all().filter(from_step=step_id)) + 1
@@ -332,14 +336,14 @@ def start_new_step_recording(request, course_id, lesson_id, step_id):
             "SubSteps": SubStep.objects.all().filter(from_step=step_id),
             "currSubStep": SubStep.objects.get(id=substep.pk)}
     args.update(csrf(request))
-    is_started = start_recording(user_id=request.user.id,
-                                 user_profile=UserProfile.objects.get(user=request.user.id), data=args)
-    if is_started:
+    recording_status = start_recording(user_id=request.user.id,
+                                       user_profile=UserProfile.objects.get(user=request.user.id), data=args)
+    if recording_status.status is ExecutionStatus.SUCCESS:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
-        return True
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
     else:
-        return False
+        return recording_status
 
 
 @login_required(login_url='/login')
@@ -578,12 +582,14 @@ def rename_elem(request):
             logger.debug('Trying to %s', tmp_step.os_path)
 
             if not camera_curr_status():
-                status = rename_element_on_disk(obj_to_rename, tmp_step)
-                if status is True:
+                rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
+                if rename_status.status is ExecutionStatus.SUCCESS:
                     obj_to_rename.delete()
                     tmp_step.save()
                     return HttpResponse("Ok")
-                else:
+                elif rename_status.status is ExecutionStatus.FIXABLE_ERROR:
+                    return HttpResponseServerError(rename_status.message)
+                elif rename_status.status is ExecutionStatus.FATAL_ERROR:
                     return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to "
                                                    "developers.")
             else:
@@ -606,6 +612,9 @@ def clear_all_locked_substeps(request):
 
 def error500_handler(request):
     logger.error("Unknown internal server error (5xx)")
-    args = {'go_back': request.META['HTTP_REFERER']}
+    if 'HTTP_REFERER' in request.META:
+        args = {'go_back': request.META['HTTP_REFERER']}
+    else:
+        args = {'go_back': '/'}
     args.update(csrf(request))
     return render_to_response("internal_error.html", args, context_instance=RequestContext(request))

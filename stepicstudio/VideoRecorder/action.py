@@ -6,6 +6,8 @@ from stepicstudio.ssh_connections.screencast import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
 import time
 from stepicstudio.ssh_connections import ScreenRecorder
+from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
+from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 
 import logging
 
@@ -22,7 +24,7 @@ def to_linux_translate(win_path: str, username: str) -> str:
     return linux_path
 
 
-def start_recording(**kwargs: dict) -> True or False:
+def start_recording(**kwargs: dict) ->InternalOperationResult:
     user_id = kwargs["user_id"]
     username = User.objects.all().get(id=int(user_id)).username
     folder_path = kwargs["user_profile"].serverFilesFolder
@@ -37,14 +39,14 @@ def start_recording(**kwargs: dict) -> True or False:
 
     # checking SSH connection to linux tab
     screencast_status = ssh_screencast_start(remote_ubuntu)
-    if screencast_status is False:
-        return False
+    if screencast_status is not ExecutionStatus.SUCCESS:
+        return screencast_status
 
     # checking ffmpeg execution possibility and start if possible
     # TODO: checking execution possibility without starting ffmpeg
     ffmpeg_status = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
-    if ffmpeg_status is False:
-        return False
+    if ffmpeg_status is not ExecutionStatus.SUCCESS:
+        return ffmpeg_status
 
     try:
         linux_obj = ScreenRecorder(to_linux_translate(substep_folder, username), remote_ubuntu)
@@ -55,8 +57,9 @@ def start_recording(**kwargs: dict) -> True or False:
     except Exception as e:
         global process
         stop_ffmpeg_recorder(process)
+        message = "Cannot execute remote ffmpeg: {0}".format(str(e))
         logger.error("Cannot execute remote ffmpeg: %s", str(e))
-        return False
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     db_camera = CameraStatus.objects.get(id="1")
     if not db_camera.status:
@@ -64,7 +67,7 @@ def start_recording(**kwargs: dict) -> True or False:
         db_camera.start_time = int(round(time.time() * 1000))
         db_camera.save()
 
-    return True
+    return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
 def start_subtep_montage(substep_id):

@@ -6,6 +6,8 @@ from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand, FFMPEG_PATH
 import subprocess
 import psutil
 from stepicstudio.state import CURRENT_TASKS_DICT
+from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
+from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 
 import logging
 
@@ -45,7 +47,7 @@ def add_file_to_test(**kwargs: dict) -> None:
     return True
 
 
-def run_ffmpeg_recorder(path: str, filename: str) -> True | False:
+def run_ffmpeg_recorder(path: str, filename: str) -> InternalOperationResult:
     command = FFMPEGcommand
     command += path + '\\' + filename
 
@@ -55,14 +57,16 @@ def run_ffmpeg_recorder(path: str, filename: str) -> True | False:
         # process still running when returncode is None
         if process.returncode is not None or process.returncode != 0:
             _, error = process.communicate()
-            logger.error("Cannot exec ffmpeg command (%s): %s", process.returncode, error)
-            return False
+            message = "Cannot exec ffmpeg command ({0}): {1}".format(process.returncode, error)
+            logger.error(message)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
     except Exception as e:
-        logger.error("Cannot exec ffmpeg command: %s", str(e))
-        return False
+        message = "Cannot exec ffmpeg command: {0}".format(str(e))
+        logger.error(message)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     logger.info('Successful starting ffmpeg (PID: %s; FFMPEG command: %s)', process.pid, command)
-    return True
+    return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
 def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, substep_id):
@@ -70,7 +74,7 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, su
         video_path = [i for i in video_path_list if os.path.exists(i)][0]
         screencast_path = [i for i in screencast_path_list if os.path.exists(i)][0]
         to_folder_path = os.path.dirname(screencast_path)
-        filename_to_create = os.path.basename(os.path.dirname(screencast_path))+'_Raw_Montage.mp4'
+        filename_to_create = os.path.basename(os.path.dirname(screencast_path)) + '_Raw_Montage.mp4'
         command = FFMPEG_PATH + r' -i ' + video_path + r' -i ' + screencast_path + r' -filter_complex \
         "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
         [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
@@ -153,22 +157,24 @@ def delete_files_on_server(path: str) -> True | False:
         return True
 
 
-def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
-    if os.path.isdir(from_obj.os_path) and not os.path.isdir(to_obj.os_path):
-        try:
-            os.rename(from_obj.os_path, to_obj.os_path)
-            return True
-        except Exception as e:
-            logger.error('Cannot rename element on disk: %s', str(e))
-            return False
-    else:
-        if not os.path.isdir(from_obj.os_path):
-            logger.error("Cannot rename non-existent file: %s doesn't exist", from_obj.os_path)
+def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperationResult:
+    if os.path.isdir(to_obj.os_path):
+        message = "File with name {0} already exists".format(to_obj.name)
+        logger.error(message)
+        return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR, message)
 
-        if os.path.isdir(to_obj.os_path):
-            logger.error("File with name '%s' already exists", to_obj.name)
+    if not os.path.isdir(from_obj.os_path):
+        message = "Cannot rename non-existent file: {0} doesn't exist".format(from_obj.os_path)
+        logger.error(message)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
-        return False
+    try:
+        os.rename(from_obj.os_path, to_obj.os_path)
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
+    except Exception as e:
+        message = "Cannot rename element on disk: {0}".format(str(e))
+        logger.error(message)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
 
 def get_length_in_sec(filename: str) -> int:
@@ -182,7 +188,7 @@ def get_length_in_sec(filename: str) -> int:
     return result
 
 
-def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:
+def calculate_folder_duration_in_sec(calc_path: str, ext: str = 'TS') -> int:
     sec = 0
     if os.path.isdir(calc_path):
         for obj in [o for o in os.listdir(calc_path) if o.endswith(ext) or os.path.isdir('/'.join([calc_path, o]))]:
@@ -191,9 +197,12 @@ def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:
     else:
         return get_length_in_sec(calc_path)
 
+
 """
 Function user for updating duration in one substep and in whole stepfolders, returns int with summ seconds
 """
+
+
 def update_time_records(substep_list, new_step_only=False, new_step_obj=None) -> int:
     if new_step_only:
         for substep_path in new_step_obj.os_path_all_variants:

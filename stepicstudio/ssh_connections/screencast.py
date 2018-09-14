@@ -2,11 +2,13 @@ import paramiko
 import logging
 from stepicstudio.const import PROFESSOR_IP
 from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
+from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
+from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 
 logger = logging.getLogger('stepic_studio.ssh_connections.screencast')
 
 
-def ssh_screencast_start(remote_ubuntu):
+def ssh_screencast_start(remote_ubuntu) -> InternalOperationResult:
     if remote_ubuntu is not None:
         global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
         PROFESSOR_IP = remote_ubuntu['professor_ip']
@@ -18,10 +20,11 @@ def ssh_screencast_start(remote_ubuntu):
         ssh.connect(hostname=PROFESSOR_IP, username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
         ssh.close()
     except Exception as e:
-        logger.error("SSH connection to remote linux tab failed: %s", str(e))
-        return False
+        message = "SSH connection to remote linux tab failed: {0}".format(str(e))
+        logger.error(message)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
-    return True
+    return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
 # TODO: Implement correctly
