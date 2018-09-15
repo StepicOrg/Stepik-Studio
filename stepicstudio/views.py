@@ -19,7 +19,6 @@ from stepicstudio.VideoRecorder.action import *
 from stepicstudio.FileSystemOperations.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
-from STEPIC_STUDIO.settings import STATISTIC_URL, SECURE_KEY_FOR_STAT
 from stepicstudio.state import CURRENT_TASKS_DICT
 
 logger = logging.getLogger('stepicstudio.views')
@@ -296,8 +295,8 @@ def update_substep_tmpl(request):
             profile = UserProfile.objects.get(user=request.user.id)
             profile.substep_template = new_name
             profile.save()
-        except Exception as e:
-            logger.error("Error while update substep template: %s", str(e))
+        except Exception:
+            logger.exception("Error while update substep template")
             return HttpResponseServerError("Sorry, there is some problems.\nError log will sent to developers.")
     args = {}
     args.update(csrf(request))
@@ -596,10 +595,12 @@ def clear_all_locked_substeps(request):
 
 
 def error500_handler(request):
-    logger.error("Unknown internal server error (5xx)")
+    logger.exception("Unknown internal server error")
     if 'HTTP_REFERER' in request.META:
         args = {'go_back': request.META['HTTP_REFERER']}
     else:
         args = {'go_back': '/'}
+
+    args['sentry_id'] = request.sentry['id']
     args.update(csrf(request))
     return render_to_response("internal_error.html", args, context_instance=RequestContext(request))

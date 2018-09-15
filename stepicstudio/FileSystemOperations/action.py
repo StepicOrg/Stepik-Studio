@@ -173,7 +173,7 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
         return InternalOperationResult(ExecutionStatus.SUCCESS)
     except Exception as e:
         message = "Cannot rename element on disk: {0}".format(str(e))
-        logger.error(message)
+        logger.exception("Cannot rename element on disk")
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
 

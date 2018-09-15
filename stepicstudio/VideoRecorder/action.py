@@ -57,7 +57,7 @@ def start_recording(**kwargs: dict) ->InternalOperationResult:
     except Exception as e:
         stop_ffmpeg_recorder()
         message = "Cannot execute remote ffmpeg: {0}".format(str(e))
-        logger.error("Cannot execute remote ffmpeg: %s", str(e))
+        logger.exception("Cannot execute remote ffmpeg")
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     db_camera = CameraStatus.objects.get(id="1")
@@ -108,7 +108,7 @@ def stop_cam_recording() -> True | False:
     try:
         stop_ffmpeg_recorder()
     except Exception as e:
-        logger.error("Cannot stop remote ffmpeg screen recorder: %s", str(e))
+        logger.exception("Cannot stop remote ffmpeg screen recorder")
 
     ssh_obj = ScreenRecorder("_Dummy_")
     ssh_obj.stop_screen_recorder()

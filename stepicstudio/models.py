@@ -124,7 +124,7 @@ class SubStep(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(User, unique=True)
+    user = models.OneToOneField(User)
     last_visit = models.DateTimeField(default="2000-10-25 14:30")
     serverIP = models.CharField(max_length=50)
     clientIP = models.CharField(max_length=50)

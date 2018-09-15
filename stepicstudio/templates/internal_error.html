@@ -1,6 +1,10 @@
 {%  extends "base.html" %}
 {%  block content %}
         <div>Sorry it's a bug, error log will be sent to developers.</div>
+        {% if sentry_id %}
+            <p>If you need assistance, you may reference this error as
+            <strong>{{ sentry_id }}</strong></p>
+        {% endif %}
         <div>
             <a href={{ go_back }}>Back</a>
         </div>
