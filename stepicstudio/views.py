@@ -22,6 +22,7 @@ from stepicstudio.statistic import add_stat_info
 from stepicstudio.state import CURRENT_TASKS_DICT
 
 logger = logging.getLogger('stepicstudio.views')
+local_disk_info = get_disk_info()
 
 
 def can_edit_page(view_function):
@@ -89,7 +90,9 @@ def logout(request):
 
 @login_required(login_url='/login/')
 def get_user_courses(request):
-    args = {'full_name': request.user.username, "Courses": Course.objects.all().filter(editors=request.user.id)}
+    args = {'full_name': request.user.username,
+            "Courses": Course.objects.all().filter(editors=request.user.id),
+            "free_space": local_disk_info}
     args.update({"Recording": camera_curr_status})
     return render_to_response("courses.html", args, context_instance=RequestContext(request))
 
@@ -99,8 +102,10 @@ def get_user_courses(request):
 def get_course_page(request, course_id):
     lesson_list = [l for l in Lesson.objects.all().filter(from_course=course_id)]
     lesson_list.sort(key=lambda lesson: lesson.position)
-    args = {'full_name': request.user.username, "Course": Course.objects.all().filter(id=course_id)[0],
-            "Lessons": lesson_list}
+    args = {'full_name': request.user.username,
+            "Course": Course.objects.all().filter(id=course_id)[0],
+            "Lessons": lesson_list,
+            "free_space": local_disk_info}
     args.update({"Recording": camera_curr_status})
     return render_to_response("course_view.html", args, context_instance=RequestContext(request))
 
@@ -125,8 +130,10 @@ def auth_view(request):
 def loggedin(request):
     if request.user.is_authenticated():
         say_hello = bool(request.GET.get('message'))
-        return render_to_response("loggedin.html", {'full_name': request.user.username, "Courses": Course.objects.all(),
-                                                    'say_hello': say_hello}, context_instance=RequestContext(request))
+        return render_to_response("loggedin.html", {'full_name': request.user.username,
+                                                    "Courses": Course.objects.all(),
+                                                    'say_hello': say_hello,
+                                                    "free_space": local_disk_info}, context_instance=RequestContext(request))
     else:
         return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
@@ -153,7 +160,8 @@ def add_lesson(request):
     else:
         form = LessonForm(userId=request.user.id, from_course=_id)
 
-    args = {"full_name": request.user.username, }
+    args = {"full_name": request.user.username,
+            "free_space": local_disk_info}
     args.update(csrf(request))
     args.update({"Recording": camera_curr_status})
     args['form'] = form
@@ -166,7 +174,8 @@ def show_lesson(request, course_id, lesson_id):
     args = {"full_name": request.user.username,
             "Course": Course.objects.all().filter(id=course_id)[0],
             "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
-            "Steps": Step.objects.all().filter(from_lesson=lesson_id).order_by('position')
+            "Steps": Step.objects.all().filter(from_lesson=lesson_id).order_by('position'),
+            "free_space": local_disk_info
             }
     args.update({"Recording": camera_curr_status})
     return render_to_response("lesson_view.html", args, context_instance=RequestContext(request))
@@ -206,7 +215,8 @@ def add_step(request, course_id, lesson_id):
 
     args = {"full_name": request.user.username,
             "postUrl": "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME
-                       + "/" + lesson_id + "/add_step/"}
+                       + "/" + lesson_id + "/add_step/",
+            "free_space": local_disk_info}
     args.update({"Recording": camera_curr_status})
     args.update(csrf(request))
     args['form'] = form
@@ -265,7 +275,8 @@ def show_step(request, course_id, lesson_id, step_id):
             "Step": Step.objects.get(id=step_id),
             "postUrl": request.path,
             "SubSteps": all_substeps,
-            "tmpl_name": UserProfile.objects.get(user=request.user.id).substep_template
+            "tmpl_name": UserProfile.objects.get(user=request.user.id).substep_template,
+            "free_space": local_disk_info
             }
     args.update({"Recording": camera_curr_status})
     args.update(csrf(request))
@@ -323,7 +334,8 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
             "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
             "Step": Step.objects.all().filter(id=step_id)[0],
             "SubSteps": SubStep.objects.all().filter(from_step=step_id),
-            "currSubStep": SubStep.objects.get(id=substep.pk)}
+            "currSubStep": SubStep.objects.get(id=substep.pk),
+            "free_space": local_disk_info}
     args.update(csrf(request))
     recording_status = start_recording(user_id=request.user.id,
                                        user_profile=UserProfile.objects.get(user=request.user.id), data=args)
@@ -351,6 +363,7 @@ def recording_page(request, course_id, lesson_id, step_id):
             "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
             "Step": Step.objects.all().filter(id=step_id)[0],
             "SubSteps": SubStep.objects.all().filter(from_step=step_id),
+            "free_space": local_disk_info
             }
     args.update({"Recording": camera_curr_status})
     return render_to_response("step_view.html", args, context_instance=RequestContext(request))
@@ -360,7 +373,8 @@ def recording_page(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login')
 @can_edit_page
 def stop_all_recording(request):
-    args = {"full_name": request.user.username}
+    args = {"full_name": request.user.username,
+            "free_space": local_disk_info}
     args.update(csrf(request))
     stop_cam_recording()
     args.update({"Recording": camera_curr_status})
@@ -376,6 +390,7 @@ def stop_recording(request, course_id, lesson_id, step_id):
             "postUrl": post_url, "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
             "Step": Step.objects.all().filter(id=step_id)[0],
             "SubSteps": SubStep.objects.all().filter(from_step=step_id),
+            "free_space": local_disk_info
             }
     args.update(csrf(request))
     stop_cam_status = stop_cam_recording()
@@ -399,7 +414,8 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
             "Step": Step.objects.all().filter(id=step_id)[0],
             "postUrl": post_url,
             "SubSteps": SubStep.objects.all().filter(from_step=step_id),
-            "currSubStep": substep}
+            "currSubStep": substep,
+            "free_space": local_disk_info}
 
     substep_deleted = delete_substep_files(user_id=request.user.id,
                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
@@ -421,7 +437,8 @@ def delete_step(request, course_id, lesson_id, step_id):
             "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
             "Step": Step.objects.all().filter(id=step_id)[0],
             "postUrl": post_url,
-            "SubSteps": SubStep.objects.all().filter(from_step=step_id)}
+            "SubSteps": SubStep.objects.all().filter(from_step=step_id),
+            "free_space": local_disk_info}
     substeps = SubStep.objects.all().filter(from_step=step_id)
     step_deleted = delete_step_files(user_id=request.user.id,
                                      user_profile=UserProfile.objects.get(user=request.user.id), data=args)
@@ -439,6 +456,7 @@ def delete_step(request, course_id, lesson_id, step_id):
 def user_profile(request):
     return render_to_response("UserProfile.html", {"full_name": request.user.username,
                                                    "settings": UserProfile.objects.get(user_id=request.user.id),
+                                                   "free_space": local_disk_info
                                                    }, context_instance=RequestContext(request))
 
 
@@ -468,7 +486,9 @@ def reorder_elements(request):
 @login_required(login_url="/login/")
 @can_edit_page
 def show_course_struct(request, course_id):
-    args = {"full_name": request.user.username, "Course": Course.objects.all().get(id=course_id)}
+    args = {"full_name": request.user.username,
+            "Course": Course.objects.all().get(id=course_id),
+            "free_space": local_disk_info}
     args.update({"user_profile": UserProfile.objects.get(user=request.user.id)})
     args.update({"Recording": camera_curr_status})
     all_lessons = Lesson.objects.all().filter(from_course=course_id)
@@ -487,7 +507,9 @@ def show_course_struct(request, course_id):
 @login_required(login_url="/login/")
 @can_edit_page
 def view_stat(request, course_id):
-    args = {"full_name": request.user.username, "Course": Course.objects.all().get(id=course_id)}
+    args = {"full_name": request.user.username,
+            "Course": Course.objects.all().get(id=course_id),
+            "free_space": local_disk_info}
     return render_to_response("stat.html", args, context_instance=RequestContext(request))
 
 
@@ -591,6 +613,7 @@ def clear_all_locked_substeps(request):
         ss.save()
     return render_to_response("UserProfile.html", {"full_name": request.user.username,
                                                    "settings": UserProfile.objects.get(user_id=request.user.id),
+                                                   "free_space": local_disk_info
                                                    }, context_instance=RequestContext(request))
 
 

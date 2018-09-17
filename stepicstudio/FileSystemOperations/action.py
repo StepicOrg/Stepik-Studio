@@ -228,3 +228,37 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
                 break
         substep.save()
     return summ
+
+
+def get_free_space() -> str:
+    try:
+        free_space = psutil.disk_usage('/').free
+        return bytes2human(free_space)
+    except Exception as e:
+        logger.warning("Can't get information about disk free space: %s", str(e))
+        return "Err"
+
+
+def get_storage_capacity() -> str:
+    try:
+        capacity = psutil.disk_usage('/').total
+        return bytes2human(capacity)
+    except Exception as e:
+        logger.warning("Can't get information about disk capacity: %s", str(e))
+        return "Err"
+
+
+def get_disk_info() -> str:
+    return get_free_space() + ' / ' + get_storage_capacity()
+
+
+def bytes2human(n) -> str:
+    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+    prefix = {}
+    for i, s in enumerate(symbols):
+        prefix[s] = 1 << (i + 1) * 10
+    for s in reversed(symbols):
+        if n >= prefix[s]:
+            value = float(n) / prefix[s]
+            return '%.1f%s' % (value, s)
+    return "%sB" % n

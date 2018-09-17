@@ -22,20 +22,20 @@ $(function  () {
 
 var cookie_csrf_updater = function(xhr){
     var cookie = null;
-                    var cookVal = null;
-                    var cookies = document.cookie.split(';');
+    var cookVal = null;
+    var cookies = document.cookie.split(';');
 
-                    for (var i=0; i < cookies.length; i++) {
-                        cookie = jQuery.trim(cookies[i]);
+    for (var i=0; i < cookies.length; i++) {
+        cookie = jQuery.trim(cookies[i]);
 
-                        if(cookie.substring(0, "csrftoken".length+1) == "csrftoken=") {
-                            cookVal = decodeURIComponent(cookie.substring("csrftoken".length + 1));
-                            break;
-                        }
+        if(cookie.substring(0, "csrftoken".length+1) == "csrftoken=") {
+            cookVal = decodeURIComponent(cookie.substring("csrftoken".length + 1));
+            break;
+        }
 
-                    }
+    }
 
-                    xhr.setRequestHeader("X-CSRFToken", cookVal)
+    xhr.setRequestHeader("X-CSRFToken", cookVal)
 };
 
 
