@@ -22,7 +22,7 @@ def ssh_screencast_start(remote_ubuntu=None) -> InternalOperationResult:
         ssh.close()
     except Exception as e:
         message = "SSH connection to remote linux tab failed: {0}".format(str(e))
-        logger.error(message)
+        logger.exception("SSH connection to remote linux tab failed:")
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     return InternalOperationResult(ExecutionStatus.SUCCESS)

@@ -60,10 +60,10 @@ def run_ffmpeg_recorder(path: str, filename: str) -> InternalOperationResult:
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
     except Exception as e:
         message = "Cannot exec ffmpeg command: {0}".format(str(e))
-        logger.error(message)
+        logger.exception("Cannot exec ffmpeg command: ")
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
-    logger.info('Successful starting ffmpeg (PID: %s; FFMPEG command: %s)', process.pid, command)
+    logger.info("Successful starting ffmpeg (PID: %s; FFMPEG command: %s)", process.pid, command)
     return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
@@ -230,26 +230,26 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
     return summ
 
 
-def get_free_space() -> str:
+def get_free_space(path) -> str:
     try:
-        free_space = psutil.disk_usage('/').free
+        free_space = psutil.disk_usage(path=path).free
         return bytes2human(free_space)
     except Exception as e:
         logger.warning("Can't get information about disk free space: %s", str(e))
         return "Err"
 
 
-def get_storage_capacity() -> str:
+def get_storage_capacity(path) -> str:
     try:
-        capacity = psutil.disk_usage('/').total
+        capacity = psutil.disk_usage(path=path).total
         return bytes2human(capacity)
     except Exception as e:
         logger.warning("Can't get information about disk capacity: %s", str(e))
         return "Err"
 
 
-def get_disk_info() -> str:
-    return get_free_space() + ' / ' + get_storage_capacity()
+def get_disk_info(path) -> str:
+    return get_free_space(path) + ' / ' + get_storage_capacity(path)
 
 
 def bytes2human(n) -> str:

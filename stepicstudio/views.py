@@ -22,7 +22,7 @@ from stepicstudio.statistic import add_stat_info
 from stepicstudio.state import CURRENT_TASKS_DICT
 
 logger = logging.getLogger('stepicstudio.views')
-local_disk_info = get_disk_info()
+local_disk_info = get_disk_info('/')
 
 
 def can_edit_page(view_function):
