@@ -21,3 +21,31 @@ def url_to_args(url):
 
 def camera_curr_status():
     return CameraStatus.objects.get(id="1").status
+
+
+def bytes2human(n) -> str:
+    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+    prefix = {}
+    for i, s in enumerate(symbols):
+        prefix[s] = 1 << (i + 1) * 10
+    for s in reversed(symbols):
+        if n >= prefix[s]:
+            value = float(n) / prefix[s]
+            return '%.1f%s' % (value, s)
+    return "%sB" % n
+
+
+def human2bytes(s):
+    num = ""
+    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+    while s and s[0:1].isdigit() or s[0:1] == '.':
+        num += s[0]
+        s = s[1:]
+    num = float(num)
+    letter = s.strip()
+    if letter not in symbols:
+        raise ValueError("can't interpret %r" % s)
+    prefix = {symbols[0]: 1}
+    for i, s in enumerate(symbols[0:]):
+        prefix[s] = 1 << (i + 1) * 10
+    return int(num * prefix[letter])

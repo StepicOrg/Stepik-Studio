@@ -230,35 +230,21 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
     return summ
 
 
-def get_free_space(path) -> str:
+def get_free_space(path) -> int:
     try:
-        free_space = psutil.disk_usage(path=path).free
-        return bytes2human(free_space)
+        return psutil.disk_usage(path=path).free
     except Exception as e:
         logger.warning("Can't get information about disk free space: %s", str(e))
-        return "Err"
+        raise e
 
 
-def get_storage_capacity(path) -> str:
+def get_storage_capacity(path) -> int:
     try:
-        capacity = psutil.disk_usage(path=path).total
-        return bytes2human(capacity)
+        return psutil.disk_usage(path=path).total
     except Exception as e:
-        logger.warning("Can't get information about disk capacity: %s", str(e))
-        return "Err"
+        logger.warning("Can't get information about total disk capacity: %s", str(e))
+        raise e
 
 
-def get_disk_info(path) -> str:
-    return get_free_space(path) + ' / ' + get_storage_capacity(path)
-
-
-def bytes2human(n) -> str:
-    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
-    prefix = {}
-    for i, s in enumerate(symbols):
-        prefix[s] = 1 << (i + 1) * 10
-    for s in reversed(symbols):
-        if n >= prefix[s]:
-            value = float(n) / prefix[s]
-            return '%.1f%s' % (value, s)
-    return "%sB" % n
+def get_disk_info(path) -> (int, int):
+    return get_free_space(path), get_storage_capacity(path)

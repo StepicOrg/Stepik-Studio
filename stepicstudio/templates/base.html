@@ -51,8 +51,22 @@
                         {{ GLOB_TASKS }}
                     {% endblock %}
                 <div>
-                    Server disk space: {{ free_space }}
+                    <span>
+                    Server disk space: {{ request.session.free_space }}
+                    {% if request.session.server_space_status == 'warning' %}
+                            <img src="/static/icons/yellow_warning.png" width="20" height="20">
+                    {% endif %}
+                    {% if request.session.server_space_status == 'error' %}
+                            <img src="/static/icons/red_warning.svg" width="20" height="20">
+                    {% endif %}
+                    </span>
                 </div>
+                <div>
+                    <span>
+                    Tablet disk space:
+                    </span>
+                </div>
+
             </div>
 
 
