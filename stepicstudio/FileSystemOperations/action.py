@@ -51,7 +51,7 @@ def run_ffmpeg_recorder(path: str, filename: str) -> InternalOperationResult:
 
     try:
         global process
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, shell=True)
         # process still running when returncode is None
         if process.returncode is not None and process.returncode != 0:
             _, error = process.communicate()
@@ -246,5 +246,5 @@ def get_storage_capacity(path) -> int:
         raise e
 
 
-def get_disk_info(path) -> (int, int):
+def get_server_disk_info(path) -> (int, int):
     return get_free_space(path), get_storage_capacity(path)

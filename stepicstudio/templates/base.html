@@ -51,20 +51,26 @@
                         {{ GLOB_TASKS }}
                     {% endblock %}
                 <div>
-                    <span>
-                    Server disk space: {{ request.session.free_space }}
+                    Server disk free/total space:
+                    <br>
+                    {{ request.session.server_space_info }}
                     {% if request.session.server_space_status == 'warning' %}
                             <img src="/static/icons/yellow_warning.png" width="20" height="20">
                     {% endif %}
                     {% if request.session.server_space_status == 'error' %}
                             <img src="/static/icons/red_warning.svg" width="20" height="20">
                     {% endif %}
-                    </span>
                 </div>
                 <div>
-                    <span>
-                    Tablet disk space:
-                    </span>
+                    Tablet disk free/total space:
+                    <br>
+                    {{ request.session.tablet_space_info }}
+                    {% if request.session.tablet_space_status == 'warning' %}
+                            <img src="/static/icons/yellow_warning.png" width="20" height="20">
+                    {% endif %}
+                    {% if request.session.tablet_space_status == 'error' %}
+                            <img src="/static/icons/red_warning.svg" width="20" height="20">
+                    {% endif %}
                 </div>
 
             </div>

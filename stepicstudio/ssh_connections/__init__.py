@@ -19,7 +19,7 @@ class Singleton(type):
 
 
 # Actually Making it Singleton was bad idea
-class ScreenRecorder(object):
+class TabletClient(object):
     def __init__(self, path, remote_ubuntu=None):
         self.path = path
         self.remote_path = ''
@@ -113,3 +113,20 @@ class ScreenRecorder(object):
         download_dir(from_dir, to_path)
         sftp.close()
         return self.download_status
+
+    def get_free_space_info(self, folder_path) -> str:
+        command = "df -B1 " + folder_path + " | tail -1 | awk '{print $4}'"
+        _, stdout, _ = self.ssh.exec_command(command)
+        exit_status = stdout.channel.recv_exit_status()
+        if exit_status > 0:
+            raise RuntimeError("Cannot execute command {0} [returned code: {1}]".format(command, exit_status))
+        return stdout.readlines()
+
+    def get_total_space_info(self, folder_path) -> str:
+        command = "df -B1 " + folder_path + " | tail -1 | awk '{print $2}'"
+        _, stdout, _ = self.ssh.exec_command(command)
+        exit_status = stdout.channel.recv_exit_status()
+        if exit_status > 0:
+            raise RuntimeError("Cannot execute command {0} [returned code: {1}]".format(command, exit_status))
+        return stdout.readlines()
+

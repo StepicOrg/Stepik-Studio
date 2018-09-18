@@ -1,3 +1,5 @@
+import re
+
 from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
 from django.contrib.auth.models import User
 from stepicstudio.FileSystemOperations.action import *
@@ -5,7 +7,7 @@ from stepicstudio.const import *
 from stepicstudio.ssh_connections.screencast import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
 import time
-from stepicstudio.ssh_connections import ScreenRecorder
+from stepicstudio.ssh_connections import TabletClient
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 from STEPIC_STUDIO.settings import LINUX_DIR
@@ -24,7 +26,7 @@ def to_linux_translate(win_path: str, username: str) -> str:
     return linux_path
 
 
-def start_recording(**kwargs: dict) ->InternalOperationResult:
+def start_recording(**kwargs: dict) -> InternalOperationResult:
     user_id = kwargs["user_id"]
     username = User.objects.all().get(id=int(user_id)).username
     folder_path = kwargs["user_profile"].serverFilesFolder
@@ -49,7 +51,7 @@ def start_recording(**kwargs: dict) ->InternalOperationResult:
         return ffmpeg_status
 
     try:
-        linux_obj = ScreenRecorder(to_linux_translate(substep_folder, username), remote_ubuntu)
+        linux_obj = TabletClient(to_linux_translate(substep_folder, username), remote_ubuntu)
         linux_obj.run_screen_recorder(data['currSubStep'].name)
         global SS_LINUX_PATH, SS_WIN_PATH
         SS_LINUX_PATH = linux_obj.remote_path
@@ -76,7 +78,6 @@ def start_subtep_montage(substep_id):
     substep.is_locked = True
     substep.save()
     run_ffmpeg_raw_montage(video_path_list, screencast_path_list, substep_id)
-
 
 
 def delete_substep_files(**kwargs):
@@ -110,13 +111,21 @@ def stop_cam_recording() -> True | False:
     except Exception as e:
         logger.exception("Cannot stop remote ffmpeg screen recorder")
 
-    ssh_obj = ScreenRecorder("_Dummy_")
+    ssh_obj = TabletClient("_Dummy_")
     ssh_obj.stop_screen_recorder()
     logger.debug("%s %s", SS_LINUX_PATH, SS_WIN_PATH)
     return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
 
 
 def delete_files_associated(url_args) -> True | False:
-    lesson_id = int(url_args[url_args.index(COURSE_ULR_NAME)+3])
+    lesson_id = int(url_args[url_args.index(COURSE_ULR_NAME) + 3])
     folder_on_server = Lesson.objects.get(id=lesson_id).os_path
     return delete_files_on_server(folder_on_server)
+
+
+def get_tablet_disk_info(tablet_client: TabletClient) -> (int, int):
+    raw_string_available = tablet_client.get_free_space_info(LINUX_DIR)
+    raw_string_total = tablet_client.get_total_space_info(LINUX_DIR)
+    free_capacity_bytes = re.findall(r'\d+', raw_string_available[0])
+    total_capacity_bytes = re.findall(r'\d+', raw_string_total[0])
+    return int(free_capacity_bytes[0]), int(total_capacity_bytes[0])

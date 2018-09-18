@@ -22,7 +22,6 @@ from stepicstudio.statistic import add_stat_info
 from stepicstudio.state import CURRENT_TASKS_DICT
 
 logger = logging.getLogger('stepicstudio.views')
-local_disk_info = get_disk_info('/')
 
 
 def can_edit_page(view_function):
@@ -374,8 +373,7 @@ def recording_page(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login')
 @can_edit_page
 def stop_all_recording(request):
-    args = {"full_name": request.user.username,
-            "free_space": request.session['free_space']}
+    args = {"full_name": request.user.username}
     args.update(csrf(request))
     stop_cam_recording()
     args.update({"Recording": camera_curr_status})
