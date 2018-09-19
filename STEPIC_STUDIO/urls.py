@@ -29,7 +29,7 @@ urlpatterns = patterns('',
 
     url(r'^reorder_lists/$', 'stepicstudio.views.reorder_elements'),
 
-    url(r'^stop_recording/$', 'stepicstudio.views.stop_all_recording'),
+    url(r'^stop_recording/', 'stepicstudio.views.stop_all_recording'),
 
     url(r'^course/(?P<course_id>[0-9]+)/', include(courseurlpatterns)),
 

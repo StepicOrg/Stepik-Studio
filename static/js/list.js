@@ -68,6 +68,28 @@ function record_stopped(callback)
     $('.stop-recording').removeClass('stop-recording').addClass('start-recording').text('Start Recording');
     callback();
 }
+/*
+var handle_not_stopped = function()
+{
+    $.ajax({
+        beforeSend: cookie_csrf_updater,
+        type: "POST",
+        url: "/stop_recording/",
+
+        data: {
+            "action": "stop"
+        },
+        success: function(data){
+            alert("success")
+            elements_subscriptor()
+        },
+        error: function(data){
+            alert("error")
+            elements_subscriptor()
+        }
+    });
+}
+*/
 
 var elements_subscriptor = function() {
     sortObj = $("#sortable");
@@ -173,7 +195,7 @@ var elements_subscriptor = function() {
         });
     });
 
-    function fader(el,callback) {
+    function fader(el, callback) {
         el.fadeTo("fast", .5).removeAttr("href");
         callback();
     }
@@ -183,6 +205,25 @@ var elements_subscriptor = function() {
                 return false;
         });
         $(this).off();
+        $(window).off().on('beforeunload', function(){
+            $.ajax({
+                beforeSend: cookie_csrf_updater,
+                type: "POST",
+                url: "/stop_recording/",
+
+                data: {
+                    "action": "stop"
+                },
+                success: function(data){
+                    alert("success")
+                    elements_subscriptor()
+                },
+                error: function(data){
+                    alert("error")
+                    elements_subscriptor()
+                }
+            });
+        });
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
@@ -209,6 +250,7 @@ var elements_subscriptor = function() {
                 return false;
         });
         $(this).off();
+        $(window).off('beforeunload');
         var el = $(this);
         $.ajax({
             beforeSend:function(jqXHR, settings) {

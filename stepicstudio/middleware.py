@@ -27,6 +27,10 @@ class SetStorageCapacityMiddleware(object):
     def __init__(self):
         self.tablet_client = TabletClient("__Dummy__")
 
+    def process_request(self, request):
+        logger.info(request.path)
+        return None
+
     def process_response(self, request, response):
         try:
             if request.user.is_authenticated():

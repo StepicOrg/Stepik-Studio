@@ -342,6 +342,8 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
     if recording_status.status is ExecutionStatus.SUCCESS:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
+    else:
+        substep.delete()
     return recording_status
 
 
@@ -371,13 +373,16 @@ def recording_page(request, course_id, lesson_id, step_id):
 
 # TODO: Add statistic here
 @login_required(login_url='/login')
-@can_edit_page
+# @can_edit_page
 def stop_all_recording(request):
-    args = {"full_name": request.user.username}
-    args.update(csrf(request))
-    stop_cam_recording()
-    args.update({"Recording": camera_curr_status})
-    return render_to_response("courses.html", args, context_instance=RequestContext(request))
+    # print("STOP ALL RECORDING")
+    logger.info("STOP ALL RECORDING")
+    return HttpResponse("Ok")
+    # args = {"full_name": request.user.username}
+    # args.update(csrf(request))
+    # stop_cam_recording()
+    # args.update({"Recording": camera_curr_status})
+    # return render_to_response("courses.html", args, context_instance=RequestContext(request))
 
 
 @login_required(login_url="/login")
