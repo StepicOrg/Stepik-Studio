@@ -338,7 +338,8 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
             }
     args.update(csrf(request))
     recording_status = start_recording(user_id=request.user.id,
-                                       user_profile=UserProfile.objects.get(user=request.user.id), data=args)
+                                       user_profile=UserProfile.objects.get(user=request.user.id),
+                                       data=args)
     if recording_status.status is ExecutionStatus.SUCCESS:
         args.update({"Recording": True})
         args.update({"StartTime": CameraStatus.objects.get(id="1").start_time / 1000})
@@ -371,18 +372,30 @@ def recording_page(request, course_id, lesson_id, step_id):
     return render_to_response("step_view.html", args, context_instance=RequestContext(request))
 
 
-# TODO: Add statistic here
 @login_required(login_url='/login')
-# @can_edit_page
 def stop_all_recording(request):
-    # print("STOP ALL RECORDING")
     logger.info("STOP ALL RECORDING")
+    # stop_status = stop_recording(request, course_id, lesson_id, step_id)
+    #Взять step_obj с помощью id из CURRENT_TASKS_DICT
+    # to_del = set()
+    # for task in CURRENT_TASKS_DICT.keys():
+    #     if task.poll() == 0:
+    #         ss_id = CURRENT_TASKS_DICT[task]
+    #         ss = SubStep.objects.get(id=ss_id)
+    #         ss.is_locked = False
+    #         ss.save()
+    #         to_del.add(task)
+    # for t in to_del:
+    #     del CURRENT_TASKS_DICT[t]
+    #
+    # all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
+    # summ_time = update_time_records(all_substeps)
+    # stop_cam_status = stop_cam_recording()
+    # step_obj.is_fresh = True
+    # step_obj.duration = summ_time
+    # step_obj.save()
+
     return HttpResponse("Ok")
-    # args = {"full_name": request.user.username}
-    # args.update(csrf(request))
-    # stop_cam_recording()
-    # args.update({"Recording": camera_curr_status})
-    # return render_to_response("courses.html", args, context_instance=RequestContext(request))
 
 
 @login_required(login_url="/login")

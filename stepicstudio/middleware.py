@@ -25,11 +25,11 @@ class SetLastVisitMiddleware(object):
 
 class SetStorageCapacityMiddleware(object):
     def __init__(self):
-        self.tablet_client = TabletClient("__Dummy__")
-
-    def process_request(self, request):
-        logger.info(request.path)
-        return None
+        try:
+            self.tablet_client = TabletClient("__Dummy__")
+        except Exception as e:
+            logger.error("Can't connect to tablet: %s", str(e))
+            self.tablet_client = None
 
     def process_response(self, request, response):
         try:
@@ -69,6 +69,8 @@ class SetStorageCapacityMiddleware(object):
 
     def handle_tablet_space_info(self, request):
         try:
+            if self.tablet_client is None:
+                raise RuntimeError("Tablet client is dummy")
             tablet_free_space, total_tablet_space = get_tablet_disk_info(self.tablet_client)
             request.session['tablet_space_info'] = bytes2human(tablet_free_space) + ' / ' + \
                                                    bytes2human(total_tablet_space)

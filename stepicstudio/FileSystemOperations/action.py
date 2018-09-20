@@ -45,7 +45,7 @@ def add_file_to_test(**kwargs: dict) -> None:
         os.makedirs(folder_p)
 
 
-def run_ffmpeg_recorder(path: str, filename: str) -> InternalOperationResult:
+def run_ffmpeg_recorder(path: str, filename: str, substep_id) -> InternalOperationResult:
     command = FFMPEGcommand
     command += path + '\\' + filename
 
@@ -63,6 +63,7 @@ def run_ffmpeg_recorder(path: str, filename: str) -> InternalOperationResult:
         logger.exception("Cannot exec ffmpeg command: ")
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
+    CURRENT_TASKS_DICT.update({process: substep_id})
     logger.info("Successful starting ffmpeg (PID: %s; FFMPEG command: %s)", process.pid, command)
     return InternalOperationResult(ExecutionStatus.SUCCESS)
 
