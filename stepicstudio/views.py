@@ -175,7 +175,7 @@ def show_lesson(request, course_id, lesson_id):
             "Course": Course.objects.all().filter(id=course_id)[0],
             "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
             "Steps": Step.objects.all().filter(from_lesson=lesson_id).order_by('position'),
-            
+
             }
     args.update({"Recording": camera_curr_status})
     return render_to_response("lesson_view.html", args, context_instance=RequestContext(request))
@@ -276,7 +276,7 @@ def show_step(request, course_id, lesson_id, step_id):
             "postUrl": request.path,
             "SubSteps": all_substeps,
             "tmpl_name": UserProfile.objects.get(user=request.user.id).substep_template,
-            
+
             }
     args.update({"Recording": camera_curr_status})
     args.update(csrf(request))
@@ -366,7 +366,7 @@ def recording_page(request, course_id, lesson_id, step_id):
             "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
             "Step": Step.objects.all().filter(id=step_id)[0],
             "SubSteps": SubStep.objects.all().filter(from_step=step_id),
-            
+
             }
     args.update({"Recording": camera_curr_status})
     return render_to_response("step_view.html", args, context_instance=RequestContext(request))
@@ -374,41 +374,43 @@ def recording_page(request, course_id, lesson_id, step_id):
 
 @login_required(login_url='/login')
 def stop_all_recording(request):
-    logger.info("STOP ALL RECORDING")
-    # stop_status = stop_recording(request, course_id, lesson_id, step_id)
-    #Взять step_obj с помощью id из CURRENT_TASKS_DICT
-    # to_del = set()
-    # for task in CURRENT_TASKS_DICT.keys():
-    #     if task.poll() == 0:
-    #         ss_id = CURRENT_TASKS_DICT[task]
-    #         ss = SubStep.objects.get(id=ss_id)
-    #         ss.is_locked = False
-    #         ss.save()
-    #         to_del.add(task)
-    # for t in to_del:
-    #     del CURRENT_TASKS_DICT[t]
-    #
-    # all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
-    # summ_time = update_time_records(all_substeps)
-    # stop_cam_status = stop_cam_recording()
-    # step_obj.is_fresh = True
-    # step_obj.duration = summ_time
-    # step_obj.save()
+    to_del = set()
+    for task in CURRENT_TASKS_DICT.keys():
+        if task.poll() != 0:
+            try:
+                substep_id = CURRENT_TASKS_DICT[task]
+                substep_obj = SubStep.objects.get(id=substep_id)
+
+                step_obj = Step.objects.get(id=substep_obj.from_step)
+                lesson_obj = Lesson.objects.get(id=step_obj.from_lesson)
+                course_obj = Course.objects.get(id=lesson_obj.from_course)
+
+                stop_recording(request, course_obj.id, lesson_obj.id, step_obj.id)
+                to_del.add(task)
+            except Exception as e:
+                logger.error("Can't stop recording; server recording process PID: %s; %s", task.pid, str(e))
+        else:
+            to_del.add(task)
+
+    for t in to_del:
+        ss_id = CURRENT_TASKS_DICT[t]
+        ss = SubStep.objects.get(id=ss_id)
+        ss.is_locked = False
+        ss.save()
+        del CURRENT_TASKS_DICT[t]
 
     return HttpResponse("Ok")
 
 
 @login_required(login_url="/login")
 def stop_recording(request, course_id, lesson_id, step_id):
-    post_url = "/" + COURSE_ULR_NAME + "/" + course_id + "/" + LESSON_URL_NAME + "/" + lesson_id + "/" + \
-               STEP_URL_NAME + "/" + step_id + "/"
+    post_url = "/" + COURSE_ULR_NAME + "/" + str(course_id) + "/" + LESSON_URL_NAME + "/" + str(lesson_id) + "/" + \
+               STEP_URL_NAME + "/" + str(step_id) + "/"
     args = {"full_name": request.user.username,
             "Course": Course.objects.all().filter(id=course_id)[0],
             "postUrl": post_url, "Lesson": Lesson.objects.all().filter(id=lesson_id)[0],
             "Step": Step.objects.all().filter(id=step_id)[0],
-            "SubSteps": SubStep.objects.all().filter(from_step=step_id),
-            
-            }
+            "SubSteps": SubStep.objects.all().filter(from_step=step_id)}
     args.update(csrf(request))
     stop_cam_status = stop_cam_recording()
     args.update({"Recording": camera_curr_status})
@@ -473,7 +475,7 @@ def delete_step(request, course_id, lesson_id, step_id):
 def user_profile(request):
     return render_to_response("UserProfile.html", {"full_name": request.user.username,
                                                    "settings": UserProfile.objects.get(user_id=request.user.id),
-                                                   
+
                                                    }, context_instance=RequestContext(request))
 
 
@@ -628,10 +630,9 @@ def clear_all_locked_substeps(request):
     for ss in all_locked:
         ss.is_locked = False
         ss.save()
-    return render_to_response("UserProfile.html", {"full_name": request.user.username,
-                                                   "settings": UserProfile.objects.get(user_id=request.user.id),
-                                                   
-                                                   }, context_instance=RequestContext(request))
+    return render_to_response("UserProfile.html",
+                              {"full_name": request.user.username, "settings": UserProfile.objects.get(user_id=request.user.id)},
+                              context_instance=RequestContext(request))
 
 
 def error500_handler(request):

@@ -205,23 +205,11 @@ var elements_subscriptor = function() {
                 return false;
         });
         $(this).off();
-        $(window).off().on('beforeunload', function(){
+        $(window).on('beforeunload', function(){
             $.ajax({
                 beforeSend: cookie_csrf_updater,
-                type: "POST",
+                type: "GET",
                 url: "/stop_recording/",
-
-                data: {
-                    "action": "stop"
-                },
-                success: function(data){
-                    alert("success")
-                    elements_subscriptor()
-                },
-                error: function(data){
-                    alert("error")
-                    elements_subscriptor()
-                }
             });
         });
         $.ajax({
@@ -250,7 +238,7 @@ var elements_subscriptor = function() {
                 return false;
         });
         $(this).off();
-        $(window).off('beforeunload');
+        $(window).off();
         var el = $(this);
         $.ajax({
             beforeSend:function(jqXHR, settings) {

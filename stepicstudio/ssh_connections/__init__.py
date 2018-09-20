@@ -7,7 +7,7 @@ from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
 from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 
 logger = logging.getLogger('stepic_studio.ssh_connections.__init__')
-
+logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 class Singleton(type):
     _instances = {}

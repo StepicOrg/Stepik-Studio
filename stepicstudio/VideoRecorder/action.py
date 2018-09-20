@@ -48,7 +48,7 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     # TODO: checking execution possibility without starting ffmpeg
     ffmpeg_status = run_ffmpeg_recorder(substep_folder.replace('/', '\\'),
                                         data['currSubStep'].name + SUBSTEP_PROFESSOR,
-                                        data['currSubStep'])
+                                        data['currSubStep'].id)
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         return ffmpeg_status
 
@@ -113,10 +113,14 @@ def stop_cam_recording() -> True | False:
     except Exception as e:
         logger.exception("Cannot stop remote ffmpeg screen recorder")
 
-    ssh_obj = TabletClient("_Dummy_")
-    ssh_obj.stop_screen_recorder()
-    logger.debug("%s %s", SS_LINUX_PATH, SS_WIN_PATH)
-    return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
+    try:
+        ssh_obj = TabletClient("_Dummy_")
+        ssh_obj.stop_screen_recorder()
+        logger.info("Recording successfully stopped")
+        return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
+    except Exception as e:
+        logger.error("Can't stop recording: %s", str(e))
+        return False
 
 
 def delete_files_associated(url_args) -> True | False:
