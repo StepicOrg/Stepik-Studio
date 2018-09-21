@@ -1,5 +1,5 @@
 from sys import platform as _platform
-from STEPIC_STUDIO.settings import __PROFESSOR_IP, __FFMPEG_PATH , __FFPROBE_RUN_PATH, __FFMPEG_COMM_PART
+from STEPIC_STUDIO.settings import __PROFESSOR_IP, __FFMPEG_PATH, __FFPROBE_RUN_PATH, __FFMPEG_COMM_PART
 
 COURSE_ULR_NAME = 'course'
 LESSON_URL_NAME = 'lesson'

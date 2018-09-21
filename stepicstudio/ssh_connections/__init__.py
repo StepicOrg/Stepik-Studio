@@ -7,7 +7,8 @@ from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
 from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 
 logger = logging.getLogger('stepic_studio.ssh_connections.__init__')
-logging.getLogger("paramiko").setLevel(logging.WARNING)
+logging.getLogger('paramiko').setLevel(logging.WARNING)
+
 
 class Singleton(type):
     _instances = {}
@@ -30,7 +31,7 @@ class TabletClient(object):
             PROFESSOR_IP = remote_ubuntu['professor_ip']
             UBUNTU_USERNAME = remote_ubuntu['ubuntu_username']
             UBUNTU_PASSWORD = remote_ubuntu['ubuntu_password']
-            self.path = remote_ubuntu['ubuntu_folder_path'] + "/" + path
+            self.path = remote_ubuntu['ubuntu_folder_path'] + '/' + path
 
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -52,16 +53,16 @@ class TabletClient(object):
     def run_screen_recorder(self, substepname=''):
         p_args = self.path.split('/')
         p_args = list(filter(None, p_args))
-        self.remote_path = "/"
-        logger.debug("I TRY : %s", self.remote_path)
+        self.remote_path = '/'
+        logger.debug('I TRY : %s', self.remote_path)
         i = 0
         while i < len(p_args):
-            self.remote_path = self.remote_path + p_args[i] + "/"
+            self.remote_path = self.remote_path + p_args[i] + '/'
             if self.rexists(self.remote_path):
-                logger.debug("Exist run_screen_recorder() %s", self.remote_path)
+                logger.debug('Exist run_screen_recorder() %s', self.remote_path)
             else:
                 self.sftp.mkdir(self.remote_path)
-                logger.debug("Generated from run_screen_recorder() %s", self.remote_path)
+                logger.debug('Generated from run_screen_recorder() %s', self.remote_path)
             i += 1
 
         command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
@@ -71,11 +72,11 @@ class TabletClient(object):
         stdin, stdout, stderr = self.ssh.exec_command(command)
 
     def stop_screen_recorder(self):
-        command = "pkill -f ffmpeg"
+        command = 'pkill -f ffmpeg'
         _, stdout, _ = self.ssh.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status > 0:
-            raise RuntimeError("Cannot execute command {0} [returned code: {1}]".format(command, exit_status))
+            raise RuntimeError('Cannot execute command {0} [returned code: {1}]'.format(command, exit_status))
 
     def get_file(self, from_dir, to_path):
         if not self.path:
@@ -86,15 +87,15 @@ class TabletClient(object):
             transport.connect(username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
             sftp = paramiko.SFTPClient.from_transport(transport)
         except Exception as e:
-            logger.exception("Finaly catched SSH Error! GOTCHA!")
+            logger.exception('Finaly catched SSH Error! GOTCHA!')
             raise e
 
         # TODO: Refactor. New connection not needed
         def download_dir(remote_dir, local_dir):
             def _download_status(done_bytes, all_bytes):
                 if done_bytes == all_bytes:
-                    logger.debug("Screencast downloaded from: %s", from_dir)
-                    print("Screencast downloaded from: %s", from_dir)
+                    logger.debug('Screencast downloaded from: %s', from_dir)
+                    print('Screencast downloaded from: %s', from_dir)
                     self.download_status = True
 
             os.path.exists(local_dir) or os.makedirs(local_dir)
@@ -115,18 +116,17 @@ class TabletClient(object):
         return self.download_status
 
     def get_free_space_info(self, folder_path) -> str:
-        command = "df -B1 " + folder_path + " | tail -1 | awk '{print $4}'"
+        command = 'df -B1 ' + folder_path + ' | tail -1 | awk \'{print $4}\''
         _, stdout, _ = self.ssh.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status > 0:
-            raise RuntimeError("Cannot execute command {0} [returned code: {1}]".format(command, exit_status))
+            raise RuntimeError('Cannot execute command {0} [returned code: {1}]'.format(command, exit_status))
         return stdout.readlines()
 
     def get_total_space_info(self, folder_path) -> str:
-        command = "df -B1 " + folder_path + " | tail -1 | awk '{print $2}'"
+        command = 'df -B1 ' + folder_path + ' | tail -1 | awk \'{print $2}\''
         _, stdout, _ = self.ssh.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status > 0:
-            raise RuntimeError("Cannot execute command {0} [returned code: {1}]".format(command, exit_status))
+            raise RuntimeError('Cannot execute command {0} [returned code: {1}]'.format(command, exit_status))
         return stdout.readlines()
-

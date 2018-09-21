@@ -21,8 +21,8 @@ def ssh_screencast_start(remote_ubuntu=None) -> InternalOperationResult:
         ssh.connect(hostname=PROFESSOR_IP, username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
         ssh.close()
     except Exception as e:
-        message = "SSH connection to remote linux tab failed: {0}".format(str(e))
-        logger.exception("SSH connection to remote linux tab failed:")
+        message = 'SSH connection to remote linux tab failed: {0}'.format(str(e))
+        logger.exception('SSH connection to remote linux tab failed:')
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     return InternalOperationResult(ExecutionStatus.SUCCESS)
