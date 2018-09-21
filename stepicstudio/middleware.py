@@ -4,10 +4,10 @@ from stepicstudio.FileSystemOperations.action import get_server_disk_info
 from stepicstudio.VideoRecorder.action import get_tablet_disk_info
 from stepicstudio.models import UserProfile
 import logging
-from STEPIC_STUDIO.settings import ERROR_CAPACITY, WARNING_CAPACITY
+from django.conf import settings
 from stepicstudio.ssh_connections import TabletClient
 
-from stepicstudio.utils.utils import bytes2human, human2bytes
+from stepicstudio.utils.utils import bytes2human
 
 logger = logging.getLogger('stepicstudio.middleware')
 
@@ -52,12 +52,12 @@ class SetStorageCapacityMiddleware(object):
             request.session['server_space_info'] = bytes2human(free_server_space) + \
                                                    ' / ' + \
                                                    bytes2human(total_server_space)
-            if free_server_space < human2bytes(ERROR_CAPACITY):
+            if free_server_space < settings.ERROR_CAPACITY:
                 request.session['server_space_status'] = 'error'
                 logger.warning('Critically low server disk space: free space: %s; total space: %s',
                                bytes2human(free_server_space),
                                bytes2human(total_server_space))
-            elif free_server_space < human2bytes(WARNING_CAPACITY):
+            elif free_server_space < settings.WARNING_CAPACITY:
                 logger.warning('Low server disk space: free space: %s; total space: %s',
                                bytes2human(free_server_space),
                                bytes2human(total_server_space))
@@ -77,12 +77,12 @@ class SetStorageCapacityMiddleware(object):
             request.session['tablet_space_info'] = bytes2human(tablet_free_space) + \
                                                    ' / ' + \
                                                    bytes2human(total_tablet_space)
-            if tablet_free_space < human2bytes(ERROR_CAPACITY):
+            if tablet_free_space < settings.ERROR_CAPACITY:
                 request.session['tablet_space_status'] = 'error'
                 logger.warning('Critically low tablet disk capacity: free space: %s; total space: %s',
                                bytes2human(tablet_free_space),
                                bytes2human(total_tablet_space))
-            elif tablet_free_space < human2bytes(WARNING_CAPACITY):
+            elif tablet_free_space < settings.WARNING_CAPACITY:
                 logger.warning('Low tablet disk capacity: free space: %s; total space: %s',
                                bytes2human(tablet_free_space),
                                bytes2human(total_tablet_space))
