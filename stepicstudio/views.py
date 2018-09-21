@@ -551,9 +551,11 @@ def video_view(request, substep_id):
         response = HttpResponse(file, content_type='video/TS')
         response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_PROFESSOR
         return response
+    except FileNotFoundError as e:
+        logger.warning('Missing file: %s', str(e))
+        return error_description(request, 'File is missing.')
     except Exception as e:
-        logger.error(e)
-        return HttpResponse('File too large or missing. Please look for it on the server.')
+        return error500_handler(request)
 
 
 # TODO: hotfix here is bad =(
@@ -575,9 +577,11 @@ def video_screen_view(request, substep_id):
         response = HttpResponse(file, content_type='video/ts')
         response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_SCREEN
         return response
+    except FileNotFoundError as e:
+        logger.warning('Missing file: %s', str(e))
+        return error_description(request, 'File is missing.')
     except Exception as e:
-        logger.error(e)
-        return HttpResponse('File to large. Please watch it on server.')
+        return error500_handler(request)
 
 
 def show_montage(request, substep_id):
@@ -645,3 +649,15 @@ def error500_handler(request):
     args['sentry_id'] = request.sentry['id']
     args.update(csrf(request))
     return render_to_response('internal_error.html', args, context_instance=RequestContext(request))
+
+
+def error_description(request, description='Unknown error'):
+    if 'HTTP_REFERER' in request.META:
+        args = {'go_back': request.META['HTTP_REFERER'],
+                'full_name': request.user.username}
+    else:
+        args = {'go_back': '/'}
+
+    args['description'] = description
+    args.update(csrf(request))
+    return render_to_response('error_description.html', args, context_instance=RequestContext(request))
