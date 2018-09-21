@@ -68,28 +68,6 @@ function record_stopped(callback)
     $('.stop-recording').removeClass('stop-recording').addClass('start-recording').text('Start Recording');
     callback();
 }
-/*
-var handle_not_stopped = function()
-{
-    $.ajax({
-        beforeSend: cookie_csrf_updater,
-        type: "POST",
-        url: "/stop_recording/",
-
-        data: {
-            "action": "stop"
-        },
-        success: function(data){
-            alert("success")
-            elements_subscriptor()
-        },
-        error: function(data){
-            alert("error")
-            elements_subscriptor()
-        }
-    });
-}
-*/
 
 var elements_subscriptor = function() {
     sortObj = $("#sortable");
@@ -206,10 +184,14 @@ var elements_subscriptor = function() {
         });
         $(this).off();
         $(window).on('beforeunload', function(){
+                return "Are you sure want to leave page? Recording will stop on leave.";
+        });
+        $(window).on('unload', function(){
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 type: "GET",
                 url: "/stop_recording/",
+                async: false
             });
         });
         $.ajax({
