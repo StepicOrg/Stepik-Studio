@@ -546,7 +546,6 @@ def video_view(request, substep_id):
         logger.warning('Missing file: %s', str(e))
         return error_description(request, 'File is missing.')
     except Exception as e:
-        logger.info("duplicate")
         return error500_handler(request)
 
 
@@ -564,7 +563,6 @@ def video_screen_view(request, substep_id):
         logger.warning('Missing file: %s', str(e))
         return error_description(request, 'File is missing.')
     except Exception as e:
-        logger.info("duplicate")
         return error500_handler(request)
 
 
