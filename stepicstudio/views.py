@@ -536,18 +536,9 @@ def view_stat(request, course_id):
 # TODO: This function is unsafe, its possible to watch other users files
 @login_required(login_url='/login/')
 def video_view(request, substep_id):
-    substep = SubStep.objects.all().get(id=substep_id)
-    try:
-        file = FileWrapper(open(substep.os_path, 'rb'))
-        response = HttpResponse(file, content_type='video/TS')
-        response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_PROFESSOR
-        return response
-    except Exception as e:
-        logger.error(e)
     try:
         substep = SubStep.objects.all().get(id=substep_id)
-        path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + str(SUBSTEP_PROFESSOR)[1:]
-        file = FileWrapper(open(path, 'rb'))
+        file = FileWrapper(open(substep.os_path, 'rb'))
         response = HttpResponse(file, content_type='video/TS')
         response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_PROFESSOR
         return response
@@ -555,32 +546,25 @@ def video_view(request, substep_id):
         logger.warning('Missing file: %s', str(e))
         return error_description(request, 'File is missing.')
     except Exception as e:
+        logger.info("duplicate")
         return error500_handler(request)
 
 
 # TODO: hotfix here is bad =(
 @login_required(login_url='/login/')
 def video_screen_view(request, substep_id):
-    substep = SubStep.objects.all().get(id=substep_id)
     try:
+        substep = SubStep.objects.all().get(id=substep_id)
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         file = FileWrapper(open(path, 'rb'))
         response = HttpResponse(file, content_type='video/mkv')
-        response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_SCREEN
-        return response
-    except Exception as e:
-        logger.error(e)
-    try:
-        substep = SubStep.objects.all().get(id=substep_id)
-        path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + str(SUBSTEP_SCREEN)[1:]
-        file = FileWrapper(open(path, 'rb'))
-        response = HttpResponse(file, content_type='video/ts')
         response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_SCREEN
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
         return error_description(request, 'File is missing.')
     except Exception as e:
+        logger.info("duplicate")
         return error500_handler(request)
 
 
