@@ -173,7 +173,7 @@ var elements_subscriptor = function() {
         });
     });
 
-    function fader(el,callback) {
+    function fader(el, callback) {
         el.fadeTo("fast", .5).removeAttr("href");
         callback();
     }
@@ -183,6 +183,17 @@ var elements_subscriptor = function() {
                 return false;
         });
         $(this).off();
+        $(window).on('beforeunload', function(){
+                return "Are you sure want to leave page? Recording will stop on leave.";
+        });
+        $(window).on('unload', function(){
+            $.ajax({
+                beforeSend: cookie_csrf_updater,
+                type: "GET",
+                url: "/stop_recording/",
+                async: false
+            });
+        });
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
@@ -209,6 +220,7 @@ var elements_subscriptor = function() {
                 return false;
         });
         $(this).off();
+        $(window).off();
         var el = $(this);
         $.ajax({
             beforeSend:function(jqXHR, settings) {

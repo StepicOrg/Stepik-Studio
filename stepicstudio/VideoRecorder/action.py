@@ -16,21 +16,21 @@ import logging
 
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
-SS_WIN_PATH = ""
-SS_LINUX_PATH = ""
+SS_WIN_PATH = ''
+SS_LINUX_PATH = ''
 
 
 def to_linux_translate(win_path: str, username: str) -> str:
-    linux_path = LINUX_DIR + username + "/" + '/'.join(win_path.split("/")[1:])
-    logger.debug("to_linux_translate() This is linux path %s", linux_path)
+    linux_path = LINUX_DIR + username + '/' + '/'.join(win_path.split('/')[1:])
+    logger.debug('to_linux_translate() This is linux path %s', linux_path)
     return linux_path
 
 
 def start_recording(**kwargs: dict) -> InternalOperationResult:
-    user_id = kwargs["user_id"]
+    user_id = kwargs['user_id']
     username = User.objects.all().get(id=int(user_id)).username
-    folder_path = kwargs["user_profile"].serverFilesFolder
-    data = kwargs["data"]
+    folder_path = kwargs['user_profile'].serverFilesFolder
+    data = kwargs['data']
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
 
@@ -46,7 +46,9 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
 
     # checking ffmpeg execution possibility and start if possible
     # TODO: checking execution possibility without starting ffmpeg
-    ffmpeg_status = run_ffmpeg_recorder(substep_folder.replace('/', '\\'), data['currSubStep'].name + SUBSTEP_PROFESSOR)
+    ffmpeg_status = run_ffmpeg_recorder(substep_folder.replace('/', '\\'),
+                                        data['currSubStep'].name + SUBSTEP_PROFESSOR,
+                                        data['currSubStep'].id)
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         return ffmpeg_status
 
@@ -58,11 +60,11 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
         SS_WIN_PATH = substep_folder
     except Exception as e:
         stop_ffmpeg_recorder()
-        message = "Cannot execute remote ffmpeg: {0}".format(str(e))
-        logger.exception("Cannot execute remote ffmpeg")
+        message = 'Cannot execute remote ffmpeg: {0}'.format(str(e))
+        logger.exception('Cannot execute remote ffmpeg')
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
-    db_camera = CameraStatus.objects.get(id="1")
+    db_camera = CameraStatus.objects.get(id='1')
     if not db_camera.status:
         db_camera.status = True
         db_camera.start_time = int(round(time.time() * 1000))
@@ -81,16 +83,16 @@ def start_subtep_montage(substep_id):
 
 
 def delete_substep_files(**kwargs):
-    folder_path = kwargs["user_profile"].serverFilesFolder
-    data = kwargs["data"]
-    if data["currSubStep"].is_locked:
+    folder_path = kwargs['user_profile'].serverFilesFolder
+    data = kwargs['data']
+    if data['currSubStep'].is_locked:
         return False
     return delete_substep_on_disc(folder_path=folder_path, data=data)
 
 
 def delete_step_files(**kwargs):
-    folder_path = kwargs["user_profile"].serverFilesFolder
-    data = kwargs["data"]
+    folder_path = kwargs['user_profile'].serverFilesFolder
+    data = kwargs['data']
     substeps = SubStep.objects.all().filter(from_step=data['Step'].id)
     for ss in substeps:
         print(ss.name)
@@ -101,7 +103,7 @@ def delete_step_files(**kwargs):
 
 # TODO: REMAKE! Wrong implementation
 def stop_cam_recording() -> True | False:
-    camstat = CameraStatus.objects.get(id="1")
+    camstat = CameraStatus.objects.get(id='1')
     camstat.status = False
     ssh_screencast_stop()
     camstat.save()
@@ -109,12 +111,16 @@ def stop_cam_recording() -> True | False:
     try:
         stop_ffmpeg_recorder()
     except Exception as e:
-        logger.exception("Cannot stop remote ffmpeg screen recorder")
+        logger.exception('Cannot stop remote ffmpeg screen recorder')
 
-    ssh_obj = TabletClient("_Dummy_")
-    ssh_obj.stop_screen_recorder()
-    logger.debug("%s %s", SS_LINUX_PATH, SS_WIN_PATH)
-    return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
+    try:
+        ssh_obj = TabletClient('_Dummy_')
+        ssh_obj.stop_screen_recorder()
+        logger.info('Recording successfully stopped')
+        return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
+    except Exception as e:
+        logger.error('Can\'t stop recording: %s', str(e))
+        return False
 
 
 def delete_files_associated(url_args) -> True | False:
