@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from django.conf.urls import handler500
 
 courseurlpatterns = patterns('',
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
@@ -15,7 +16,6 @@ courseurlpatterns = patterns('',
 )
 
 urlpatterns = patterns('',
-
     url(r'^rename_elem/$', 'stepicstudio.views.rename_elem'),
 
     url(r'^admin/', include(admin.site.urls)),
@@ -29,7 +29,7 @@ urlpatterns = patterns('',
 
     url(r'^reorder_lists/$', 'stepicstudio.views.reorder_elements'),
 
-    url(r'^stop_recording/$', 'stepicstudio.views.stop_all_recording'),
+    url(r'^stop_recording/', 'stepicstudio.views.stop_all_recording'),
 
     url(r'^course/(?P<course_id>[0-9]+)/', include(courseurlpatterns)),
 
@@ -47,5 +47,6 @@ urlpatterns = patterns('',
     # url(r'^course/(?P<courseId>[0-9]+)/add/lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
     url(r'^notes/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.notes'),
-
 )
+
+handler500 = 'stepicstudio.views.error500_handler'

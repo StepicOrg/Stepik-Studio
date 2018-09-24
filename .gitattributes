@@ -1,0 +1,2 @@
+settings.py filter=git-crypt diff=git-crypt
+local_settings.py filter=git-crypt diff=git-crypt

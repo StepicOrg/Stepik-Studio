@@ -1,0 +1,10 @@
+{%  extends "base.html" %}
+{%  block content %}
+        <div>Something went wrong:</div>
+        {% if description %}
+            {{ description }}
+        {% endif %}
+        <div>
+            <a href={{ go_back }}>Back</a>
+        </div>
+    {% endblock %}

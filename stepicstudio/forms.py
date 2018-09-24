@@ -11,7 +11,6 @@ def get_my_courses(userId):
 
 
 class LessonForm(forms.ModelForm):
-
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('userId')
         self.from_course = kwargs.pop('from_course', 1)
@@ -35,7 +34,6 @@ class LessonForm(forms.ModelForm):
 
 
 class StepForm(forms.ModelForm):
-
     def __init__(self, userId, lessonId, *args, **kwargs):
         super(StepForm, self).__init__(*args, **kwargs)
         self.user = userId

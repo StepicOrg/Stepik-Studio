@@ -18,17 +18,17 @@ class Course(models.Model):
     start_date = models.DateTimeField('Start date of course')
 
     def __str__(self):
-        return self.name + " " + str(self.start_date)
+        return self.name + ' ' + str(self.start_date)
 
     @property
     def os_path(self):
         user_id = self.editors
         user_folder = UserProfile.objects.all().get(user_id=user_id).serverFilesFolder
-        return user_folder + "/" + translate_non_alphanumerics(self.name) + "/"
+        return user_folder + '/' + translate_non_alphanumerics(self.name) + '/'
 
     @property
     def url(self):
-        return "/" + COURSE_ULR_NAME + "/" + str(self.id) + "/"
+        return '/' + COURSE_ULR_NAME + '/' + str(self.id) + '/'
 
 
 class Lesson(models.Model):
@@ -37,17 +37,17 @@ class Lesson(models.Model):
     position = models.SmallIntegerField(default=0)
 
     def __str__(self):
-        return self.name + " from course id =" + str(self.from_course)
+        return self.name + ' from course id =' + str(self.from_course)
 
     @property
     def url(self):
         course = Course.objects.all().get(id=self.from_course)
-        return "/" + COURSE_ULR_NAME + "/" + str(course.id) + "/" + LESSON_URL_NAME + "/" + str(self.id) + "/"
+        return '/' + COURSE_ULR_NAME + '/' + str(course.id) + '/' + LESSON_URL_NAME + '/' + str(self.id) + '/'
 
     @property
     def os_path(self):
         course = Course.objects.all().get(id=self.from_course)
-        return course.os_path + translate_non_alphanumerics(self.name) + "/"
+        return course.os_path + translate_non_alphanumerics(self.name) + '/'
 
 
 class Step(models.Model):
@@ -60,16 +60,15 @@ class Step(models.Model):
     text_data = models.TextField(default='')
 
     def __str__(self):
-        return self.name + " from lesson id =" + str(self.from_lesson)
+        return self.name + ' from lesson id =' + str(self.from_lesson)
 
     @property
     def os_path(self):
         lesson = Lesson.objects.all().get(id=self.from_lesson)
-        return lesson.os_path + translate_non_alphanumerics(self.name) + "/"
+        return lesson.os_path + translate_non_alphanumerics(self.name) + '/'
 
 
 class SubStep(models.Model):
-
     name = models.CharField(max_length=400)
     from_step = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
@@ -79,17 +78,17 @@ class SubStep(models.Model):
     is_locked = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name + " from step id =" + str(self.from_step)
+        return self.name + ' from step id =' + str(self.from_step)
 
     @property
     def os_path(self):
         step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + SUBSTEP_PROFESSOR
+        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_PROFESSOR
 
     @property
     def os_path_v1(self):
         step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_PROFESSOR_v1
+        return step.os_path + translate_non_alphanumerics(self.name) + '/' + SUBSTEP_PROFESSOR_v1
 
     @property
     def os_path_all_variants(self):
@@ -98,12 +97,12 @@ class SubStep(models.Model):
     @property
     def os_screencast_path(self):
         step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + SUBSTEP_SCREEN
+        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_SCREEN
 
     @property
     def os_screencast_path_v1(self):
         step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + "/" + SUBSTEP_SCREEN_v1
+        return step.os_path + translate_non_alphanumerics(self.name) + '/' + SUBSTEP_SCREEN_v1
 
     @property
     def os_screencast_path_all_variants(self):
@@ -116,7 +115,7 @@ class SubStep(models.Model):
     @property
     def os_automontage_path(self):
         step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + "/" + self.name + FAST_MONTAGE
+        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + FAST_MONTAGE
 
     @property
     def automontage_exist(self):
@@ -124,8 +123,8 @@ class SubStep(models.Model):
 
 
 class UserProfile(models.Model):
-    user = models.ForeignKey(User, unique=True)
-    last_visit = models.DateTimeField(default="2000-10-25 14:30")
+    user = models.OneToOneField(User)
+    last_visit = models.DateTimeField(default='2000-10-25 14:30')
     serverIP = models.CharField(max_length=50)
     clientIP = models.CharField(max_length=50)
     serverFilesFolder = models.CharField(max_length=10000)
@@ -138,7 +137,7 @@ class UserProfile(models.Model):
     def is_ready_to_show_hello_screen(self) -> True | False:
         now = datetime.datetime.utcnow().replace(tzinfo=utc)
         timediff = now - self.last_visit
-        if timediff.total_seconds() > 60*60*12:
+        if timediff.total_seconds() > 60 * 60 * 12:
             return True
         return False
 
@@ -146,6 +145,7 @@ class UserProfile(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
+
 
 # Some magic here?
 post_save.connect(create_user_profile, sender=User)
