@@ -141,14 +141,17 @@ def loggedin(request):
 # TODO: Implement correctly !!! REDECORATE WITH CAN_EDIT_PAGE
 @login_required(login_url='/login/')
 def add_lesson(request):
-    _id = None
-    if request.META.get('HTTP_REFERER'):
-        url_arr = (request.META.get('HTTP_REFERER')).split('/')
-        try:
-            _id = url_arr[url_arr.index('course') + 1]
-        except Exception as e:
-            logger.error(e)
-    if request.POST:
+    if request.method == 'GET':
+        if request.META.get('HTTP_REFERER'):
+            try:
+                url_arr = (request.META.get('HTTP_REFERER')).split('/')
+                _id = url_arr[url_arr.index('course') + 1]
+                form = LessonForm(userId=request.user.id, from_course=_id)
+            except:
+                return error500_handler(request)
+        else:
+            raise Http404
+    elif request.method == 'POST':
         form = LessonForm(request.POST, userId=request.user.id)
         if form.is_valid():
             from_course = form.data['from_courseName']
@@ -158,7 +161,7 @@ def add_lesson(request):
             last_saved.save()
             return HttpResponseRedirect('/course/' + from_course + '/')
     else:
-        form = LessonForm(userId=request.user.id, from_course=_id)
+        raise Http404
 
     args = {'full_name': request.user.username}
     args.update(csrf(request))

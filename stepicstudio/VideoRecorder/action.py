@@ -101,7 +101,6 @@ def delete_step_files(**kwargs):
     return delete_step_on_disc(folder_path=folder_path, data=data)
 
 
-# TODO: REMAKE! Wrong implementation
 def stop_cam_recording() -> True | False:
     camstat = CameraStatus.objects.get(id='1')
     camstat.status = False
@@ -110,16 +109,17 @@ def stop_cam_recording() -> True | False:
 
     try:
         stop_ffmpeg_recorder()
-    except Exception as e:
-        logger.exception('Cannot stop remote ffmpeg screen recorder')
+        logger.info('Camera recording successfully stopped')
+    except:
+        logger.exception('Cannot stop camera recorder')
 
     try:
         ssh_obj = TabletClient('_Dummy_')
         ssh_obj.stop_screen_recorder()
-        logger.info('Recording successfully stopped')
+        logger.info('Tablet screen recording successfully stopped')
         return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
-    except Exception as e:
-        logger.error('Can\'t stop recording: %s', str(e))
+    except:
+        logger.exception('Can\'t stop tablet screen recording')
         return False
 
 

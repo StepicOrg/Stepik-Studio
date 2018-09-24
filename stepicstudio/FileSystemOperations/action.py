@@ -3,6 +3,7 @@ import shutil
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
 from stepicstudio.utils.extra import translate_non_alphanumerics
 from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand, FFMPEG_PATH
+from django.conf import settings
 import subprocess
 import psutil
 from stepicstudio.state import CURRENT_TASKS_DICT
@@ -63,6 +64,38 @@ def run_ffmpeg_recorder(path: str, filename: str, substep_id) -> InternalOperati
 
     CURRENT_TASKS_DICT.update({process: substep_id})
     logger.info('Successful starting ffmpeg (PID: %s; FFMPEG command: %s)', process.pid, command)
+    return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+
+def reencode_to_mp4(path: str, filename: str) -> InternalOperationResult:
+    if not settings.REENCODE_TO_MP4:
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+    new_filename = filename[0:-2] + "mp4"  # change file extension from .TS to .mp4
+    source_file = path + '\\' + filename
+    target_file = path + '\\' + new_filename
+
+    if not os.path.isfile(source_file):
+        message = 'File {0} doesn\'t exist'.format(source_file)
+        logger.error('Cannot reencode camera recording: %s', message)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
+
+    command = settings.CAMERA_REENCODE_TEMPLATE.format(source_file, target_file)
+
+    try:
+        proc = subprocess.Popen(command, shell=True)
+        # process still running when returncode is None
+        if proc.returncode is not None and proc.returncode != 0:
+            _, error = proc.communicate()
+            message = 'Cannot exec ffmpeg reencode command ({0}): {1}'.format(proc.returncode, error)
+            logger.error(message)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
+    except Exception as e:
+        message = 'Cannot exec ffmpeg reencode command: {0}'.format(str(e))
+        logger.exception('Cannot exec ffmpeg reencode command: ')
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
+
+    logger.info('Successful starting reencode of %s to mp4', source_file)
     return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
@@ -247,3 +280,4 @@ def get_storage_capacity(path) -> int:
 
 def get_server_disk_info(path) -> (int, int):
     return get_free_space(path), get_storage_capacity(path)
+
