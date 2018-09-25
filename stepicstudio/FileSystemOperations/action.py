@@ -190,7 +190,7 @@ def delete_files_on_server(path: str) -> True | False:
 
 
 def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperationResult:
-    if os.path.isdir(to_obj.os_path):
+    if os.path.exists(to_obj.os_path):
         message = 'File with name \'{0}\' already exists'.format(to_obj.name)
         logger.error(message)
         return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR, message)
