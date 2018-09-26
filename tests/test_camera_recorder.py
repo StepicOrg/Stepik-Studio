@@ -1,6 +1,6 @@
 import time
 from django.test import TestCase
-from stepicstudio.VideoRecorder.camera_recorder import CameraRecorder
+from stepicstudio.VideoRecorder.ffmpy_camera_recorder import CameraRecorder
 import os
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'STEPIC_STUDIO.settings'

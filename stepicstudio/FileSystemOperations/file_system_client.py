@@ -16,12 +16,14 @@ class FileSystemClient(object):
             # process still running when returncode is None
             if proc.returncode is not None and proc.returncode != 0:
                 _, error = proc.communicate()
-                message = 'Cannot exec ffmpeg reencode command ({0}): {1}'.format(proc.returncode, error)
+                message = 'Cannot exec command: (return code: {0}): {1}'.format(proc.returncode, error)
                 self.logger.error(message)
                 return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message), proc
+            else:
+                return InternalOperationResult(ExecutionStatus.SUCCESS), proc
         except Exception as e:
-            message = 'Cannot exec ffmpeg reencode command: {0}'.format(str(e))
-            self.logger.exception('Cannot exec ffmpeg reencode command: ')
+            message = 'Cannot exec command: {0}'.format(str(e))
+            self.logger.exception('Cannot exec command: ')
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message), None
 
     def kill_process(self, pid, including_parent=True) -> InternalOperationResult:
