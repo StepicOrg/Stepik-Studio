@@ -209,6 +209,7 @@ var elements_subscriptor = function() {
 
             },
             error: function(data){
+                $(window).off();
                 alert(data.responseText);
                 record_start_failed(elements_subscriptor);
             }

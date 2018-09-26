@@ -3,6 +3,7 @@ import copy
 import re
 from wsgiref.util import FileWrapper
 import logging
+import os
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest
@@ -15,7 +16,7 @@ from django.template import RequestContext
 import requests
 
 from stepicstudio.forms import LessonForm, StepForm
-from stepicstudio.VideoRecorder.action import *
+from stepicstudio.video_recorders.action import *
 from stepicstudio.FileSystemOperations.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
@@ -141,14 +142,17 @@ def loggedin(request):
 # TODO: Implement correctly !!! REDECORATE WITH CAN_EDIT_PAGE
 @login_required(login_url='/login/')
 def add_lesson(request):
-    _id = None
-    if request.META.get('HTTP_REFERER'):
-        url_arr = (request.META.get('HTTP_REFERER')).split('/')
-        try:
-            _id = url_arr[url_arr.index('course') + 1]
-        except Exception as e:
-            logger.error(e)
-    if request.POST:
+    if request.method == 'GET':
+        if request.META.get('HTTP_REFERER'):
+            try:
+                url_arr = (request.META.get('HTTP_REFERER')).split('/')
+                _id = url_arr[url_arr.index('course') + 1]
+                form = LessonForm(userId=request.user.id, from_course=_id)
+            except:
+                return error500_handler(request)
+        else:
+            raise Http404
+    elif request.method == 'POST':
         form = LessonForm(request.POST, userId=request.user.id)
         if form.is_valid():
             from_course = form.data['from_courseName']
@@ -158,7 +162,7 @@ def add_lesson(request):
             last_saved.save()
             return HttpResponseRedirect('/course/' + from_course + '/')
     else:
-        form = LessonForm(userId=request.user.id, from_course=_id)
+        raise Http404
 
     args = {'full_name': request.user.username}
     args.update(csrf(request))
@@ -246,22 +250,11 @@ def show_step(request, course_id, lesson_id, step_id):
             elif start_status.status is ExecutionStatus.FATAL_ERROR:
                 return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
         elif user_action == 'stop':
-            stop_status = stop_recording(request, course_id, lesson_id, step_id)
+            stop_status = stop_cam_recording()  # stop_recording(request, course_id, lesson_id, step_id)
             if stop_status:
                 return HttpResponse('Ok')
             else:
                 return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
-
-    to_del = set()
-    for task in CURRENT_TASKS_DICT.keys():
-        if task.poll() == 0:
-            ss_id = CURRENT_TASKS_DICT[task]
-            ss = SubStep.objects.get(id=ss_id)
-            ss.is_locked = False
-            ss.save()
-            to_del.add(task)
-    for t in to_del:
-        del CURRENT_TASKS_DICT[t]
 
     all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
     summ_time = update_time_records(all_substeps)
@@ -373,31 +366,7 @@ def recording_page(request, course_id, lesson_id, step_id):
 
 @login_required(login_url='/login')
 def stop_all_recording(request):
-    to_del = set()
-    for task in CURRENT_TASKS_DICT.keys():
-        if task.poll() != 0:
-            try:
-                substep_id = CURRENT_TASKS_DICT[task]
-                substep_obj = SubStep.objects.get(id=substep_id)
-
-                step_obj = Step.objects.get(id=substep_obj.from_step)
-                lesson_obj = Lesson.objects.get(id=step_obj.from_lesson)
-                course_obj = Course.objects.get(id=lesson_obj.from_course)
-
-                stop_recording(request, course_obj.id, lesson_obj.id, step_obj.id)
-                to_del.add(task)
-            except Exception as e:
-                logger.error('Can\'t stop recording; server recording process PID: %s; %s', task.pid, str(e))
-        else:
-            to_del.add(task)
-
-    for t in to_del:
-        ss_id = CURRENT_TASKS_DICT[t]
-        ss = SubStep.objects.get(id=ss_id)
-        ss.is_locked = False
-        ss.save()
-        del CURRENT_TASKS_DICT[t]
-
+    stop_cam_recording()
     return HttpResponse('Ok')
 
 
@@ -537,10 +506,25 @@ def view_stat(request, course_id):
 @login_required(login_url='/login/')
 def video_view(request, substep_id):
     try:
+        fs_client = FileSystemClient()
         substep = SubStep.objects.all().get(id=substep_id)
-        file = FileWrapper(open(substep.os_path, 'rb'))
-        response = HttpResponse(file, content_type='video/TS')
-        response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_PROFESSOR
+        path = substep.os_path
+        base_path = os.path.splitext(path)[0]
+
+        if fs_client.validate_file(base_path + '.mp4'):
+            path_to_show = base_path + '.mp4'
+            file = FileWrapper(open(path_to_show, 'rb'))
+            response = HttpResponse(file, content_type='video/mp4')
+            response['Content-Disposition'] = 'inline; filename=' + \
+                                              substep.name + '_' + \
+                                              os.path.splitext(SUBSTEP_PROFESSOR)[0] + '.mp4'
+        else:
+            file = FileWrapper(open(path, 'rb'))
+            response = HttpResponse(file, content_type='video/TS')
+            response['Content-Disposition'] = 'inline; filename=' + \
+                                              substep.name + '_' + \
+                                              SUBSTEP_PROFESSOR
+
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
@@ -553,11 +537,25 @@ def video_view(request, substep_id):
 @login_required(login_url='/login/')
 def video_screen_view(request, substep_id):
     try:
+        fs_client = FileSystemClient()
         substep = SubStep.objects.all().get(id=substep_id)
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
-        file = FileWrapper(open(path, 'rb'))
-        response = HttpResponse(file, content_type='video/mkv')
-        response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + SUBSTEP_SCREEN
+        base_path = os.path.splitext(path)[0]
+
+        if fs_client.validate_file(base_path + '.mp4'):
+            path_to_show = base_path + '.mp4'
+            file = FileWrapper(open(path_to_show, 'rb'))
+            response = HttpResponse(file, content_type='video/mp4')
+            response['Content-Disposition'] = 'inline; filename=' + \
+                                              substep.name + '_' + \
+                                              os.path.splitext(SUBSTEP_SCREEN)[0] + '.mp4'
+        else:
+            file = FileWrapper(open(path, 'rb'))
+            response = HttpResponse(file, content_type='video/TS')
+            response['Content-Disposition'] = 'inline; filename=' + \
+                                              substep.name + '_' + \
+                                              SUBSTEP_SCREEN
+
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))

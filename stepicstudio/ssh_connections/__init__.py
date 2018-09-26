@@ -5,6 +5,7 @@ import logging
 import time
 from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
 from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
+from django.conf import settings
 
 logger = logging.getLogger('stepic_studio.ssh_connections.__init__')
 logging.getLogger('paramiko').setLevel(logging.WARNING)
@@ -65,9 +66,7 @@ class TabletClient(object):
                 logger.debug('Generated from run_screen_recorder() %s', self.remote_path)
             i += 1
 
-        command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
-                  '-pix_fmt yuv420p -vcodec libx264 -acodec pcm_s16le -preset ultrafast -threads 0 -af "volume=1dB" -y ' \
-                  + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
+        command = settings.FFMPEG_TABLET_COMM + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
         logger.debug(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
 
@@ -100,7 +99,9 @@ class TabletClient(object):
 
             os.path.exists(local_dir) or os.makedirs(local_dir)
             dir_items = sftp.listdir_attr(remote_dir)
+            filename = None
             for item in dir_items:
+                filename = item.filename
                 remote_path = remote_dir + '/' + item.filename
                 local_path = os.path.join(local_dir, item.filename)
                 if S_ISDIR(item.st_mode):
@@ -111,9 +112,11 @@ class TabletClient(object):
                     print('Starting downloading screencast from: %s', from_dir)
                     sftp.get(remote_path, local_path, _download_status)
 
-        download_dir(from_dir, to_path)
+            return filename
+
+        downloaded_filename = download_dir(from_dir, to_path)
         sftp.close()
-        return self.download_status
+        return self.download_status, downloaded_filename
 
     def get_free_space_info(self, folder_path) -> str:
         command = 'df -B1 ' + folder_path + ' | tail -1 | awk \'{print $4}\''

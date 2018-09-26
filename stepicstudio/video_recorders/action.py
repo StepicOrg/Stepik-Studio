@@ -1,5 +1,7 @@
 import re
 
+from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
+from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
 from django.contrib.auth.models import User
 from stepicstudio.FileSystemOperations.action import *
@@ -44,11 +46,8 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     if screencast_status.status is not ExecutionStatus.SUCCESS:
         return screencast_status
 
-    # checking ffmpeg execution possibility and start if possible
-    # TODO: checking execution possibility without starting ffmpeg
-    ffmpeg_status = run_ffmpeg_recorder(substep_folder.replace('/', '\\'),
-                                        data['currSubStep'].name + SUBSTEP_PROFESSOR,
-                                        data['currSubStep'].id)
+    ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
+                                                           data['currSubStep'].name + SUBSTEP_PROFESSOR)
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         return ffmpeg_status
 
@@ -59,7 +58,7 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
         SS_LINUX_PATH = linux_obj.remote_path
         SS_WIN_PATH = substep_folder
     except Exception as e:
-        stop_ffmpeg_recorder()
+        ServerCameraRecorder().stop_recording()
         message = 'Cannot execute remote ffmpeg: {0}'.format(str(e))
         logger.exception('Cannot execute remote ffmpeg')
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
@@ -101,26 +100,42 @@ def delete_step_files(**kwargs):
     return delete_step_on_disc(folder_path=folder_path, data=data)
 
 
-# TODO: REMAKE! Wrong implementation
 def stop_cam_recording() -> True | False:
     camstat = CameraStatus.objects.get(id='1')
     camstat.status = False
-    ssh_screencast_stop()
     camstat.save()
 
-    try:
-        stop_ffmpeg_recorder()
-    except Exception as e:
-        logger.exception('Cannot stop remote ffmpeg screen recorder')
+    ServerCameraRecorder().stop_recording()
 
     try:
         ssh_obj = TabletClient('_Dummy_')
         ssh_obj.stop_screen_recorder()
-        logger.info('Recording successfully stopped')
-        return ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
-    except Exception as e:
-        logger.error('Can\'t stop recording: %s', str(e))
+        logger.info('Tablet screen recording successfully stopped')
+        download_status, filename = ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
+        if download_status and filename is not None:
+            convert_mkv_to_mp4(SS_WIN_PATH, filename)
+        return download_status
+    except:
+        logger.exception('Can\'t stop tablet screen recording')
         return False
+
+
+def convert_mkv_to_mp4(path: str, filename: str):
+    path = path.replace('/', '\\')
+    new_filename = filename[0:-3] + "mp4"  # change file extension from .mkv to .mp4
+    source_file = path + '\\' + filename
+    target_file = path + '\\' + new_filename
+    fs_client = FileSystemClient()
+
+    reencode_command = settings.FFMPEG_PATH + ' ' + \
+                       settings.TABLET_REENCODE_TEMPLATE.format(source_file, target_file)
+
+    result, _ = fs_client.execute_command(reencode_command)
+
+    if result.status is ExecutionStatus.SUCCESS:
+        logger.info('Successfully start converting mkv to mp4 (FFMPEG command: %s)', reencode_command)
+    else:
+        logger.error('Converting failed mkv to mp4: %s; FFMPEG command: %s', result.message, reencode_command)
 
 
 def delete_files_associated(url_args) -> True | False:

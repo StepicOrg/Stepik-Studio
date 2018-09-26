@@ -7,7 +7,8 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from stepicstudio.models import UserProfile, Course, Lesson, Step, SubStep, CameraStatus, User
-from STEPIC_STUDIO.settings import TEST_SSH_ACC_USERNAME, TEST_SSH_ACC_PASS
+TEST_SSH_ACC_USERNAME = '123'
+TEST_SSH_ACC_PASS = '123'
 
 
 class Helper(object):
