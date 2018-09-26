@@ -1,5 +1,7 @@
 import logging
 import subprocess
+
+import os
 import psutil
 
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
@@ -47,6 +49,9 @@ class FileSystemClient(object):
 
         return InternalOperationResult(ExecutionStatus.SUCCESS)
 
+    def is_process_exists(self, pid: int) -> bool:
+        return psutil.pid_exists(pid)
+
     def get_free_disk_space(self, path: str) -> (InternalOperationResult, int):
         """Returns free disk capacity in bytes."""
 
@@ -66,3 +71,6 @@ class FileSystemClient(object):
         except Exception as e:
             self.logger.warning('Can\'t get information about total disk capacity: %s', str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, str(e)), None
+
+    def validate_file(self, file: str) -> bool:
+        return os.path.isfile(file)

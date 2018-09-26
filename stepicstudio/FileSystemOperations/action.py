@@ -44,61 +44,6 @@ def add_file_to_test(**kwargs: dict) -> None:
         os.makedirs(folder_p)
 
 
-def run_ffmpeg_recorder(path: str, filename: str, substep_id) -> InternalOperationResult:
-    command = FFMPEGcommand
-    command += path + '\\' + filename
-
-    try:
-        global process
-        process = subprocess.Popen(command, shell=True)
-        # process still running when returncode is None
-        if process.returncode is not None and process.returncode != 0:
-            _, error = process.communicate()
-            message = 'Cannot exec ffmpeg command ({0}): {1}'.format(process.returncode, error)
-            logger.error(message)
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
-    except Exception as e:
-        message = 'Cannot exec ffmpeg command: {0}'.format(str(e))
-        logger.exception('Cannot exec ffmpeg command: ')
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
-
-    CURRENT_TASKS_DICT.update({process: substep_id})
-    logger.info('Successful starting ffmpeg (PID: %s; FFMPEG command: %s)', process.pid, command)
-    return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-
-def reencode_to_mp4(path: str, filename: str) -> InternalOperationResult:
-    if not settings.REENCODE_TO_MP4:
-        return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-    new_filename = filename[0:-2] + "mp4"  # change file extension from .TS to .mp4
-    source_file = path + '\\' + filename
-    target_file = path + '\\' + new_filename
-
-    if not os.path.isfile(source_file):
-        message = 'File {0} doesn\'t exist'.format(source_file)
-        logger.error('Cannot reencode camera recording: %s', message)
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
-
-    command = settings.CAMERA_REENCODE_TEMPLATE.format(source_file, target_file)
-
-    try:
-        proc = subprocess.Popen(command, shell=True)
-        # process still running when returncode is None
-        if proc.returncode is not None and proc.returncode != 0:
-            _, error = proc.communicate()
-            message = 'Cannot exec ffmpeg reencode command ({0}): {1}'.format(proc.returncode, error)
-            logger.error(message)
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
-    except Exception as e:
-        message = 'Cannot exec ffmpeg reencode command: {0}'.format(str(e))
-        logger.exception('Cannot exec ffmpeg reencode command: ')
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
-
-    logger.info('Successful starting reencode of %s to mp4', source_file)
-    return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-
 def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, substep_id):
     try:
         video_path = [i for i in video_path_list if os.path.exists(i)][0]
@@ -114,20 +59,6 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, su
 
     except Exception as e:
         logger.debug('run_ffmepg_raw_mongage: Error')
-
-
-# TODO: problems with stopping ffmpeg process
-def stop_ffmpeg_recorder() -> None:
-    global process
-
-    def kill_proc_tree(pid, including_parent=True):
-        parent = psutil.Process(pid)
-        for child in parent.children(recursive=True):
-            child.kill()
-        if including_parent:
-            parent.kill()
-
-    kill_proc_tree(process.pid)
 
 
 def delete_substep_on_disc(**kwargs: dict) -> True | False:

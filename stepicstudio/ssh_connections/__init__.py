@@ -99,7 +99,9 @@ class TabletClient(object):
 
             os.path.exists(local_dir) or os.makedirs(local_dir)
             dir_items = sftp.listdir_attr(remote_dir)
+            filename = None
             for item in dir_items:
+                filename = item.filename
                 remote_path = remote_dir + '/' + item.filename
                 local_path = os.path.join(local_dir, item.filename)
                 if S_ISDIR(item.st_mode):
@@ -110,9 +112,11 @@ class TabletClient(object):
                     print('Starting downloading screencast from: %s', from_dir)
                     sftp.get(remote_path, local_path, _download_status)
 
-        download_dir(from_dir, to_path)
+            return filename
+
+        downloaded_filename = download_dir(from_dir, to_path)
         sftp.close()
-        return self.download_status
+        return self.download_status, downloaded_filename
 
     def get_free_space_info(self, folder_path) -> str:
         command = 'df -B1 ' + folder_path + ' | tail -1 | awk \'{print $4}\''
