@@ -47,14 +47,18 @@ def start_recording(**kwargs: dict) -> True or False:
     SS_LINUX_PATH = linux_obj.remote_path
     SS_WIN_PATH = substep_folder
 
+    print("OK HERE WRITE TO DB")
     db_camera = CameraStatus.objects.get(id="1")
+    print("SERVER STATUS GET")
     if server_status and screencast_status:
         if not db_camera.status:
             db_camera.status = True
             db_camera.start_time = int(round(time.time() * 1000))
             db_camera.save()
+        print("SERVER STATUS UPDATED")
         return True
     else:
+        print("SERVER STATUS UPDATED")
         return False
 
 

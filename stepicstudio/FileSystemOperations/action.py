@@ -61,10 +61,7 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, su
         screencast_path = [i for i in screencast_path_list if os.path.exists(i)][0]
         to_folder_path = os.path.dirname(screencast_path)
         filename_to_create = os.path.basename(os.path.dirname(screencast_path))+'_Raw_Montage.mp4'
-        command = FFMPEG_PATH + r' -i ' + video_path + r' -i ' + screencast_path + r' -filter_complex \
-        "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
-        [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
-        amerge,pan=stereo:c0<c0+c1:c1<c1+c0" ' + to_folder_path + "/" + filename_to_create + " -y"
+        command = FFMPEG_PATH + r' -i ' + video_path + r' -i ' + screencast_path + r' -filter_complex "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; amerge,pan=stereo:c0<c0+c1:c1<c1+c0" ' + to_folder_path + "/" + filename_to_create + " -y"
         proc = subprocess.Popen(command, shell=True)
         CURRENT_TASKS_DICT.update({proc: substep_id})
 
@@ -155,10 +152,14 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> True or False:
 
 
 def get_length_in_sec(filename: str) -> int:
-    result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    duration_string = [x.decode("utf-8") for x in result.stdout.readlines() if "Duration" in x.decode('utf-8')][0]
-    time = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
-    return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2].split('.')[0])
+    try:
+        result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        duration_string = [x.decode("utf-8") for x in result.stdout.readlines() if "Duration" in x.decode('utf-8')][0]
+        time = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
+        result = int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2].split('.')[0])
+    except Exception as e:
+        return 0
+    return result
 
 
 def calculate_folder_duration_in_sec(calc_path: str, ext: str='TS') -> int:

@@ -24,6 +24,7 @@ class ScreenRecorder(object):
         self.path = path
         self.remote_path = ''
         self.download_status = False
+        print("STARTING SSH")
 
         if remote_ubuntu is not None:
             global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME
@@ -40,6 +41,7 @@ class ScreenRecorder(object):
         transport = paramiko.Transport((host, 22))
         transport.connect(username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
         self.sftp = paramiko.SFTPClient.from_transport(transport)
+        print("CREATED SSH")
 
     def rexists(self, path):
         try:
@@ -50,6 +52,7 @@ class ScreenRecorder(object):
             return True
 
     def run_screen_recorder(self, substepname=''):
+        print("STARTING SSH SCREEN RECORDER")
         p_args = self.path.split('/')
         p_args = list(filter(None, p_args))
         self.remote_path = "/"
@@ -64,11 +67,13 @@ class ScreenRecorder(object):
                 logger.debug("Generated from run_screen_recorder() %s", self.remote_path)
             i += 1
 
-        command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
+        command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -draw_mouse 0 -r 24 -s 1920x1080 -i :0.0 ' \
                   '-pix_fmt yuv420p -vcodec libx264 -acodec pcm_s16le -preset ultrafast -threads 0 -af "volume=1dB" -y ' \
                   + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
         logger.debug(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
+        print("STARTED SSH SCREEN RECORDER!")
+        print("STARTED SSH SCREEN RECORDER!")
 
     def stop_screen_recorder(self):
         stdin, stdout, stderr = self.ssh.exec_command("pkill -f ffmpeg")
@@ -77,34 +82,36 @@ class ScreenRecorder(object):
     def get_file(self, from_dir, to_path):
         if not self.path:
             raise IOError
-        else:
+        try:
             host = PROFESSOR_IP
             transport = paramiko.Transport((host, 22))
             transport.connect(username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
             sftp = paramiko.SFTPClient.from_transport(transport)
-
-            # TODO: Refactor. New connection not needed
-            def download_dir(remote_dir, local_dir):
-                def _download_status(done_bytes, all_bytes):
-                    if done_bytes == all_bytes:
-                        logger.debug("Screencast downloaded from: %s", from_dir)
-                        print("Screencast downloaded from: %s", from_dir)
-                        self.download_status = True
-                os.path.exists(local_dir) or os.makedirs(local_dir)
-                dir_items = sftp.listdir_attr(remote_dir)
-                for item in dir_items:
-                    remote_path = remote_dir + '/' + item.filename
-                    local_path = os.path.join(local_dir, item.filename)
-                    if S_ISDIR(item.st_mode):
-                        download_dir(remote_path, local_path)
-                    else:
-                        global download_status
-                        logger.debug('Starting downloading screencast from: %s', from_dir)
-                        print('Starting downloading screencast from: %s', from_dir)
-                        sftp.get(remote_path, local_path, _download_status)
-            download_dir(from_dir, to_path)
-            sftp.close()
-            return self.download_status
+        except Exception as e:
+            logger.exception("Finaly catched SSH Error! GOTCHA!")
+            raise e
+        # TODO: Refactor. New connection not needed
+        def download_dir(remote_dir, local_dir):
+            def _download_status(done_bytes, all_bytes):
+                if done_bytes == all_bytes:
+                    logger.debug("Screencast downloaded from: %s", from_dir)
+                    print("Screencast downloaded from: %s", from_dir)
+                    self.download_status = True
+            os.path.exists(local_dir) or os.makedirs(local_dir)
+            dir_items = sftp.listdir_attr(remote_dir)
+            for item in dir_items:
+                remote_path = remote_dir + '/' + item.filename
+                local_path = os.path.join(local_dir, item.filename)
+                if S_ISDIR(item.st_mode):
+                    download_dir(remote_path, local_path)
+                else:
+                    global download_status
+                    logger.debug('Starting downloading screencast from: %s', from_dir)
+                    print('Starting downloading screencast from: %s', from_dir)
+                    sftp.get(remote_path, local_path, _download_status)
+        download_dir(from_dir, to_path)
+        sftp.close()
+        return self.download_status
 
 # def get_file_test():
 #     global PROFESSOR_IP, UBUNTU_PASSWORD, UBUNTU_USERNAME

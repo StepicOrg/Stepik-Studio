@@ -246,11 +246,14 @@ def show_step(request, course_id, lesson_id, step_id):
     to_del = set()
     for task in CURRENT_TASKS_DICT.keys():
         if task.poll() == 0:
-            ss_id = CURRENT_TASKS_DICT[task]
-            ss = SubStep.objects.get(id=ss_id)
-            ss.is_locked = False
-            ss.save()
-            to_del.add(task)
+            try:
+                ss_id = CURRENT_TASKS_DICT[task]
+                ss = SubStep.objects.get(id=ss_id)
+                ss.is_locked = False
+                ss.save()
+                to_del.add(task)
+            except Exception as e:
+                pass
     for t in to_del:
         del CURRENT_TASKS_DICT[t]
 
@@ -330,15 +333,17 @@ def start_new_step_recording(request, course_id, lesson_id, step_id):
     else:
         return False
     try:
-        logger.debug("sent data to stepic.mehanig.com")
-        data = {'User': request.user.username,
-                'Name': substep.name,
-                'Duration': 'No data',
-                'priority': '1',
-                'status': '0',
-                'token': SECURE_KEY_FOR_STAT}
-        r = requests.post(STATISTIC_URL, data=data)
-        logger.debug('STATISTIC STATUS: %s', r)
+        #
+        #logger.debug("sent data to stepic.mehanig.com")
+        #data = {'User': request.user.username,
+        #        'Name': substep.name,
+        #        'Duration': 'No data',
+        #        'priority': '1',
+        #        'status': '0',
+        #        'token': SECURE_KEY_FOR_STAT}
+        #r = requests.post(STATISTIC_URL, data=data)
+        #logger.debug('STATISTIC STATUS: %s', r)
+        pass
     except Exception as e:
         logger.debug('Error!!!: %s', e)
     return True
@@ -525,7 +530,8 @@ def video_view(request, substep_id):
         return response
     except Exception as e:
         logger.debug(e)
-        return HttpResponse("File to large. Please watch it on server.")
+        print(e)
+        return HttpResponse("File too large. Please watch it on server.")
 
 
 # TODO: hotfix here is bad =(
@@ -549,7 +555,20 @@ def video_screen_view(request, substep_id):
         return response
     except Exception as e:
         logger.debug(e)
-        return HttpResponse("File to large. Please watch it on server.")
+        return HttpResponse("File too large. Please watch it on server.")
+
+
+def geterate_notes_page(request, course_id):
+    lessons = Lesson.objects.all().filter(from_course=course_id)
+    notes = list()
+    for l in lessons:
+        steps = Step.objects.all().filter(from_lesson=l.id).order_by('id')
+        for s in steps:
+            notes.append({'id': 'Step' + str(s.id) + 'from' + str(s.from_lesson), 'text': s.text_data})
+    args = {'notes': notes}
+
+    return render_to_response('notes_page.html', args, context_instance=RequestContext(request))
+
 
 
 def show_montage(request, substep_id):
