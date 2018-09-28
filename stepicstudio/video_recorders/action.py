@@ -13,7 +13,7 @@ from stepicstudio.ssh_connections import TabletClient
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 from STEPIC_STUDIO.settings import LINUX_DIR
-
+import os
 import logging
 
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
@@ -114,6 +114,8 @@ def stop_cam_recording() -> True | False:
         download_status, filename = ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
         if download_status and filename is not None:
             convert_mkv_to_mp4(SS_WIN_PATH, filename)
+        else:
+            logger.error('Can\'t convert mkv to mp4; download status: %s, filename: %s', download_status, filename)
         return download_status
     except:
         logger.exception('Can\'t stop tablet screen recording')
@@ -122,10 +124,14 @@ def stop_cam_recording() -> True | False:
 
 def convert_mkv_to_mp4(path: str, filename: str):
     path = path.replace('/', '\\')
-    new_filename = filename[0:-3] + "mp4"  # change file extension from .mkv to .mp4
-    source_file = path + '\\' + filename
-    target_file = path + '\\' + new_filename
+    new_filename = os.path.splitext(filename)[0] + ".mp4"  # change file extension from .mkv to .mp4
+    source_file = os.path.join(path, filename)
+    target_file = os.path.join(path, new_filename)
     fs_client = FileSystemClient()
+
+    if not fs_client.validate_file(source_file):
+        logger.error('Converting mkv to mp4 failed; file %s doesn\'t exist', source_file)
+        return
 
     reencode_command = settings.FFMPEG_PATH + ' ' + \
                        settings.TABLET_REENCODE_TEMPLATE.format(source_file, target_file)
@@ -135,7 +141,7 @@ def convert_mkv_to_mp4(path: str, filename: str):
     if result.status is ExecutionStatus.SUCCESS:
         logger.info('Successfully start converting mkv to mp4 (FFMPEG command: %s)', reencode_command)
     else:
-        logger.error('Converting failed mkv to mp4: %s; FFMPEG command: %s', result.message, reencode_command)
+        logger.error('Converting mkv to mp4 failed: %s; FFMPEG command: %s', result.message, reencode_command)
 
 
 def delete_files_associated(url_args) -> True | False:

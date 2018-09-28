@@ -2,6 +2,7 @@ from django.conf import settings
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 import logging
+import os
 
 
 class PostprocessorInterface(object):
@@ -30,9 +31,10 @@ class TSConverter(PostprocessorInterface):
         self.logger = logging.getLogger('stepic_studio.postprocessing.TSConverter')
 
     def process(self, path: str, filename: str) -> (str, str):
-        new_filename = filename[0:-2] + "mp4"  # change file extension from .TS to .mp4
-        source_file = path + '\\' + filename
-        target_file = path + '\\' + new_filename
+        new_filename = os.path.splitext(filename)[0] + '.mp4'  # change file extension from .TS to .mp4
+
+        source_file = os.path.join(path, filename)
+        target_file = os.path.join(path, new_filename)
 
         reencode_command = settings.FFMPEG_PATH + ' ' + \
                            settings.CAMERA_REENCODE_TEMPLATE.format(source_file, target_file)

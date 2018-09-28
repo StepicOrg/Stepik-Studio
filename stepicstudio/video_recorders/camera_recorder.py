@@ -1,4 +1,6 @@
 import logging
+
+import os
 from singleton_decorator import singleton
 from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
@@ -23,11 +25,11 @@ class ServerCameraRecorder(PostprocessableRecorder):
     def start_recording(self, path: str, filename: str) -> InternalOperationResult:
         if self.is_active():
             self.__logger.error('Can\'t start FFMPEG for file %s: camera is acctually recording (process with PID %s)',
-                                path + '\\' + filename,
+                                os.path.join(path, filename),
                                 self.__process.pid)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'Camera is actually recording')
 
-        local_command = self.__command + path + '\\' + filename
+        local_command = self.__command + os.path.join(path, filename)
         result, self.__process = self.__fs_client.execute_command(local_command)
 
         if result.status is ExecutionStatus.SUCCESS:

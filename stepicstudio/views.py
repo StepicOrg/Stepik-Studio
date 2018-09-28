@@ -500,8 +500,6 @@ def view_stat(request, course_id):
     return render_to_response('stat.html', args, context_instance=RequestContext(request))
 
 
-# TODO: try catch works incorrectly. Should check for file size before return
-# TODO: hotfix here is bad
 # TODO: This function is unsafe, its possible to watch other users files
 @login_required(login_url='/login/')
 def video_view(request, substep_id):

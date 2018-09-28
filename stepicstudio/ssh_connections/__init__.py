@@ -66,7 +66,7 @@ class TabletClient(object):
                 logger.debug('Generated from run_screen_recorder() %s', self.remote_path)
             i += 1
 
-        command = settings.FFMPEG_TABLET_COMM + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
+        command = settings.FFMPEG_TABLET_CMD + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
         logger.debug(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
 

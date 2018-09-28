@@ -15,10 +15,10 @@ logger = logging.getLogger('stepicstudio.middleware')
 class SetLastVisitMiddleware(object):
     def process_response(self, request, response):
         try:
-            if request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated():
                 UserProfile.objects.filter(pk=request.user.pk).update(last_visit=now())
         except Exception as e:
-            logger.debug('Exception handled while setting last visit info: %s', e)
+            logger.error('Exception handled while setting last visit info: %s', e)
             pass
         return response
 
@@ -33,7 +33,7 @@ class SetStorageCapacityMiddleware(object):
 
     def process_response(self, request, response):
         try:
-            if request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated():
                 self.handle_server_space_info(request)
                 self.handle_tablet_space_info(request)
             else:
