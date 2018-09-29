@@ -1,0 +1,13 @@
+{%  extends "base.html" %}
+{%  load static %}
+ {% block content %}
+    {%  for note in notes %}
+        <table>
+            <td>
+                <tr>
+                    {{ note.id }}: {{ note.text }}
+                </tr>
+            </td>
+        </table>
+    {% endfor %}
+{% endblock %}

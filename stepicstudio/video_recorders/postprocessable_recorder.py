@@ -1,6 +1,7 @@
-import os
-from django.utils.module_loading import import_string
 import logging
+import os
+
+from django.utils.module_loading import import_string
 
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 

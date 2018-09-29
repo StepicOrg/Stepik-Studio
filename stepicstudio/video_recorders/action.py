@@ -1,20 +1,21 @@
+import logging
+import os
 import re
+import time
 
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
-from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
+from stepicstudio.models import CameraStatus, Lesson, SubStep
 from django.contrib.auth.models import User
 from stepicstudio.FileSystemOperations.action import *
 from stepicstudio.const import *
 from stepicstudio.ssh_connections.screencast import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
-import time
+
 from stepicstudio.ssh_connections import TabletClient
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 from STEPIC_STUDIO.settings import LINUX_DIR
-import os
-import logging
 
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 

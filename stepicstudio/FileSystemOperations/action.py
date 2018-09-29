@@ -1,11 +1,11 @@
 import os
-import shutil
-from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
-from stepicstudio.utils.extra import translate_non_alphanumerics
-from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand, FFMPEG_PATH
-from django.conf import settings
-import subprocess
 import psutil
+import shutil
+import subprocess
+
+from stepicstudio.models import Step
+from stepicstudio.utils.extra import translate_non_alphanumerics
+from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEG_PATH
 from stepicstudio.state import CURRENT_TASKS_DICT
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
