@@ -15,7 +15,7 @@ import logging
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
 
-def substep_server_path(**kwargs: dict) -> (str, str):
+def substep_server_path(**kwargs):
     folder = kwargs['folder_path']
     data = kwargs['data']
     if not os.path.isdir(folder):
@@ -38,13 +38,13 @@ def substep_server_path(**kwargs: dict) -> (str, str):
     return f_c_l_s_substep, f_c_l_step
 
 
-def add_file_to_test(**kwargs: dict) -> None:
+def add_file_to_test(**kwargs):
     folder_p, a = substep_server_path(**kwargs)
     if not os.path.isdir(folder_p):
         os.makedirs(folder_p)
 
 
-def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, substep_id):
+def run_ffmpeg_raw_montage(video_path_list, screencast_path_list, substep_id):
     try:
         video_path = [i for i in video_path_list if os.path.exists(i)][0]
         screencast_path = [i for i in screencast_path_list if os.path.exists(i)][0]
@@ -61,7 +61,7 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, su
         logger.debug('run_ffmepg_raw_mongage: Error')
 
 
-def delete_substep_on_disc(**kwargs: dict) -> True | False:
+def delete_substep_on_disc(**kwargs):
     folder = kwargs['folder_path']
     data = kwargs['data']
     f_course = folder + '/' + translate_non_alphanumerics(data['Course'].name)
@@ -77,7 +77,7 @@ def delete_substep_on_disc(**kwargs: dict) -> True | False:
         return True
 
 
-def delete_step_on_disc(**kwargs: dict) -> True | False:
+def delete_step_on_disc(**kwargs):
     folder = kwargs['folder_path']
     data = kwargs['data']
     f_course = folder + '/' + translate_non_alphanumerics(data['Course'].name)
@@ -86,7 +86,7 @@ def delete_step_on_disc(**kwargs: dict) -> True | False:
     return delete_files_on_server(f_c_l_step)
 
 
-def search_as_files_and_update_info(args: dict) -> dict:
+def search_as_files_and_update_info(args):
     folder = args['user_profile'].serverFilesFolder
     course = args['Course']
     file_status = [False] * (len(args['all_steps']))
@@ -111,7 +111,7 @@ def search_as_files_and_update_info(args: dict) -> dict:
 
 
 # TODO: Let's not check if it's fine? Return True anyway?
-def delete_files_on_server(path: str) -> True | False:
+def delete_files_on_server(path):
     if os.path.exists(path):
         shutil.rmtree(path)
         return True
@@ -120,7 +120,7 @@ def delete_files_on_server(path: str) -> True | False:
         return True
 
 
-def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperationResult:
+def rename_element_on_disk(from_obj, to_obj):
     if os.path.exists(to_obj.os_path):
         message = 'File with name \'{0}\' already exists'.format(to_obj.name)
         logger.error(message)
@@ -140,7 +140,7 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
 
-def get_length_in_sec(filename: str) -> int:
+def get_length_in_sec(filename):
     try:
         result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         duration_string = [x.decode('utf-8') for x in result.stdout.readlines() if 'Duration' in x.decode('utf-8')][0]
@@ -151,7 +151,7 @@ def get_length_in_sec(filename: str) -> int:
     return result
 
 
-def calculate_folder_duration_in_sec(calc_path: str, ext: str = 'TS') -> int:
+def calculate_folder_duration_in_sec(calc_path, ext):
     sec = 0
     if os.path.isdir(calc_path):
         for obj in [o for o in os.listdir(calc_path) if o.endswith(ext) or os.path.isdir('/'.join([calc_path, o]))]:
@@ -166,7 +166,7 @@ Function user for updating duration in one substep and in whole stepfolders, ret
 '''
 
 
-def update_time_records(substep_list, new_step_only=False, new_step_obj=None) -> int:
+def update_time_records(substep_list, new_step_only=False, new_step_obj=None):
     if new_step_only:
         for substep_path in new_step_obj.os_path_all_variants:
             if os.path.exists(substep_path):
@@ -193,7 +193,7 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
     return summ
 
 
-def get_free_space(path) -> int:
+def get_free_space(path):
     try:
         return psutil.disk_usage(path=path).free
     except Exception as e:
@@ -201,7 +201,7 @@ def get_free_space(path) -> int:
         raise e
 
 
-def get_storage_capacity(path) -> int:
+def get_storage_capacity(path):
     try:
         return psutil.disk_usage(path=path).total
     except Exception as e:
@@ -209,6 +209,6 @@ def get_storage_capacity(path) -> int:
         raise e
 
 
-def get_server_disk_info(path) -> (int, int):
+def get_server_disk_info(path):
     return get_free_space(path), get_storage_capacity(path)
 
