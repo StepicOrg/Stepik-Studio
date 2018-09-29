@@ -3,6 +3,7 @@ import shutil
 from stepicstudio.models import Step, UserProfile, Lesson, SubStep, Course
 from stepicstudio.utils.extra import translate_non_alphanumerics
 from stepicstudio.const import FFPROBE_RUN_PATH, FFMPEGcommand, FFMPEG_PATH
+from django.conf import settings
 import subprocess
 import psutil
 from stepicstudio.state import CURRENT_TASKS_DICT
@@ -43,29 +44,6 @@ def add_file_to_test(**kwargs: dict) -> None:
         os.makedirs(folder_p)
 
 
-def run_ffmpeg_recorder(path: str, filename: str, substep_id) -> InternalOperationResult:
-    command = FFMPEGcommand
-    command += path + '\\' + filename
-
-    try:
-        global process
-        process = subprocess.Popen(command, shell=True)
-        # process still running when returncode is None
-        if process.returncode is not None and process.returncode != 0:
-            _, error = process.communicate()
-            message = 'Cannot exec ffmpeg command ({0}): {1}'.format(process.returncode, error)
-            logger.error(message)
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
-    except Exception as e:
-        message = 'Cannot exec ffmpeg command: {0}'.format(str(e))
-        logger.exception('Cannot exec ffmpeg command: ')
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
-
-    CURRENT_TASKS_DICT.update({process: substep_id})
-    logger.info('Successful starting ffmpeg (PID: %s; FFMPEG command: %s)', process.pid, command)
-    return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-
 def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, substep_id):
     try:
         video_path = [i for i in video_path_list if os.path.exists(i)][0]
@@ -81,20 +59,6 @@ def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, su
 
     except Exception as e:
         logger.debug('run_ffmepg_raw_mongage: Error')
-
-
-# TODO: problems with stopping ffmpeg process
-def stop_ffmpeg_recorder() -> None:
-    global process
-
-    def kill_proc_tree(pid, including_parent=True):
-        parent = psutil.Process(pid)
-        for child in parent.children(recursive=True):
-            child.kill()
-        if including_parent:
-            parent.kill()
-
-    kill_proc_tree(process.pid)
 
 
 def delete_substep_on_disc(**kwargs: dict) -> True | False:
@@ -157,7 +121,7 @@ def delete_files_on_server(path: str) -> True | False:
 
 
 def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperationResult:
-    if os.path.isdir(to_obj.os_path):
+    if os.path.exists(to_obj.os_path):
         message = 'File with name \'{0}\' already exists'.format(to_obj.name)
         logger.error(message)
         return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR, message)
@@ -247,3 +211,4 @@ def get_storage_capacity(path) -> int:
 
 def get_server_disk_info(path) -> (int, int):
     return get_free_space(path), get_storage_capacity(path)
+

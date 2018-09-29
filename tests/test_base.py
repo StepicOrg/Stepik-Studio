@@ -1,4 +1,4 @@
-import stepicstudio.VideoRecorder.action as VR
+import stepicstudio.video_recorders.action as VR
 from . import Helper
 
 

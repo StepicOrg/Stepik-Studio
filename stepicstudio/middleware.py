@@ -1,7 +1,7 @@
 from django.utils.timezone import now
 
 from stepicstudio.FileSystemOperations.action import get_server_disk_info
-from stepicstudio.VideoRecorder.action import get_tablet_disk_info
+from stepicstudio.video_recorders.action import get_tablet_disk_info
 from stepicstudio.models import UserProfile
 import logging
 from django.conf import settings
@@ -15,10 +15,10 @@ logger = logging.getLogger('stepicstudio.middleware')
 class SetLastVisitMiddleware(object):
     def process_response(self, request, response):
         try:
-            if request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated():
                 UserProfile.objects.filter(pk=request.user.pk).update(last_visit=now())
         except Exception as e:
-            logger.debug('Exception handled while setting last visit info: %s', e)
+            logger.error('Exception handled while setting last visit info: %s', e)
             pass
         return response
 
@@ -33,7 +33,7 @@ class SetStorageCapacityMiddleware(object):
 
     def process_response(self, request, response):
         try:
-            if request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated():
                 self.handle_server_space_info(request)
                 self.handle_tablet_space_info(request)
             else:
