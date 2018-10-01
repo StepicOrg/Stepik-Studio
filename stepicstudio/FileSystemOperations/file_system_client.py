@@ -1,6 +1,5 @@
 import logging
 import subprocess
-
 import os
 import psutil
 
@@ -12,9 +11,9 @@ class FileSystemClient(object):
     def __init__(self):
         self.logger = logging.getLogger('stepic_studio.FileSystemOperations.file_system_client')
 
-    def execute_command(self, command: str) -> (InternalOperationResult, subprocess.Popen):
+    def execute_command(self, command: str, stdout=None) -> (InternalOperationResult, subprocess.Popen):
         try:
-            proc = subprocess.Popen(command, shell=True)
+            proc = subprocess.Popen(command, shell=True, stdout=stdout)
             # process still running when returncode is None
             if proc.returncode is not None and proc.returncode != 0:
                 _, error = proc.communicate()
@@ -36,8 +35,16 @@ class FileSystemClient(object):
             return InternalOperationResult(ExecutionStatus.SUCCESS)
         except Exception as e:
             message = 'Cannot exec command: {0}'.format(str(e))
-            self.logger.exception('Cannot exec command: ')
+            self.logger.error('Cannot exec command: %s', str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
+
+    def exec_and_get_output(self, command, stderr=None) -> (InternalOperationResult, str):
+        try:
+            return InternalOperationResult(ExecutionStatus.SUCCESS), \
+                   subprocess.check_output(command, stderr=stderr)
+        except Exception as e:
+            self.logger.error('Can\'t get execution result of %s: %s', command, str(e))
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR), None
 
     def kill_process(self, pid, including_parent=True) -> InternalOperationResult:
         try:
