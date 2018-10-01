@@ -1,12 +1,12 @@
+import logging
+
+from django.conf import settings
 from django.utils.timezone import now
 
 from stepicstudio.FileSystemOperations.action import get_server_disk_info
 from stepicstudio.video_recorders.action import get_tablet_disk_info
 from stepicstudio.models import UserProfile
-import logging
-from django.conf import settings
 from stepicstudio.ssh_connections import TabletClient
-
 from stepicstudio.utils.utils import bytes2human
 
 logger = logging.getLogger('stepicstudio.middleware')
