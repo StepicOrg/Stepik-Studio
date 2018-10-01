@@ -1,5 +1,5 @@
-import os
 import warnings
+import os
 
 
 # TODO: Replace no_letters_or_digits to only allowed characters

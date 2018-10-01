@@ -1,7 +1,8 @@
 import logging
+import subprocess
+
 import os
 import psutil
-import subprocess
 
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus

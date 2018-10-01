@@ -1,5 +1,7 @@
 import paramiko
 import logging
+from stepicstudio.const import PROFESSOR_IP
+from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 

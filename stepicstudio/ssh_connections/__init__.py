@@ -1,10 +1,10 @@
-import logging
-import os
 import paramiko
-
+import os
 from stat import S_ISDIR
-
-from stepicstudio.const import SUBSTEP_SCREEN
+import logging
+import time
+from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
+from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
 from django.conf import settings
 
 logger = logging.getLogger('stepic_studio.ssh_connections.__init__')

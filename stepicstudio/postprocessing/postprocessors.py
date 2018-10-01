@@ -1,9 +1,8 @@
-import logging
-import os
-
 from django.conf import settings
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+import logging
+import os
 
 
 class PostprocessorInterface(object):

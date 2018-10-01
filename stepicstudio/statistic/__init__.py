@@ -1,6 +1,5 @@
-import time
-
 from stepicstudio.models import StatInfo, SubStep
+import time
 
 
 def add_stat_info(substep_id):
