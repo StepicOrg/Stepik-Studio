@@ -1,10 +1,10 @@
-import paramiko
-import os
-from stat import S_ISDIR
 import logging
-import time
-from STEPIC_STUDIO.settings import UBUNTU_USERNAME, UBUNTU_PASSWORD
-from stepicstudio.const import SUBSTEP_SCREEN, PROFESSOR_IP
+import os
+import paramiko
+
+from stat import S_ISDIR
+
+from stepicstudio.const import SUBSTEP_SCREEN
 from django.conf import settings
 
 logger = logging.getLogger('stepic_studio.ssh_connections.__init__')
@@ -66,7 +66,7 @@ class TabletClient(object):
                 logger.debug('Generated from run_screen_recorder() %s', self.remote_path)
             i += 1
 
-        command = settings.FFMPEG_TABLET_COMM + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
+        command = settings.FFMPEG_TABLET_CMD + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
         logger.debug(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
 

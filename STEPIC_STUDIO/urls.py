@@ -1,6 +1,5 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from django.conf.urls import handler500
 
 courseurlpatterns = patterns('',
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
@@ -37,6 +36,8 @@ urlpatterns = patterns('',
     url(r'^unlock_all/', 'stepicstudio.views.clear_all_locked_substeps'),
 
     url(r'^add_lesson/', 'stepicstudio.views.add_lesson'),
+
+    url(r'^all_notes/(?P<course_id>[0-9]+)/', 'stepicstudio.views.geterate_notes_page'),
 
     url(r'^showcontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_view'),
     url(r'^showscreencontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_screen_view'),

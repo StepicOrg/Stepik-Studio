@@ -1,12 +1,13 @@
-from django.db import models
-import re
-from django.db.models.signals import post_save
+import datetime
+import time
+
 from django.contrib.auth.models import User
-from stepicstudio.utils.extra import translate_non_alphanumerics, file_exist
-from stepicstudio.const import *
-import time, datetime
+from django.db import models
+from django.db.models.signals import post_save
 from django.utils.timezone import utc
 
+from stepicstudio.utils.extra import translate_non_alphanumerics, file_exist
+from stepicstudio.const import *
 
 def set_time_milisec():
     return int(time.time() * 1000)

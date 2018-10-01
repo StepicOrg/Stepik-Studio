@@ -1,5 +1,7 @@
-from django.utils.module_loading import import_string
 import logging
+import os
+
+from django.utils.module_loading import import_string
 
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 
@@ -25,7 +27,7 @@ class PostprocessableRecorder(object):
     def _apply_pipe(self, path: str, filename: str):
         if path is None or filename is None:
             return
-        source_file = path + '\\' + filename
+        source_file = os.path.join(path, filename)
 
         if not self.__fs_client.validate_file(source_file):
             self.__logger.error('Can\'t apply postprocessing pipe to %s: it\'s not a file', source_file)

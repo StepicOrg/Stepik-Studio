@@ -1,9 +1,11 @@
-import itertools
 import copy
-import re
-from wsgiref.util import FileWrapper
+import itertools
 import logging
 import os
+import re
+import requests
+
+from wsgiref.util import FileWrapper
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest
@@ -13,14 +15,13 @@ from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.db.models import Max
 from django.template import RequestContext
-import requests
+
 
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.video_recorders.action import *
 from stepicstudio.FileSystemOperations.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
-from stepicstudio.state import CURRENT_TASKS_DICT
 
 logger = logging.getLogger('stepicstudio.views')
 
@@ -500,8 +501,6 @@ def view_stat(request, course_id):
     return render_to_response('stat.html', args, context_instance=RequestContext(request))
 
 
-# TODO: try catch works incorrectly. Should check for file size before return
-# TODO: hotfix here is bad
 # TODO: This function is unsafe, its possible to watch other users files
 @login_required(login_url='/login/')
 def video_view(request, substep_id):
@@ -562,6 +561,18 @@ def video_screen_view(request, substep_id):
         return error_description(request, 'File is missing.')
     except Exception as e:
         return error500_handler(request)
+
+
+def geterate_notes_page(request, course_id):
+    lessons = Lesson.objects.all().filter(from_course=course_id)
+    notes = list()
+    for l in lessons:
+        steps = Step.objects.all().filter(from_lesson=l.id).order_by('id')
+        for s in steps:
+            notes.append({'id': 'Step' + str(s.id) + 'from' + str(s.from_lesson), 'text': s.text_data})
+    args = {'notes': notes}
+    return render_to_response('notes_page.html', args, context_instance=RequestContext(request))
+
 
 
 def show_montage(request, substep_id):

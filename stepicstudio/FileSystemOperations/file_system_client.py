@@ -1,8 +1,7 @@
 import logging
-import subprocess
-
 import os
 import psutil
+import subprocess
 
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
@@ -27,6 +26,17 @@ class FileSystemClient(object):
             message = 'Cannot exec command: {0}'.format(str(e))
             self.logger.exception('Cannot exec command: ')
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message), None
+
+    def execute_command_sync(self, command) -> InternalOperationResult:
+        """Blocking execution."""
+        try:
+            # raise exception when returncode != 0
+            subprocess.check_call(command, shell=True)
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+        except Exception as e:
+            message = 'Cannot exec command: {0}'.format(str(e))
+            self.logger.exception('Cannot exec command: ')
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     def kill_process(self, pid, including_parent=True) -> InternalOperationResult:
         try:

@@ -1,2 +1,1 @@
-settings.py filter=git-crypt diff=git-crypt
-local_settings.py filter=git-crypt diff=git-crypt
+STEPIC_STUDIO/settings/* filter=git-crypt diff=git-crypt

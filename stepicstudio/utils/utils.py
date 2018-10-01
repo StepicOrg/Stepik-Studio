@@ -1,4 +1,4 @@
-from stepicstudio.models import Course, Lesson, Step, SubStep, UserProfile, CameraStatus
+from stepicstudio.models import Course, CameraStatus
 from stepicstudio.const import *
 
 
