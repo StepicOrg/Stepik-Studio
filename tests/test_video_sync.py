@@ -9,5 +9,4 @@ class TestSynchronization(TestCase):
         path_1 = 'C:\\Development\\Tests\\prof.mp4'
         path_2 = 'C:\\Development\\Tests\\screen.mp4'
         sync = VideoSynchronizer()
-
         sync.sync(path_1, path_2)

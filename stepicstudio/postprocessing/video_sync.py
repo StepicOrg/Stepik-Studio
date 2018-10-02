@@ -9,9 +9,15 @@ from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 
 
 class VideoSynchronizer(object):
+    """Video synchronization via durations of silence at the start of videos"""
+
     def __init__(self):
         self.__fs_client = FileSystemClient()
         self.__logger = logging.getLogger('stepic_studio.postprocessing.VideSynchronizer')
+
+        self.__max_diff = 5  # seconds
+        self.__noise_normalization = '-20dB'
+        self.__min_duration = 0.1
 
     def sync(self, path_1, path_2):
         if not self.__fs_client.validate_file(path_1) or \
@@ -20,21 +26,30 @@ class VideoSynchronizer(object):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         try:
-            audio_1 = self.__extract_audio(path_1)
-            audio_2 = self.__extract_audio(path_2)
+            duration_1 = self.__get_silence_duration(path_1, self.__noise_normalization, self.__min_duration)
+            duration_2 = self.__get_silence_duration(path_2, self.__noise_normalization, self.__min_duration)
         except Exception as e:
-            self.__logger.error('Can\'t extract audio from %s, %s: %s', path_1, path_2, str(e))
+            self.__logger.error('Can\'t get silence duration of %s, %s: %s', path_1, path_2, str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
+        longer = ''
         try:
-            duration_1 = self.__get_silence_duration(audio_1)
-            duration_2 = self.__get_silence_duration(audio_2)
+            silence_diff = self.__get_valid_silence_diff(duration_1, duration_2)
+            if silence_diff > 0:
+                longer = path_1
+                self.__add_empty_frames(path_2, silence_diff)
+            elif silence_diff < 0:
+                longer = path_2
+                self.__add_empty_frames(path_1, abs(silence_diff))
         except Exception as e:
-            self.__logger.exception('Can\'t get silence duration of %s, %s: %s', audio_1, audio_2, str(e))
+            self.__logger.error('Invalide difference: %s', e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
-        print('First output: {}'.format(duration_1))
-        print('Second output: {}'.format(duration_2))
+        self.__logger.info('Videos successfully synchronized (difference: %s sec.; longer video: %s; '
+                           'silence duration of %s - %s sec.; silence duration of %s - %s sec.)',
+                           '%.3f' % silence_diff, longer, path_1, duration_1, path_2, duration_2)
+
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
 
     def __extract_audio(self, video_path):
         wo_extension = os.path.splitext(video_path)[0]
@@ -47,7 +62,7 @@ class VideoSynchronizer(object):
         else:
             return audio_output
 
-    def __get_silence_duration(self, audio_path, noise_level='-25dB', min_duration='0.1'):
+    def __get_silence_duration(self, audio_path, noise_level='-30dB', min_duration=0.1):
         command = settings.FFMPEG_PATH + ' ' + settings.SILENCE_DETECT_TEMPLATE.format(audio_path, noise_level,
                                                                                        min_duration)
 
@@ -98,3 +113,22 @@ class VideoSynchronizer(object):
                 dictionary[key] = digits[idx]
 
         return dictionary
+
+    #
+    def __get_valid_silence_diff(self, val_1, val_2):
+        if abs(val_1 - val_2) > self.__max_diff:
+            raise Exception('Silence duration difference exceeds allowable value, difference: {}'
+                            .format(abs(val_1 - val_2)))
+
+        return val_1 - val_2
+
+    def __add_empty_frames(self, path, duration):
+        splitted_path = os.path.splitext(path)
+        new_path = splitted_path[0] + '_synchronized' + splitted_path[1]
+        duration = '%.3f' % duration
+        command = settings.FFMPEG_PATH + ' ' + settings.VIDEO_OFFSET_TEMPLATE.format(duration, path, new_path)
+
+        status = self.__fs_client.execute_command_sync(command)
+
+        if status.status is not ExecutionStatus.SUCCESS:
+            raise Exception(status.message)

@@ -39,6 +39,7 @@ class TabletClient(object):
         self.ssh.connect(PROFESSOR_IP, username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
 
         host = PROFESSOR_IP
+        logger.warning('un %s', UBUNTU_USERNAME)
         transport = paramiko.Transport((host, 22))
         transport.connect(username=UBUNTU_USERNAME, password=UBUNTU_PASSWORD)
         self.sftp = paramiko.SFTPClient.from_transport(transport)

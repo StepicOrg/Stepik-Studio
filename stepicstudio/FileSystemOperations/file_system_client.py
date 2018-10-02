@@ -92,3 +92,16 @@ class FileSystemClient(object):
 
     def validate_file(self, file: str) -> bool:
         return os.path.isfile(file)
+
+    def remove_file(self, file: str) -> InternalOperationResult:
+        if not self.validate_file(file):
+            self.logger.warning('Can\'t delete non-existing file %s ', file)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+
+        try:
+            os.remove(file)
+        except Exception as e:
+            self.logger.warning('Can\'t delete %s :', e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
