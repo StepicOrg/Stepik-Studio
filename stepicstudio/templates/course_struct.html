@@ -4,10 +4,11 @@
 
 {% if Recording == False %}
     {%  block content %}
-        Structure for <a href = {{ Course.url }}>{{ Course.name}}</a><br>
-        <br>
+        Structure for <a href = {{ Course.url }}>{{ Course.name}} </a><br>
+        Course duration = {{ Course.duration | sec_to_time }}
+        <br><br>
         {% for L in all_course_lessons %}
-            {{ L.name }}<br>
+            {{ L.name }}, duration: {{ L.duration | sec_to_time }}<br>
             {% for S, ind in all_steps %}
                 {% if S.from_lesson == L.id %}
                     &nbsp;&nbsp;&nbsp;&nbsp;{{ S.name }} {% if ind == False %} (Not recorded) {% endif %} {% if S.duration != 0 %}, Duration =  {{ S.duration | sec_to_time }} {% endif %}

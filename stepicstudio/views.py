@@ -24,11 +24,11 @@ logger = logging.getLogger('stepic_studio.views')
 def can_edit_page(view_function):
     def process_request(*args, **kwargs):
         access = test_access(args[0].user.id, list(filter(None, args[0].path.split("/"))))
-        logger.debug("runing " + str(args[0].user.id) + str(kwargs['courseId']))
+        #logger.debug("runing " + str(args[0].user.id) + str(kwargs['courseId']))
         if not access:
             return HttpResponseRedirect(reverse('stepicstudio.views.login'))
         else:
-            logger.debug(args[0].user.id)
+            #logger.debug(args[0].user.id)
             return view_function(*args, **kwargs)
     return process_request
 
@@ -57,7 +57,7 @@ def test_access(user_id, path_list):
         step_id = None
     if path_list[0] == COURSE_ULR_NAME and not cant_edit_course(user_id, course_id):
         if lesson_id and not (str(Lesson.objects.all().get(id=lesson_id).from_course) == str(course_id)):
-            logger.debug(lesson_id,  Lesson.objects.all().get(id=lesson_id).from_course, course_id )
+            #logger.debug(lesson_id,  Lesson.objects.all().get(id=lesson_id).from_course, course_id )
             logger.debug("Error here 1 ")
             return False
         if step_id and not (int(Step.objects.all().get(id=step_id).from_lesson) == int(lesson_id)):
@@ -102,7 +102,7 @@ def get_course_page(request, courseId):
     args = {'full_name': request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
                                                 "Lessons": lesson_list}
     args.update({"Recording": camera_curr_status})
-    logger.debug(UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen)
+    #logger.debug(UserProfile.objects.get(user=request.user.id).is_ready_to_show_hello_screen)
     return render_to_response("course_view.html", args)
 
 
@@ -165,7 +165,7 @@ def add_lesson(request):
 def show_lesson(request, courseId, lessonId):
     args = {"full_name": request.user.username, "Course": Course.objects.all().filter(id=courseId)[0],
                                                        "Lesson": Lesson.objects.all().filter(id=lessonId)[0],
-                                                       "Steps": Step.objects.all().filter(from_lesson=lessonId)}
+                                                       "Steps": Step.objects.all().filter(from_lesson=lessonId).order_by('position')}
     args.update({"Recording": camera_curr_status})
     return render_to_response("lesson_view.html", args)
 
@@ -210,6 +210,16 @@ def add_step(request, courseId, lessonId):
     return render_to_response("create_step.html", args)
 
 
+def geterate_notes_page(request, course_id):
+    lessons = Lesson.objects.all().filter(from_course=course_id)
+    notes = list()
+    for l in lessons:
+        steps = Step.objects.all().filter(from_lesson=l.id).order_by('id')
+        for s in steps:
+            if s.text_data:
+                notes.append({'id': 'Step' + str(s.id) + 'from' + str(s.from_lesson), 'text': s.text_data})
+    args = {'notes': notes}
+    return render_to_response('notes_page.html', args)
 
 @login_required(login_url='/login/')
 @can_edit_page
@@ -218,6 +228,7 @@ def show_step(request, courseId, lessonId, stepId):
     if request.POST and request.is_ajax():
         user_action = dict(request.POST.lists())['action'][0]
         if user_action == "start":
+            print('OK')
             if start_new_step_recording(request, courseId, lessonId, stepId):
                 step_obj.is_fresh = False
                 return HttpResponse("Ok")
@@ -280,13 +291,15 @@ def start_new_step_recording(request, courseId, lessonId, stepId):
     else:
         return False
     try:
-        logger.debug("sent data to stepic.mehanig.com")
-        data = {'User': request.user.username, 'Name': substep.name, 'Duration': 'No data', 'priority':'1', 'status':'0',
-                'token': SECURE_KEY_FOR_STAT}
-        r = requests.post(STATISTIC_URL, data=data)
-        logger.debug('STATISTIC STATUS:', r)
+        #logger.debug("sent data to stepic.mehanig.com")
+        #data = {'User': request.user.username, 'Name': substep.name, 'Duration': 'No data', 'priority':'1', 'status':'0',
+        #        'token': SECURE_KEY_FOR_STAT}
+        #r = requests.post(STATISTIC_URL, data=data)
+        #logger.debug('STATISTIC STATUS:', r)
+        pass
     except Exception as e:
-        logger.debug('Error!!!: ', e)
+        #logger.debug('Error!!!: ', e)
+        pass
     return True
 
 @login_required(login_url='/login')

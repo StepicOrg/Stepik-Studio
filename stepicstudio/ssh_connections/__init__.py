@@ -40,21 +40,22 @@ class Screen_Recorder(object):
         p_args = self.path.split('/')
         p_args = list(filter(None, p_args))
         self.remote_path = "/"
-        logger.debug("I TRY : ", self.remote_path)
+        #logger.debug("I TRY : ", self.remote_path)
         i = 0
         while i < len(p_args):
             self.remote_path = self.remote_path + p_args[i] + "/"
             if self.rexists(self.remote_path):
-                logger.debug("Exist run_screen_recorder()", self.remote_path)
+                #logger.debug("Exist run_screen_recorder()", self.remote_path)
+                pass
             else:
                 self.sftp.mkdir(self.remote_path)
-                logger.debug("Generated from run_screen_recorder()", self.remote_path)
+                #logger.debug("Generated from run_screen_recorder()", self.remote_path)
             i += 1
 
-        command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -r 24 -s 1920x1080 -i :0.0 ' \
+        command = 'ffmpeg -f alsa -ac 2 -i pulse -f x11grab -draw_mouse 0 -r 24 -s 1920x1080 -i :0.0 ' \
                   '-pix_fmt yuv420p -vcodec libx264 -acodec pcm_s16le -preset ultrafast -threads 0 -af "volume=1dB" -y ' \
                   + self.remote_path + substepname + SUBSTEP_SCREEN + ' 2< /dev/null &'
-        logger.debug(command)
+        #logger.debug(command)
         stdin, stdout, stderr = self.ssh.exec_command(command)
 
 

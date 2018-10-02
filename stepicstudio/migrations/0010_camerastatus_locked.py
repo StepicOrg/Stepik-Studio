@@ -11,10 +11,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='camerastatus',
-            name='locked',
-            field=models.BooleanField(default=False),
-            preserve_default=True,
+        migrations.CreateModel(
+            name='SubStep',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=400)),
+                ('from_step', models.BigIntegerField(default=0)),
+                ('position', models.SmallIntegerField(default=0)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
         ),
     ]

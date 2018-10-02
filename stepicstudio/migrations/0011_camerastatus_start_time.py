@@ -11,10 +11,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='camerastatus',
-            name='start_time',
-            field=models.BigIntegerField(default=0),
-            preserve_default=True,
-        ),
+
     ]

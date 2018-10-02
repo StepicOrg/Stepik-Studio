@@ -24,9 +24,9 @@ class Migration(migrations.Migration):
         #     },
         #     bases=(models.Model,),
         # ),
-        migrations.DeleteModel(
-            name='UserSettings',
-        ),
+        # migrations.DeleteModel(
+        #     name='UserSettings',
+        # ),
         migrations.AddField(
             model_name='step',
             name='duration',

@@ -54,7 +54,7 @@ def run_adobe_live() -> None:
          "/p", r"C:\StepicServer\static\video\xml_settings.xml"]
     GlobalProcess = subprocess.Popen(p, shell=False)
     print("From Run", GlobalProcess.pid)
-    logger.debug("From Run", GlobalProcess.pid)
+    logger.debug("From Run %s", GlobalProcess.pid)
     return True
 
 def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
@@ -63,7 +63,7 @@ def run_ffmpeg_recorder(path: str, filename: str) -> subprocess.Popen:
     proc = subprocess.Popen(command, shell=True)
     print("PID = ", proc.pid)
     print(command)
-    logger.debug('PID:', proc.pid, " ", command)
+    logger.debug('PID: %s %s', proc.pid, command)
     return proc
 
 #TODO: CHANGE ALL!!!!!!!!!!!!!!!!  stop_path inside is bad, it doesn't support spaces and isn't safe
@@ -156,7 +156,7 @@ def delete_files_on_server(path: str) -> True | False:
         shutil.rmtree(path)
         return True
     else:
-        logger.debug(path + ' No folder was found and can\'t be deleted.(This is BAD!)')
+        logger.debug('%s No folder was found and can\'t be deleted.(This is BAD!)', path)
         return True
 
 @deprecated

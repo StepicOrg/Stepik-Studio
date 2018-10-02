@@ -17,7 +17,7 @@ process = "'"
 
 def to_linux_translate(win_path: str, username: str) -> str:
     linux_path = '/home/stepic/VIDEO/STEPICSTUDIO/'+ username + "/" + '/'.join(win_path.split("/")[1:])
-    logger.debug("to_linux_translate() This is linux path ", linux_path)
+    #logger.debug("to_linux_translate() This is linux path ", linux_path)
     return linux_path
 
 def start_recording(**kwargs: dict) -> True or False:
@@ -80,12 +80,12 @@ def stop_cam_recording() -> None:
     ssh_screencast_stop()
     camstat.save()
     global process
-    logger.debug('PROCESS PID TO STOP: ', process.pid)
+    #logger.debug('PROCESS PID TO STOP: ', process.pid)
     stop_ffmpeg_recorder(process)
     ssh_obj = Screen_Recorder("D:")
     ssh_obj.stop_screen_recorder()
     ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
-    logger.debug(SS_LINUX_PATH, SS_WIN_PATH)
+    #logger.debug(SS_LINUX_PATH, SS_WIN_PATH)
 
 
 def delete_files_associated(url_args) -> True | False:

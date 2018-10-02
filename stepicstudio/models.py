@@ -32,6 +32,11 @@ class Course(models.Model):
     def url(self):
         return "/" + COURSE_ULR_NAME + "/" + str(self.id) + "/"
 
+    @property
+    def duration(self):
+        all_lessons = Lesson.objects.filter(from_course=self.id)
+        return sum([s.duration for s in all_lessons])
+
 
 class Lesson(models.Model):
     name = models.CharField(max_length=400)
@@ -50,6 +55,11 @@ class Lesson(models.Model):
     def os_path(self):
         course = Course.objects.all().get(id=self.from_course)
         return course.os_path + translate_non_alphanumerics(self.name) + "/"
+
+    @property
+    def duration(self):
+        all_steps = Step.objects.filter(from_lesson=self.id)
+        return sum([s.duration for s in all_steps])
 
 
 class Step(models.Model):
