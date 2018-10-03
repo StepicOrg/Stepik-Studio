@@ -1,13 +1,14 @@
 import logging
-
 import os
+
+from django.conf import settings
 from singleton_decorator import singleton
-from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
+
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 from stepicstudio.const import FFMPEGcommand
-from django.conf import settings
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
 
 
 @singleton
@@ -58,7 +59,6 @@ class ServerCameraRecorder(PostprocessableRecorder):
         if result.status is ExecutionStatus.SUCCESS:
             self.__logger.info('Successfully stop camera recording (FFMPEG PID: %s)', self.__process.pid)
             self.__process = None
-            self._apply_pipe(self.__last_processed_path, self.__last_processed_file)
             return result
         else:
             self.__logger.error('Problems while stop camera recording (FFMPEG PID: %s) : %s', self.__process.pid,
