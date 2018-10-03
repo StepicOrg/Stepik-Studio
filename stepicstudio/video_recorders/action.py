@@ -1,5 +1,6 @@
 import re
 
+from stepicstudio import const
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
@@ -15,6 +16,8 @@ from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 from STEPIC_STUDIO.settings import LINUX_DIR
 import os
 import logging
+
+from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
 
@@ -36,32 +39,40 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
 
-    if 'remote_ubuntu' in kwargs:
-        remote_ubuntu = kwargs['remote_ubuntu']
-    else:
-        remote_ubuntu = None
-
-    # checking SSH connection to linux tab
-    screencast_status = ssh_screencast_start(remote_ubuntu)
-    if screencast_status.status is not ExecutionStatus.SUCCESS:
-        return screencast_status
+    # if 'remote_ubuntu' in kwargs:
+    #     remote_ubuntu = kwargs['remote_ubuntu']
+    # else:
+    #     remote_ubuntu = None
+    #
+    # # checking SSH connection to linux tab
+    # screencast_status = ssh_screencast_start(remote_ubuntu)
+    # if screencast_status.status is not ExecutionStatus.SUCCESS:
+    #     return screencast_status
 
     ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
                                                            data['currSubStep'].name + SUBSTEP_PROFESSOR)
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         return ffmpeg_status
 
-    try:
-        linux_obj = TabletClient(to_linux_translate(substep_folder, username), remote_ubuntu)
-        linux_obj.run_screen_recorder(data['currSubStep'].name)
-        global SS_LINUX_PATH, SS_WIN_PATH
-        SS_LINUX_PATH = linux_obj.remote_path
-        SS_WIN_PATH = substep_folder
-    except Exception as e:
+    filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
+    folder = to_linux_translate(substep_folder, username) + '/' + data['currSubStep'].name
+    remote_status = TabletScreenRecorder().start_recording(folder, filename)
+
+    if remote_status.status is not ExecutionStatus.SUCCESS:
         ServerCameraRecorder().stop_recording()
-        message = 'Cannot execute remote ffmpeg: {0}'.format(str(e))
-        logger.exception('Cannot execute remote ffmpeg')
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
+        return remote_status
+
+    # try:
+    #     linux_obj = TabletClient(to_linux_translate(substep_folder, username), remote_ubuntu)
+    #     linux_obj.run_screen_recorder(data['currSubStep'].name)
+    #     global SS_LINUX_PATH, SS_WIN_PATH
+    #     SS_LINUX_PATH = linux_obj.remote_path
+    #     SS_WIN_PATH = substep_folder
+    # except Exception as e:
+    #     ServerCameraRecorder().stop_recording()
+    #     message = 'Cannot execute remote ffmpeg: {0}'.format(str(e))
+    #     logger.exception('Cannot execute remote ffmpeg')
+    #     return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     db_camera = CameraStatus.objects.get(id='1')
     if not db_camera.status:
