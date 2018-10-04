@@ -2,8 +2,6 @@ import itertools
 import copy
 import re
 from wsgiref.util import FileWrapper
-import logging
-import os
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest
@@ -13,14 +11,12 @@ from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.db.models import Max
 from django.template import RequestContext
-import requests
 
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.video_recorders.action import *
 from stepicstudio.FileSystemOperations.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
-from stepicstudio.state import CURRENT_TASKS_DICT
 
 logger = logging.getLogger('stepicstudio.views')
 

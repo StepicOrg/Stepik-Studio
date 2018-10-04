@@ -1,11 +1,10 @@
 from django.utils.timezone import now
 
 from stepicstudio.FileSystemOperations.action import get_server_disk_info
-from stepicstudio.video_recorders.action import get_tablet_disk_info
 from stepicstudio.models import UserProfile
 import logging
 from django.conf import settings
-from stepicstudio.ssh_connections import TabletClient
+from stepicstudio.ssh_connections.tablet_client import TabletClient
 
 from stepicstudio.utils.utils import bytes2human
 
@@ -26,7 +25,7 @@ class SetLastVisitMiddleware(object):
 class SetStorageCapacityMiddleware(object):
     def __init__(self):
         try:
-            self.tablet_client = TabletClient('__Dummy__')
+            self.tablet_client = TabletClient()
         except Exception as e:
             logger.error('Can\'t connect to tablet: %s', str(e))
             self.tablet_client = None
@@ -73,7 +72,7 @@ class SetStorageCapacityMiddleware(object):
         try:
             if self.tablet_client is None:
                 raise RuntimeError('Tablet client is dummy')
-            tablet_free_space, total_tablet_space = get_tablet_disk_info(self.tablet_client)
+            tablet_free_space, total_tablet_space = self.tablet_client.get_disk_info()
             request.session['tablet_space_info'] = bytes2human(tablet_free_space) + \
                                                    ' / ' + \
                                                    bytes2human(total_tablet_space)

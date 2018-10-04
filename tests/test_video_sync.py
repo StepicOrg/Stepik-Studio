@@ -1,12 +1,13 @@
-import os
 from django.test import TestCase
 
+from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing.video_sync import VideoSynchronizer
 
 
 class TestSynchronization(TestCase):
-    def test_reencode_should_be_successful(self):
-        path_1 = 'C:\\Development\\Tests\\prof.mp4'
-        path_2 = 'C:\\Development\\Tests\\screen.mp4'
+    def test_video_sync(self):
+        path_1 = 'D:\\STEPIKSTUDIO\\TESTER\\test_course\\test_2\\step_2\\Step18from137\\Step18from137_Screen.mkv'
+        path_2 = 'D:\\STEPIKSTUDIO\\TESTER\\test_course\\test_2\\step_2\\Step18from137\\Step18from137_Professor.TS'
         sync = VideoSynchronizer()
-        sync.sync(path_1, path_2)
+        status = sync.sync(path_2, path_1)
+        self.assertEqual(status.status, ExecutionStatus.SUCCESS)
