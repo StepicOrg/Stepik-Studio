@@ -1,43 +1,29 @@
-import sched
-import time
-import threading
-from queue import *
-
+from apscheduler.schedulers.background import BackgroundScheduler
+from multiprocessing import Queue
 from singleton_decorator import singleton
-
+import logging
 
 @singleton
 class TaskManager(object):
-    def __init__(self, datetime_):
-        self.scheduler = sched.scheduler(time.time, time.sleep)
+    def __init__(self):
+        self.scheduler = BackgroundScheduler({'apscheduler.timezone': 'UTC'})
+        self.scheduler.start()
         self.queue = Queue()
-        self.datetime = datetime_
-        threading.Thread(target=self.__init_sched()).run()
-        # self.scheduler.run()
+        self.__logger = logging.getLogger('stepicstudio.scheduling.tesk_manager')
+        self.scheduler.add_job(self.__execute_jobs, 'cron', second='*')
+        #  sched.add_job(my_job, trigger='cron', hour='22', minute='30')
 
-    def __init_sched(self):
-        self.scheduler.enterabs(self.datetime, 1, self.__execute_all)
-        self.scheduler.run()
+    def run_while_idle_once_time(self, job: callable):
+        self.queue.put(job)
 
-    def put_task(self, job: callable, args: list):
-        task = ScheduledTask(job, args)
-        self.queue.put(task)
-        print('put task: {}'.format(self.queue.qsize()))
-        # job_to_run = self.queue.get()
-        # job_to_run.callable_job(job_to_run.args)
-        # self.scheduler.enterabs(datetime_, 1, job_to_run.callable_job, job_to_run.args)
-        # self.scheduler.run()
+    def repeat_while_idle(self, job: callable):
+        self.scheduler.add_job(job, 'cron', second='*')
 
-    def __execute_all(self):
-        print('qwe')
-        print(self.queue.qsize())
-        while not self.queue.empty():
-            print('Hi not empy')
-            task = self.queue.get()
-            task.callable_job(task.args)
+    def __execute_jobs(self):
+        try:
+            while not self.queue.empty():
+                task = self.queue.get()
+                task()
+        except Exception as e:
+            self.__logger.error('Error while execute queued tasks: %s', e)
 
-
-class ScheduledTask(object):
-    def __init__(self, callable_job: callable, *args):
-        self.callable_job = callable_job
-        self.args = args
