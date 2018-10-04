@@ -2,6 +2,8 @@
 
 from stepicstudio import const
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
+from stepicstudio.postprocessing import synchronize_videos
+from stepicstudio.scheduling.task_manager import TaskManager
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
@@ -16,6 +18,7 @@ from STEPIC_STUDIO.settings import LINUX_DIR
 import os
 import logging
 
+from functools import partial
 from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
@@ -101,8 +104,16 @@ def stop_cam_recording() -> True | False:
     tablet_client.download_dir(TabletScreenRecorder().last_processed_path,
                                ServerCameraRecorder().last_processed_path)
 
+    professor_video = os.path.join(ServerCameraRecorder().last_processed_path,
+                                   ServerCameraRecorder().last_processed_file)
+
+    screen_video = os.path.join(ServerCameraRecorder().last_processed_path,
+                                TabletScreenRecorder().last_processed_file)
+
     convert_mkv_to_mp4(ServerCameraRecorder().last_processed_path,
                        TabletScreenRecorder().last_processed_file)
+
+    TaskManager().run_while_idle_once_time(partial(synchronize_videos, professor_video, screen_video))
 
     return True
 

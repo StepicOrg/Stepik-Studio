@@ -1,8 +1,9 @@
-import os
 import logging
+import os
 import subprocess
 
 from django.conf import settings
+
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
@@ -20,6 +21,8 @@ class VideoSynchronizer(object):
         self.__min_duration = 0.1
 
     def sync(self, path_1, path_2):
+        path_1 = os.path.splitext(path_1)[0] + '.mp4'
+        path_2 = os.path.splitext(path_2)[0] + '.mp4'
         if not self.__fs_client.validate_file(path_1) or \
                 not self.__fs_client.validate_file(path_2):
             self.__logger.error('Can\'t synchronize invalid videos (%s; %s)', path_1, path_2)
