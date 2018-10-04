@@ -11,14 +11,12 @@ from stepicstudio.video_recorders.postprocessable_recorder import Postprocessabl
 
 
 @singleton
-class TabletScreenRecorder(PostprocessableRecorder):
+class TabletScreenRecorder():
     def __init__(self):
-        super().__init__()
         self.__command = settings.FFMPEG_TABLET_CMD
         self.__logger = logging.getLogger('stepic_studio.video_recorders.tablet_recorder')
-        self.__last_processed_path = None
-        self.__last_processed_file = None
-        self._load_postprocessing_pipe(settings.TABLET_POSTPROCESSING_PIPE)
+        self.last_processed_path = None
+        self.last_processed_file = None
 
         try:
             self.__tablet_client = TabletClient()
@@ -33,7 +31,7 @@ class TabletScreenRecorder(PostprocessableRecorder):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'Tablet is actually recording')
 
         self.__tablet_client.check_and_create_folder(path)
-        command = settings.FFMPEG_TABLET_CMD + path + '/' + filename + const.SUBSTEP_SCREEN + ' 2< /dev/null &'
+        command = settings.FFMPEG_TABLET_CMD + path + '/' + filename + ' 2< /dev/null &'
 
         try:
             self.__tablet_client.execute_remote(command)
@@ -41,8 +39,8 @@ class TabletScreenRecorder(PostprocessableRecorder):
             self.__logger.error('Screen recording start failed: %s; FFMPEG command: %s', e, command)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
-        self.__last_processed_file = filename
-        self.__last_processed_path = path
+        self.last_processed_file = filename
+        self.last_processed_path = path
         self.__logger.info('Successfully start screen recording (FFMPEG command: %s', command)
         return InternalOperationResult(ExecutionStatus.SUCCESS)
 
@@ -60,7 +58,6 @@ class TabletScreenRecorder(PostprocessableRecorder):
             self.__logger.error('Problems while stop screen recording: %s', e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
-        self._apply_pipe(self.__last_processed_path, self.__last_processed_file)
         self.__logger.info('Successfully stop screen recording.')
         return InternalOperationResult(ExecutionStatus.SUCCESS)
 

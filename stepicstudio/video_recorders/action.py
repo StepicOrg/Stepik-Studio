@@ -1,16 +1,15 @@
-import re
+
 
 from stepicstudio import const
 from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
+from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
 from django.contrib.auth.models import User
 from stepicstudio.FileSystemOperations.action import *
 from stepicstudio.const import *
-from stepicstudio.ssh_connections.screencast import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
 import time
-from stepicstudio.ssh_connections import TabletClient
 from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
 from stepicstudio.operationsstatuses.statuses import ExecutionStatus
 from STEPIC_STUDIO.settings import LINUX_DIR
@@ -20,9 +19,6 @@ import logging
 from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
 logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
-
-SS_WIN_PATH = ''
-SS_LINUX_PATH = ''
 
 
 def to_linux_translate(win_path: str, username: str) -> str:
@@ -39,40 +35,18 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
 
-    # if 'remote_ubuntu' in kwargs:
-    #     remote_ubuntu = kwargs['remote_ubuntu']
-    # else:
-    #     remote_ubuntu = None
-    #
-    # # checking SSH connection to linux tab
-    # screencast_status = ssh_screencast_start(remote_ubuntu)
-    # if screencast_status.status is not ExecutionStatus.SUCCESS:
-    #     return screencast_status
-
     ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
                                                            data['currSubStep'].name + SUBSTEP_PROFESSOR)
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         return ffmpeg_status
 
     filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
-    folder = to_linux_translate(substep_folder, username) + '/' + data['currSubStep'].name
+    folder = to_linux_translate(substep_folder, username)
     remote_status = TabletScreenRecorder().start_recording(folder, filename)
 
     if remote_status.status is not ExecutionStatus.SUCCESS:
         ServerCameraRecorder().stop_recording()
         return remote_status
-
-    # try:
-    #     linux_obj = TabletClient(to_linux_translate(substep_folder, username), remote_ubuntu)
-    #     linux_obj.run_screen_recorder(data['currSubStep'].name)
-    #     global SS_LINUX_PATH, SS_WIN_PATH
-    #     SS_LINUX_PATH = linux_obj.remote_path
-    #     SS_WIN_PATH = substep_folder
-    # except Exception as e:
-    #     ServerCameraRecorder().stop_recording()
-    #     message = 'Cannot execute remote ffmpeg: {0}'.format(str(e))
-    #     logger.exception('Cannot execute remote ffmpeg')
-    #     return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
 
     db_camera = CameraStatus.objects.get(id='1')
     if not db_camera.status:
@@ -116,25 +90,24 @@ def stop_cam_recording() -> True | False:
     camstat.status = False
     camstat.save()
 
-    ServerCameraRecorder().stop_recording()
+    stop_camera_status = ServerCameraRecorder().stop_recording()
+    stop_screen_status = TabletScreenRecorder().stop_recording()
 
-    try:
-        ssh_obj = TabletClient('_Dummy_')
-        ssh_obj.stop_screen_recorder()
-        logger.info('Tablet screen recording successfully stopped')
-        download_status, filename = ssh_obj.get_file(SS_LINUX_PATH, SS_WIN_PATH)
-        if download_status and filename is not None:
-            convert_mkv_to_mp4(SS_WIN_PATH, filename)
-        else:
-            logger.error('Can\'t convert mkv to mp4; download status: %s, filename: %s', download_status, filename)
-        return download_status
-    except:
-        logger.exception('Can\'t stop tablet screen recording')
+    if stop_camera_status.status is not ExecutionStatus.SUCCESS or \
+        stop_screen_status.status is not ExecutionStatus.SUCCESS:
         return False
+
+    tablet_client = TabletClient()
+    tablet_client.download_dir(TabletScreenRecorder().last_processed_path,
+                               ServerCameraRecorder().last_processed_path)
+
+    convert_mkv_to_mp4(ServerCameraRecorder().last_processed_path,
+                       TabletScreenRecorder().last_processed_file)
+
+    return True
 
 
 def convert_mkv_to_mp4(path: str, filename: str):
-    path = path.replace('/', '\\')
     new_filename = os.path.splitext(filename)[0] + ".mp4"  # change file extension from .mkv to .mp4
     source_file = os.path.join(path, filename)
     target_file = os.path.join(path, new_filename)
@@ -159,11 +132,3 @@ def delete_files_associated(url_args) -> True | False:
     lesson_id = int(url_args[url_args.index(COURSE_ULR_NAME) + 3])
     folder_on_server = Lesson.objects.get(id=lesson_id).os_path
     return delete_files_on_server(folder_on_server)
-
-
-def get_tablet_disk_info(tablet_client: TabletClient) -> (int, int):
-    raw_string_available = tablet_client.get_free_space_info(LINUX_DIR)
-    raw_string_total = tablet_client.get_total_space_info(LINUX_DIR)
-    free_capacity_bytes = re.findall(r'\d+', raw_string_available[0])
-    total_capacity_bytes = re.findall(r'\d+', raw_string_total[0])
-    return int(free_capacity_bytes[0]), int(total_capacity_bytes[0])

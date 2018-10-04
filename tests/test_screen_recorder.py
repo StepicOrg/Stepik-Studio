@@ -14,16 +14,16 @@ Needs delays between starts to free up video device.
 
 
 class TestCameraRecorder(TestCase):
-    # def test_should_successfully_start_and_stop_record(self):
-    #     time.sleep(2)
-    #     recorder = TabletScreenRecorder()
-    #     status = recorder.start_recording('/home/user/VIDEO/STEPICSTUDIO/tester/tests', 'test_1')
-    #     self.assertEqual(status.status, ExecutionStatus.SUCCESS)
-    #     time.sleep(4)
-    #     self.assertTrue(recorder.is_active())
-    #     status = recorder.stop_recording()
-    #     self.assertEqual(status.status, ExecutionStatus.SUCCESS)
-    #     self.assertFalse(recorder.is_active())
+    def test_should_successfully_start_and_stop_record(self):
+        time.sleep(2)
+        recorder = TabletScreenRecorder()
+        status = recorder.start_recording('/home/user/VIDEO/STEPICSTUDIO/tester/tests', 'test_1')
+        self.assertEqual(status.status, ExecutionStatus.SUCCESS)
+        time.sleep(4)
+        self.assertTrue(recorder.is_active())
+        status = recorder.stop_recording()
+        self.assertEqual(status.status, ExecutionStatus.SUCCESS)
+        self.assertFalse(recorder.is_active())
 
     def test_should_fail_on_repeating_start_or_stop(self):
         time.sleep(1)
