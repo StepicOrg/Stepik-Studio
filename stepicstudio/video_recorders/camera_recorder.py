@@ -4,10 +4,10 @@ import os
 from django.conf import settings
 from singleton_decorator import singleton
 
-from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
+from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.const import FFMPEGcommand
-from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
 
 

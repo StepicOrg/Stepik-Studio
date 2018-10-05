@@ -4,9 +4,9 @@ import subprocess
 
 from django.conf import settings
 
-from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
-from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.file_system_utils.file_system_client import FileSystemClient
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
 
 class VideoSynchronizer(object):

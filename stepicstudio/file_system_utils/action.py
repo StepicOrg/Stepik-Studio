@@ -7,12 +7,12 @@ from django.conf import settings
 import subprocess
 import psutil
 from stepicstudio.state import CURRENT_TASKS_DICT
-from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
 import logging
 
-logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
+logger = logging.getLogger('stepic_studio.file_system_utils.action')
 
 
 def substep_server_path(**kwargs: dict) -> (str, str):

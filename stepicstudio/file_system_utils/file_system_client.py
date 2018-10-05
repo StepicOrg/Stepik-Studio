@@ -3,13 +3,13 @@ import subprocess
 import os
 import psutil
 
-from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
 
 class FileSystemClient(object):
     def __init__(self):
-        self.logger = logging.getLogger('stepic_studio.FileSystemOperations.file_system_client')
+        self.logger = logging.getLogger('stepic_studio.file_system_utils.file_system_client')
 
     def execute_command(self, command: str, stdout=None) -> (InternalOperationResult, subprocess.Popen):
         try:

@@ -3,7 +3,7 @@ import time
 
 from django.test import TestCase
 
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'STEPIC_STUDIO.settings'

@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 
 

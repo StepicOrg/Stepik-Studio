@@ -6,8 +6,8 @@ from stat import S_ISDIR
 import paramiko
 from django.conf import settings
 
-from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
 logging.getLogger('paramiko').setLevel(logging.WARNING)
 

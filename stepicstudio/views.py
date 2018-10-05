@@ -14,7 +14,7 @@ from django.template import RequestContext
 
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.video_recorders.action import *
-from stepicstudio.FileSystemOperations.action import search_as_files_and_update_info, rename_element_on_disk
+from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
 
@@ -610,6 +610,17 @@ def clear_all_locked_substeps(request):
                               {'full_name': request.user.username,
                                'settings': UserProfile.objects.get(user_id=request.user.id)},
                               context_instance=RequestContext(request))
+
+
+def generate_notes_page(request, course_id):
+    lessons = Lesson.objects.all().filter(from_course=course_id)
+    notes = list()
+    for l in lessons:
+        steps = Step.objects.all().filter(from_lesson=l.id).order_by('id')
+        for s in steps:
+            notes.append({'id': 'Step' + str(s.id) + 'from' + str(s.from_lesson), 'text': s.text_data})
+    args = {'notes': notes}
+    return render_to_response('notes_page.html', args, context_instance=RequestContext(request))
 
 
 def error500_handler(request):

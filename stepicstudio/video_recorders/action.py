@@ -1,27 +1,26 @@
+import logging
+import os
+import time
+from functools import partial
 
+from django.contrib.auth.models import User
 
+from STEPIC_STUDIO.settings import LINUX_DIR
 from stepicstudio import const
-from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
+from stepicstudio.const import *
+from stepicstudio.const import SUBSTEP_PROFESSOR
+from stepicstudio.file_system_utils.action import *
+from stepicstudio.file_system_utils.file_system_client import FileSystemClient
+from stepicstudio.models import CameraStatus
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
 from stepicstudio.scheduling.task_manager import TaskManager
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
-from stepicstudio.models import UserProfile, CameraStatus, Lesson, Step, SubStep, Course
-from django.contrib.auth.models import User
-from stepicstudio.FileSystemOperations.action import *
-from stepicstudio.const import *
-from stepicstudio.const import SUBSTEP_PROFESSOR
-import time
-from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
-from STEPIC_STUDIO.settings import LINUX_DIR
-import os
-import logging
-
-from functools import partial
 from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
-logger = logging.getLogger('stepic_studio.FileSystemOperations.action')
+logger = logging.getLogger('stepic_studio.file_system_utils.action')
 
 
 def to_linux_translate(win_path: str, username: str) -> str:

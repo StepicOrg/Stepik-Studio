@@ -1,10 +1,11 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from django.conf.urls import handler500
 
-courseurlpatterns = patterns('',
+courseurlpatterns = patterns(
+    '',
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
-    url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/(?P<substep_id>[0-9]+)/delete/','stepicstudio.views.remove_substep'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/(?P<substep_id>[0-9]+)/delete/',
+        'stepicstudio.views.remove_substep'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/add_step/', 'stepicstudio.views.add_step'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/delete/', 'stepicstudio.views.delete_lesson'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.show_step'),
@@ -15,7 +16,8 @@ courseurlpatterns = patterns('',
     url(r'^', 'stepicstudio.views.get_course_page'),
 )
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^rename_elem/$', 'stepicstudio.views.rename_elem'),
 
     url(r'^admin/', include(admin.site.urls)),
@@ -38,13 +40,14 @@ urlpatterns = patterns('',
 
     url(r'^add_lesson/', 'stepicstudio.views.add_lesson'),
 
+    url(r'^all_notes/(?P<course_id>[0-9]+)/', 'stepicstudio.views.generate_notes_page'),
+
     url(r'^showcontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_view'),
     url(r'^showscreencontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_screen_view'),
     #
     url(r'^create_montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.montage'),
     url(r'^show_montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.show_montage'),
 
-    # url(r'^course/(?P<courseId>[0-9]+)/add/lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
     url(r'^notes/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.notes'),
 )

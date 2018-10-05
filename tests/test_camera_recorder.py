@@ -3,7 +3,7 @@ from django.test import TestCase
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 import os
 
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'STEPIC_STUDIO.settings'
 

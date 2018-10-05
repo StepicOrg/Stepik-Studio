@@ -1,7 +1,7 @@
 import logging
+from datetime import datetime
 from multiprocessing import Queue
 
-from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.conf import settings
 from singleton_decorator import singleton
@@ -21,10 +21,11 @@ class TaskManager(object):
         #  sched.add_job(my_job, trigger='cron', hour='22', minute='30')
 
     def run_while_idle_once_time(self, job: callable):
-        self.__logger.info('New task for once time idle execution! Current queue size: %s tasks. Current time: %s; Execution at %s:00.',
-                           self.queue.qsize(),
-                           datetime.now(self.scheduler.timezone),
-                           settings.BACKGROUND_TASKS_START_HOUR)
+        self.__logger.info(
+            'New task for once time idle execution! Current queue size: %s tasks. Current time: %s; Execution at %s:00.',
+            self.queue.qsize(),
+            datetime.now(self.scheduler.timezone),
+            settings.BACKGROUND_TASKS_START_HOUR)
         self.queue.put(job)
 
     def repeat_while_idle(self, job: callable):
