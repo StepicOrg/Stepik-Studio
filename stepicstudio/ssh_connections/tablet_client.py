@@ -20,8 +20,11 @@ class TabletClient(object):
         self.__connect()
 
     def __del__(self):
-        self.__sftp.close()
-        self.__ssh.close()
+        try:
+            self.__sftp.close()
+            self.__ssh.close()
+        except:
+            pass
 
     def execute_remote(self, command: str, allowable_code=0, read_output=False) -> str:
         if not self.__is_alive():

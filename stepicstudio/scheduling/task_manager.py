@@ -18,7 +18,6 @@ class TaskManager(object):
         self.queue = Queue()
         self.__logger = logging.getLogger('stepicstudio.scheduling.tesk_manager')
         self.scheduler.add_job(self.__execute_jobs, 'cron', hour=settings.BACKGROUND_TASKS_START_HOUR)
-        #  sched.add_job(my_job, trigger='cron', hour='22', minute='30')
 
     def run_while_idle_once_time(self, job: callable):
         self.__logger.info(
@@ -27,9 +26,6 @@ class TaskManager(object):
             datetime.now(self.scheduler.timezone),
             settings.BACKGROUND_TASKS_START_HOUR)
         self.queue.put(job)
-
-    def repeat_while_idle(self, job: callable):
-        self.scheduler.add_job(job, 'cron', second='*')
 
     def __execute_jobs(self):
         self.__logger.info('Executing scheduled tasks. Size of queue before executing: %s.',

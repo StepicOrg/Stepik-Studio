@@ -44,7 +44,11 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
 
     filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
     folder = to_linux_translate(substep_folder, username)
-    remote_status = TabletScreenRecorder().start_recording(folder, filename)
+
+    try:
+        remote_status = TabletScreenRecorder().start_recording(folder, filename)
+    except:
+        remote_status = InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
     if remote_status.status is not ExecutionStatus.SUCCESS:
         ServerCameraRecorder().stop_recording()

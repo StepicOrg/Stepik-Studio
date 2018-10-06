@@ -11,7 +11,7 @@ from stepicstudio.video_recorders.postprocessable_recorder import Postprocessabl
 
 
 @singleton
-class TabletScreenRecorder():
+class TabletScreenRecorder(object):
     def __init__(self):
         self.__command = settings.FFMPEG_TABLET_CMD
         self.__logger = logging.getLogger('stepic_studio.video_recorders.tablet_recorder')
@@ -30,7 +30,12 @@ class TabletScreenRecorder():
                                 path + '/' + filename)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'Tablet is actually recording')
 
-        self.__tablet_client.check_and_create_folder(path)
+        try:
+            self.__tablet_client.check_and_create_folder(path)
+        except Exception as e:
+            self.__logger.error('Error while creating remmote dir: %s', e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+
         command = settings.FFMPEG_TABLET_CMD + path + '/' + filename + ' 2< /dev/null &'
 
         try:
