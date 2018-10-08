@@ -37,11 +37,6 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
 
-    ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
-                                                           data['currSubStep'].name + SUBSTEP_PROFESSOR)
-    if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
-        return ffmpeg_status
-
     filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
     folder = to_linux_translate(substep_folder, username)
 
@@ -51,8 +46,14 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
         remote_status = InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
     if remote_status.status is not ExecutionStatus.SUCCESS:
-        ServerCameraRecorder().stop_recording()
         return remote_status
+
+    ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
+                                                           data['currSubStep'].name + SUBSTEP_PROFESSOR)
+
+    if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
+        TabletScreenRecorder().stop_recording()
+        return ffmpeg_status
 
     db_camera = CameraStatus.objects.get(id='1')
     if not db_camera.status:
@@ -96,11 +97,11 @@ def stop_cam_recording() -> True | False:
     camstat.status = False
     camstat.save()
 
-    stop_camera_status = ServerCameraRecorder().stop_recording()
     stop_screen_status = TabletScreenRecorder().stop_recording()
+    stop_camera_status = ServerCameraRecorder().stop_recording()
 
     if stop_camera_status.status is not ExecutionStatus.SUCCESS or \
-        stop_screen_status.status is not ExecutionStatus.SUCCESS:
+                    stop_screen_status.status is not ExecutionStatus.SUCCESS:
         return False
 
     tablet_client = TabletClient()
