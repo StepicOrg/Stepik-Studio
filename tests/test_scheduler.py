@@ -31,3 +31,4 @@ class TestScheduler(TestCase):
         time.sleep(5)
         self.assertEqual(n, 3)
         print('End value: {}'.format(n))
+        self.assertEqual(manager.scheduler.get_jobs().__len__(), 0)

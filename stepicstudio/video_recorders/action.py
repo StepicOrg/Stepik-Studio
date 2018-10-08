@@ -117,7 +117,7 @@ def stop_cam_recording() -> True | False:
     convert_mkv_to_mp4(ServerCameraRecorder().last_processed_path,
                        TabletScreenRecorder().last_processed_file)
 
-    TaskManager().run_while_idle_once_time(partial(synchronize_videos, professor_video, screen_video))
+    TaskManager().run_while_idle_once_time(synchronize_videos, args=[professor_video, screen_video])
 
     return True
 

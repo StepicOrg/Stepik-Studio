@@ -11,3 +11,4 @@ pexpect >= 3.3
 raven==6.9.0
 singleton-decorator >= 1.0.0
 psycopg2==2.7.5
+SQLAlchemy==1.2.12
