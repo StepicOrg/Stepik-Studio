@@ -16,41 +16,50 @@ class VideoSynchronizer(object):
         self.__fs_client = FileSystemClient()
         self.__logger = logging.getLogger('stepic_studio.postprocessing.VideSynchronizer')
 
-        self.__max_diff = 5  # seconds
-        self.__noise_normalization = '-20dB'
-        self.__min_duration = 0.1
+        self.__max_diff = 2  # seconds
+        self.__min_diff = 0.1
 
-    def sync(self, path_1, path_2):
-        path_1 = os.path.splitext(path_1)[0] + '.mp4'
-        path_2 = os.path.splitext(path_2)[0] + '.mp4'
-        if not self.__fs_client.validate_file(path_1) or \
-                not self.__fs_client.validate_file(path_2):
-            self.__logger.error('Can\'t synchronize invalid videos (%s; %s)', path_1, path_2)
+        self.__camera_noise_tolerance = '-11.5dB'
+        self.__tablet_noise_tolerance = '-12dB'
+        self.__min_silence_duration = 0.001
+
+    def sync(self, screen_path, camera_path):
+        screen_path = os.path.splitext(screen_path)[0] + '.mp4'
+        camera_path = os.path.splitext(camera_path)[0] + '.mp4'
+        if not self.__fs_client.validate_file(screen_path) or \
+                not self.__fs_client.validate_file(camera_path):
+            self.__logger.error('Invalid paths to videos: (%s; %s)', screen_path, camera_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         try:
-            duration_1 = self.__get_silence_duration(path_1, self.__noise_normalization, self.__min_duration)
-            duration_2 = self.__get_silence_duration(path_2, self.__noise_normalization, self.__min_duration)
+            duration_1 = self.__get_silence_duration(screen_path, self.__tablet_noise_tolerance, self.__min_silence_duration)
+            duration_2 = self.__get_silence_duration(camera_path, self.__camera_noise_tolerance, self.__min_silence_duration)
         except Exception as e:
-            self.__logger.error('Can\'t get silence duration of %s, %s: %s', path_1, path_2, str(e))
+            self.__logger.error('Can\'t get silence duration of %s, %s: %s', screen_path, camera_path, str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         longer = ''
         try:
             silence_diff = self.__get_valid_silence_diff(duration_1, duration_2)
+
+            if silence_diff == 0:
+                self.__logger.info('Video synchronizing: no need to be synchronized, silence difference < %ssec.',
+                                   self.__min_diff)
+                return InternalOperationResult(ExecutionStatus.SUCCESS)
+
             if silence_diff > 0:
-                longer = path_1
-                self.__add_empty_frames(path_2, silence_diff)
+                longer = screen_path
+                self.__add_empty_frames(camera_path, silence_diff)
             elif silence_diff < 0:
-                longer = path_2
-                self.__add_empty_frames(path_1, abs(silence_diff))
+                longer = camera_path
+                self.__add_empty_frames(screen_path, abs(silence_diff))
         except Exception as e:
             self.__logger.error('Invalide difference: %s', e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
-        self.__logger.info('Videos successfully synchronized (difference: %s sec.; longer video: %s; '
+        self.__logger.info('Videos successfully synchronized (difference: %s sec.; longer silence in  %s; '
                            'silence duration of %s - %s sec.; silence duration of %s - %s sec.)',
-                           '%.3f' % silence_diff, longer, path_1, duration_1, path_2, duration_2)
+                           '%.3f' % silence_diff, longer, screen_path, duration_1, camera_path, duration_2)
 
         return InternalOperationResult(ExecutionStatus.SUCCESS)
 
@@ -122,6 +131,9 @@ class VideoSynchronizer(object):
         if abs(val_1 - val_2) > self.__max_diff:
             raise Exception('Silence duration difference exceeds allowable value, difference: {}'
                             .format(abs(val_1 - val_2)))
+
+        if abs(val_1 - val_2) < self.__min_diff:
+            return 0
 
         return val_1 - val_2
 
