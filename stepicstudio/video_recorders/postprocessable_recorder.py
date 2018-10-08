@@ -1,9 +1,8 @@
-import logging
 import os
-
 from django.utils.module_loading import import_string
+import logging
 
-from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
+from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 
 
 class PostprocessableRecorder(object):

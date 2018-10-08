@@ -37,4 +37,3 @@ workon studio-env
 # not sure about the next line:
 python manage.py runserver --noreload --insecure
 ```
-
