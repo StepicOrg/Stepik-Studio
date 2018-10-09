@@ -1,11 +1,10 @@
 import logging
 import os
 import time
-from functools import partial
 
 from django.contrib.auth.models import User
+from django.conf import settings
 
-from STEPIC_STUDIO.settings import LINUX_DIR
 from stepicstudio import const
 from stepicstudio.const import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
@@ -24,7 +23,7 @@ logger = logging.getLogger('stepic_studio.file_system_utils.action')
 
 
 def to_linux_translate(win_path: str, username: str) -> str:
-    linux_path = LINUX_DIR + username + '/' + '/'.join(win_path.split('/')[1:])
+    linux_path = settings.LINUX_DIR + username + '/' + '/'.join(win_path.split('/')[1:])
     logger.debug('to_linux_translate() This is linux path %s', linux_path)
     return linux_path
 
@@ -117,7 +116,7 @@ def stop_cam_recording() -> True | False:
     convert_mkv_to_mp4(ServerCameraRecorder().last_processed_path,
                        TabletScreenRecorder().last_processed_file)
 
-    TaskManager().run_while_idle_once_time(synchronize_videos, args=[professor_video, screen_video])
+    TaskManager().run_once_time(synchronize_videos, args=[professor_video, screen_video])
 
     return True
 

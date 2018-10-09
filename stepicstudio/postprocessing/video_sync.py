@@ -28,14 +28,16 @@ class VideoSynchronizer(object):
         camera_path = os.path.splitext(camera_path)[0] + '.mp4'
         if not self.__fs_client.validate_file(screen_path) or \
                 not self.__fs_client.validate_file(camera_path):
-            self.__logger.error('Invalid paths to videos: (%s; %s)', screen_path, camera_path)
+            self.__logger.warning('Invalid paths to videos: (%s; %s)', screen_path, camera_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         try:
-            duration_1 = self.__get_silence_duration(screen_path, self.__tablet_noise_tolerance, self.__min_silence_duration)
-            duration_2 = self.__get_silence_duration(camera_path, self.__camera_noise_tolerance, self.__min_silence_duration)
+            duration_1 = self.__get_silence_duration(screen_path, self.__tablet_noise_tolerance,
+                                                     self.__min_silence_duration)
+            duration_2 = self.__get_silence_duration(camera_path, self.__camera_noise_tolerance,
+                                                     self.__min_silence_duration)
         except Exception as e:
-            self.__logger.error('Can\'t get silence duration of %s, %s: %s', screen_path, camera_path, str(e))
+            self.__logger.warning('Can\'t get silence duration of %s, %s.', screen_path, camera_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         longer = ''
@@ -54,7 +56,7 @@ class VideoSynchronizer(object):
                 longer = camera_path
                 self.__add_empty_frames(screen_path, abs(silence_diff))
         except Exception as e:
-            self.__logger.error('Invalide difference: %s', e)
+            self.__logger.warning('Invalide difference: %s', e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         self.__logger.info('Videos successfully synchronized (difference: %s sec.; longer silence in  %s; '

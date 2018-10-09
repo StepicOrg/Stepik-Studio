@@ -9,6 +9,11 @@ from tzlocal import get_localzone
 
 logging.getLogger('apscheduler').setLevel(logging.WARNING)
 
+# wait for resheduling missed tasks:
+misfire_grace_time = 60 * 60 * 24 * 2  # 2 days in seconds
+
+logger = logging.getLogger('randomname')
+
 
 @singleton
 class TaskManager(object):
@@ -20,33 +25,48 @@ class TaskManager(object):
             host = settings.DATABASES['default']['HOST']
             url = 'postgresql://' + user + ':' + passsword + '@' + host
             self.scheduler.add_jobstore('sqlalchemy', url=url)
-        self.scheduler.start()
-        self.__logger = logging.getLogger('stepicstudio.scheduling.tesk_manager')
 
-    def run_while_idle_once_time(self, job: callable, args: list):
+        self.__logger = logging.getLogger(__name__)
+        self.scheduler.start()
+
+    def run_once_time(self, job: callable, args):
         launch_time = self.__get_launch_time()
         trigger = DateTrigger(launch_time, timezone=get_localzone())
-        self.scheduler.add_job(job, trigger=trigger, args=args)
+        self.scheduler.add_job(func=job,
+                               trigger=trigger,
+                               args=args,
+                               misfire_grace_time=misfire_grace_time)
 
         self.__logger.info('New task for scheduled execution: %s. \n '
                            'Current size of tasks queue: %s; \n'
                            'Execution time: %s; \n Current time: %s;',
                            getattr(job, '__name__', repr(job)),
-                           self.__current_size() + 1,
+                           self.__current_size(),
                            launch_time,
                            datetime.now(self.scheduler.timezone))
 
     def run_while_idle_repeatable(self, job: callable, single=True):
+        if single:
+            for task in self.scheduler.get_jobs():
+                if job.__name__ in str(task):
+                    return
+
+        self.scheduler.add_job(func=job,
+                               trigger='cron',
+                               hour=str(settings.BACKGROUND_TASKS_START_HOUR),
+                               misfire_grace_time=misfire_grace_time)
+
         self.__logger.info('New task for scheduled repeatable execution: %s. \n '
-                           'Execution time: %s:00 of next day; \n Current time: %s;',
+                           'Execution time: %s:00 of next day; \n Current time: %s; \n'
+                           'Size of scheduler queue: %s tasks.',
                            getattr(job, '__name__', repr(job)),
                            settings.BACKGROUND_TASKS_START_HOUR,
-                           datetime.now(self.scheduler.timezone))
+                           datetime.now(self.scheduler.timezone),
+                           self.__current_size())
 
-        scheduled = self.scheduler.add_job(job, 'cron', hour=str(settings.BACKGROUND_TASKS_START_HOUR))
-
-        if single is True:
-            scheduled.modify(max_instances=1)
+    def remove_all_tasks(self):
+        for task in self.scheduler.get_jobs():
+            task.remove()
 
     def __get_launch_time(self):
         launch_date = datetime.now() + timedelta(days=1)
