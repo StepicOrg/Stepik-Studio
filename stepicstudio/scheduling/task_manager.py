@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 
+from apscheduler.events import EVENT_JOB_ERROR
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from django.conf import settings
@@ -27,6 +28,7 @@ class TaskManager(object):
             self.scheduler.add_jobstore('sqlalchemy', url=url)
 
         self.__logger = logging.getLogger(__name__)
+        self.scheduler.add_listener(self.__exception_listener, EVENT_JOB_ERROR)
         self.scheduler.start()
 
     def run_once_time(self, job: callable, args):
@@ -49,11 +51,12 @@ class TaskManager(object):
         if single:
             for task in self.scheduler.get_jobs():
                 if job.__name__ in str(task):
+                    self.__logger.info('Scheduler already contains task with name \'%s\'.', job.__name__)
                     return
 
         self.scheduler.add_job(func=job,
                                trigger='cron',
-                               hour=str(settings.BACKGROUND_TASKS_START_HOUR),
+                               hour=settings.BACKGROUND_TASKS_START_HOUR,
                                misfire_grace_time=misfire_grace_time)
 
         self.__logger.info('New task for scheduled repeatable execution: %s. \n '
@@ -74,3 +77,7 @@ class TaskManager(object):
 
     def __current_size(self):
         return self.scheduler.get_jobs().__len__()
+
+    def __exception_listener(self, event):
+        if event.exception:
+            self.__logger.warning('Exception was caught while handle %s: %s', event, event.exception)

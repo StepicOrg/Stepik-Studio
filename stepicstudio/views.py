@@ -522,7 +522,7 @@ def video_view(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
-        return error_description(request, 'File is missing.')
+        return error_description(request, 'File is missed.')
     except Exception as e:
         return error500_handler(request)
 
@@ -553,7 +553,7 @@ def video_screen_view(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
-        return error_description(request, 'File is missing.')
+        return error_description(request, 'File is missed.')
     except Exception as e:
         return error500_handler(request)
 

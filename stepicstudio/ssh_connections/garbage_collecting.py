@@ -8,7 +8,7 @@ from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.utils.utils import bytes2human
 
-logger = logging.getLogger('stepicstudio.ssh_connections.garbage_collecting')
+logger = logging.getLogger(__name__)
 
 
 def collect_garbage():
