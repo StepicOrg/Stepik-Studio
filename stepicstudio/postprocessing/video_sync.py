@@ -23,7 +23,7 @@ class VideoSynchronizer(object):
         self.__tablet_noise_tolerance = '-12dB'
         self.__min_silence_duration = 0.001
 
-    def sync(self, screen_path, camera_path):
+    def sync(self, screen_path, camera_path) -> InternalOperationResult:
         screen_path = os.path.splitext(screen_path)[0] + '.mp4'
         camera_path = os.path.splitext(camera_path)[0] + '.mp4'
         if not self.__fs_client.validate_file(screen_path) or \

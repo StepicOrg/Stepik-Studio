@@ -24,7 +24,8 @@ class TaskManager(object):
             user = settings.DATABASES['default']['USER']
             passsword = settings.DATABASES['default']['PASSWORD']
             host = settings.DATABASES['default']['HOST']
-            url = 'postgresql://' + user + ':' + passsword + '@' + host
+            db_name = settings.DATABASES['default']['NAME']
+            url = 'postgresql://' + user + ':' + passsword + '@' + host + '/' + db_name
             self.scheduler.add_jobstore('sqlalchemy', url=url)
 
         self.__logger = logging.getLogger(__name__)
