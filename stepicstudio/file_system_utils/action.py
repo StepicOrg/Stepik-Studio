@@ -126,6 +126,10 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
         logger.error(message)
         return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR, message)
 
+    if not os.path.exists(from_obj.os_path):
+        #  it may means that step created just now - it's OK
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
+
     if not os.path.isdir(from_obj.os_path):
         message = 'Cannot rename non-existent file: \'{0}\' doesn\'t exist'.format(from_obj.os_path)
         logger.error(message)

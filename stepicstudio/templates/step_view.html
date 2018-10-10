@@ -13,7 +13,7 @@
                 {% for SS in SubSteps  %}
                        <div class="substep-list" {% if SS.is_locked %} style="background: #141628; pointer-events: none; cursor: default" {% endif %}>
                                <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}}{% if not SS.automontage_exist %}
-                                   <a target="_blank" style="float: right" href=/create_montage/{{ SS.id }}> AutoMontage</a>{% endif %}</span>
+                                   <a target="_blank" style="float: right" href=/create_montage/{{ SS.id }}> Raw Cut</a>{% endif %}</span>
                                |<a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a>|
                                 <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a> {% if SS.automontage_exist %}|
                                 <a target="_blank" href=/show_montage/{{ SS.id }}/><img src="/static/icons/Film_strip_Silhouette_24.png"></a> {% endif %}
