@@ -105,3 +105,9 @@ class FileSystemClient(object):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+    def listdir_files(self, path: str):
+        if not os.path.isdir(path):
+            return []
+
+        return [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
