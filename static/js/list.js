@@ -178,6 +178,57 @@ var elements_subscriptor = function() {
         callback();
     }
 
+    $('.start-montage').on('click', function(event){
+        event.stopPropagation();
+        $(this).text("Processing...").click(function(){
+                return false;
+        });
+        var redir_url = $(this).data("urllink");
+        var ss_id = $(this).data("ss_id");
+        $(this).off();
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: redir_url,
+
+            data: {
+                "action": "start_montage"
+            },
+            success: function(data){
+                $('.substep-list').each(function() {
+                    if ($(this).data("ss_id") == ss_id) {
+                        $(this).css("background", "#141628");
+                        $(this).css("pointer-events", "none");
+                        $(this).css("cursor", "default");
+                    }
+                });
+            },
+            error: function(data){
+                alert(data.responseText);
+                $(this).text("Raw Cut")
+            }
+        });
+    });
+
+//    $(window).on('load', function(){
+//        $('.substep-list').each(function() {
+//            var ss_id = $(this).data("ss_id")
+//            setInterval(function(){
+//                $.ajax({
+//                    beforeSend: cookie_csrf_updater,
+//                    type: "GET",
+//                    url: "/substep_status/" + ss_id,
+//
+//                    success: function(data){
+//                        $(this).parents('.substep-list').css("background", "#333333");
+//                        //$(this).css("pointer-events", "none");
+//                        //$(this).css("cursor", "default");
+//                    }
+//                });
+//            }, 1000);
+//        });
+//    });
+
     $('.start-recording').off().on('click', function(){
         $(this).text("Starting...").click(function(){
                 return false;

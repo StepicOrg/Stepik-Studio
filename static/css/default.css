@@ -139,6 +139,10 @@
             cursor: pointer;
         }
 
+        .start-montage {
+            cursor: pointer;
+        }
+
         .lesson_info {
             font-size: 0.8em;
             display: inline-block;

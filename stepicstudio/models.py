@@ -98,6 +98,12 @@ class SubStep(models.Model):
         return self.name + ' from step id =' + str(self.from_step)
 
     @property
+    def dir_path(self):
+        step = Step.objects.all().get(id=self.from_step)
+        parh = step.os_path + translate_non_alphanumerics(self.name)
+        return parh.replace('/', os.sep)
+
+    @property
     def os_path(self):
         step = Step.objects.all().get(id=self.from_step)
         return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_PROFESSOR

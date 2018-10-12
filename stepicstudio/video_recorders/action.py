@@ -14,6 +14,7 @@ from stepicstudio.models import CameraStatus
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
+from stepicstudio.postprocessing.raw_cut import RawCutter
 from stepicstudio.scheduling.task_manager import TaskManager
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
@@ -65,11 +66,8 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
 
 def start_subtep_montage(substep_id):
     substep = SubStep.objects.get(id=substep_id)
-    video_path_list = substep.os_path_all_variants
-    screencast_path_list = substep.os_screencast_path_all_variants
-    substep.is_locked = True
-    substep.save()
-    run_ffmpeg_raw_montage(video_path_list, screencast_path_list, substep_id)
+    cutter = RawCutter()
+    cutter.raw_cut_async(substep)
 
 
 def delete_substep_files(**kwargs):
@@ -122,12 +120,12 @@ def stop_cam_recording() -> True | False:
 
 
 def convert_mkv_to_mp4(path: str, filename: str):
-    new_filename = os.path.splitext(filename)[0] + ".mp4"  # change file extension from .mkv to .mp4
+    new_filename = os.path.splitext(filename)[0] + MP4_EXTENSION  # change file extension from .mkv to .mp4
     source_file = os.path.join(path, filename)
     target_file = os.path.join(path, new_filename)
     fs_client = FileSystemClient()
 
-    if not fs_client.validate_file(source_file):
+    if not fs_client.is_file_valid(source_file):
         logger.error('Converting mkv to mp4 failed; file %s doesn\'t exist', source_file)
         return
 

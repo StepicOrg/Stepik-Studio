@@ -339,9 +339,16 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 @login_required(login_url='/login')
 def montage(request, substep_id):
     start_subtep_montage(substep_id)
-    args = {'go_back': request.META['HTTP_REFERER']}
-    args.update(csrf(request))
-    return render_to_response('montage_page.html', args, context_instance=RequestContext(request))
+    return HttpResponse('Ok')
+
+
+@login_required(login_url='/login')
+def substep_status(request, substep_id):
+    substep = SubStep.objects.all().get(id=substep_id)
+    if substep.is_locked:
+        return HttpResponse(status=451)
+    else:
+        return HttpResponse('Ok')
 
 
 @login_required(login_url='/login')
@@ -505,7 +512,7 @@ def video_view(request, substep_id):
         path = substep.os_path
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.validate_file(base_path + '.mp4'):
+        if fs_client.is_file_valid(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -536,7 +543,7 @@ def video_screen_view(request, substep_id):
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.validate_file(base_path + '.mp4'):
+        if fs_client.is_file_valid(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -552,9 +559,9 @@ def video_screen_view(request, substep_id):
 
         return response
     except FileNotFoundError as e:
-        logger.warning('Missing file: %s', str(e))
+        logger.warning('Missed file: %s', str(e))
         return error_description(request, 'File is missed.')
-    except Exception as e:
+    except Exception:
         return error500_handler(request)
 
 
@@ -563,11 +570,14 @@ def show_montage(request, substep_id):
         substep = SubStep.objects.all().get(id=substep_id)
         path = substep.os_automontage_path
         file = FileWrapper(open(path, 'rb'))
-        response = HttpResponse(file, content_type='video/ts')
-        response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + 'Raw_montage.mp4'
+        response = HttpResponse(file, content_type='video/mp4')
+        response['Content-Disposition'] = 'inline; filename=' + substep.name + RAW_MONTAGE_LABEL
         return response
-    except Exception as e:
-        return HttpResponse('Unknown Error')
+    except FileNotFoundError as e:
+        logger.warning('Missed file: %s', str(e))
+        return error_description(request, 'File is missed.')
+    except Exception:
+        return error500_handler(request)
 
 
 def rename_elem(request):

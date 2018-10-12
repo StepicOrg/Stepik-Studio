@@ -4,6 +4,7 @@ import subprocess
 
 from django.conf import settings
 
+from stepicstudio.const import SYNC_LABEL
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
@@ -26,8 +27,8 @@ class VideoSynchronizer(object):
     def sync(self, screen_path, camera_path) -> InternalOperationResult:
         screen_path = os.path.splitext(screen_path)[0] + '.mp4'
         camera_path = os.path.splitext(camera_path)[0] + '.mp4'
-        if not self.__fs_client.validate_file(screen_path) or \
-                not self.__fs_client.validate_file(camera_path):
+        if not self.__fs_client.is_file_valid(screen_path) or \
+                not self.__fs_client.is_file_valid(camera_path):
             self.__logger.warning('Invalid paths to videos: (%s; %s)', screen_path, camera_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
@@ -141,7 +142,7 @@ class VideoSynchronizer(object):
 
     def __add_empty_frames(self, path, duration):
         splitted_path = os.path.splitext(path)
-        new_path = splitted_path[0] + '_synchronized' + splitted_path[1]
+        new_path = splitted_path[0] + SYNC_LABEL + splitted_path[1]
         duration = '%.3f' % duration
         command = settings.FFMPEG_PATH + ' ' + settings.VIDEO_OFFSET_TEMPLATE.format(duration, path, new_path)
 
