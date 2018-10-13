@@ -1,13 +1,14 @@
 import logging
-
 import os
-from singleton_decorator import singleton
-from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
-from stepicstudio.FileSystemOperations.file_system_client import FileSystemClient
-from stepicstudio.const import FFMPEGcommand
+
 from django.conf import settings
-from stepicstudio.operationsstatuses.operation_result import InternalOperationResult
-from stepicstudio.operationsstatuses.statuses import ExecutionStatus
+from singleton_decorator import singleton
+
+from stepicstudio.file_system_utils.file_system_client import FileSystemClient
+from stepicstudio.const import FFMPEGcommand
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
+from stepicstudio.operations_statuses.statuses import ExecutionStatus
+from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
 
 
 @singleton
@@ -18,8 +19,8 @@ class ServerCameraRecorder(PostprocessableRecorder):
         self.__command = FFMPEGcommand
         self.__process = None
         self.__logger = logging.getLogger('stepic_studio.video_recorders.camera_recorder')
-        self.__last_processed_path = None
-        self.__last_processed_file = None
+        self.last_processed_path = None
+        self.last_processed_file = None
         self._load_postprocessing_pipe(settings.SERVER_POSTPROCESSING_PIPE)
 
     def start_recording(self, path: str, filename: str) -> InternalOperationResult:
@@ -35,8 +36,8 @@ class ServerCameraRecorder(PostprocessableRecorder):
         if result.status is ExecutionStatus.SUCCESS:
             self.__logger.info('Successfully start camera recording (FFMPEG PID: %s; FFMPEG command: %s)',
                                self.__process.pid, local_command)
-            self.__last_processed_file = filename
-            self.__last_processed_path = path
+            self.last_processed_file = filename
+            self.last_processed_path = path
         else:
             self.__logger.error('Camera recording start failed: %s; FFMPEG command: %s', result.message, local_command)
 
@@ -58,7 +59,7 @@ class ServerCameraRecorder(PostprocessableRecorder):
         if result.status is ExecutionStatus.SUCCESS:
             self.__logger.info('Successfully stop camera recording (FFMPEG PID: %s)', self.__process.pid)
             self.__process = None
-            self._apply_pipe(self.__last_processed_path, self.__last_processed_file)
+            self._apply_pipe(self.last_processed_path, self.last_processed_file)
             return result
         else:
             self.__logger.error('Problems while stop camera recording (FFMPEG PID: %s) : %s', self.__process.pid,
