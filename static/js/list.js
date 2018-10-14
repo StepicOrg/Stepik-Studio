@@ -83,7 +83,7 @@ var elements_subscriptor = function() {
             var reorderingType = reorderingSteps ? "step" : "lesson";
             $.ajax({
                 beforeSend: cookie_csrf_updater,
-                //alert("in ajax");
+
                 type: "POST",
                 url: "/reorder_lists/",
 
@@ -180,7 +180,7 @@ var elements_subscriptor = function() {
 
     $('.start-montage').on('click', function(event){
         event.stopPropagation();
-        $(this).text("Processing...").click(function(){
+        $(this).text("").click(function(){
                 return false;
         });
         var redir_url = $(this).data("urllink");
@@ -196,7 +196,7 @@ var elements_subscriptor = function() {
             },
             success: function(data){
                 $('.substep-list').each(function() {
-                    if ($(this).data("ss_id") == ss_id) {
+                    if ($(this).data("ss_id") === ss_id) {
                         $(this).css("background", "#141628");
                         $(this).css("pointer-events", "none");
                         $(this).css("cursor", "default");
@@ -210,24 +210,42 @@ var elements_subscriptor = function() {
         });
     });
 
-//    $(window).on('load', function(){
-//        $('.substep-list').each(function() {
-//            var ss_id = $(this).data("ss_id")
-//            setInterval(function(){
-//                $.ajax({
-//                    beforeSend: cookie_csrf_updater,
-//                    type: "GET",
-//                    url: "/substep_status/" + ss_id,
-//
-//                    success: function(data){
-//                        $(this).parents('.substep-list').css("background", "#333333");
-//                        //$(this).css("pointer-events", "none");
-//                        //$(this).css("cursor", "default");
-//                    }
-//                });
-//            }, 1000);
-//        });
-//    });
+    $(window).on('load', function(){
+        var poller_id;
+        $(window).on('unload', function(){
+            console.info(poller_id);
+            clearInterval(poller_id);
+        });
+        poller_id = setInterval(function(){
+            $('.substep-list').each(function(index, value) {
+                var ss_id = $(this).data("ss_id");
+                var elem = $(this);
+                var show_montage = elem.children('.show-montage');
+                var start_montage = elem.children('.start-montage');
+
+                $.ajax({
+                    beforeSend: cookie_csrf_updater,
+                    type: "GET",
+                    url: "/substep_status/" + ss_id,
+                    dataType: "json",
+
+                    success: function(data){
+                        if (data.islocked) {
+                            elem.css("background", "#141628");
+                            elem.css("pointer-events", "none");
+                            elem.css("cursor", "default");
+                        } else if (data.isexists){
+                            elem.css("background", "#FFFFFF");
+                            elem.css("pointer-events", "auto");
+                            show_montage.show();
+                        } else if (!data.isexists){
+                            show_montage.hide();
+                        }
+                    },
+                });
+            });
+        }, 1000);
+    });
 
     $('.start-recording').off().on('click', function(){
         $(this).text("Starting...").click(function(){

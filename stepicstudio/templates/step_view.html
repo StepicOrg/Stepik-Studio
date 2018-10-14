@@ -11,12 +11,19 @@
             from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
             </h3>
                 {% for SS in SubSteps  %}
-                       <div class="substep-list" data-ss_id="{{ SS.id }}" {% if SS.is_locked %} style="background: #141628; pointer-events: none; cursor: default" {% endif %}>
-                               <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}}{% if not SS.automontage_exist %}
-                                   <a class="start-montage" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}" style="float: right"> Raw Cut</a>{% endif %}</span>
+                       <div class="substep-list" data-ss_id="{{ SS.id }}"  {% if SS.is_locked %} style="background: #141628; pointer-events: none; cursor: default" {% endif %}>
+                               <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}}
+                               </span>
                                |<a target="_blank" href=/showcontent/{{ SS.id }}><img src="/static/icons/video-camera.svg"></a>|
-                                <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a> {% if SS.automontage_exist %}|
-                                <a target="_blank" href=/show_montage/{{ SS.id }}/><img src="/static/icons/Film_strip_Silhouette_24.png"></a> {% endif %}
+                                <a target="_blank" href=/showscreencontent/{{ SS.id }}><img src="/static/icons/display.svg"></a>
+                                {% if SS.automontage_exist %}|
+                                <a target="_blank" class="show-montage" href=/show_montage/{{ SS.id }}/><img src="/static/icons/Film_strip_Silhouette_24.png"></a>
+                                <a target="_blank" class="start-montage" hidden="true" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
+                                {% endif %}
+                                {% if not SS.automontage_exist %}|
+                                <a target="_blank" class="show-montage" hidden="true" href=/show_montage/{{ SS.id }}/><img src="/static/icons/Film_strip_Silhouette_24.png"></a>
+                                <a target="_blank" class="start-montage" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
+                                {% endif %}
                                | V: {% if SS.duration > 0 %} {{ SS.duration | sec_to_time}} {% else %} Err! {% endif %}
                                | Scr: {% if SS.screencast_duration > 0 %} {{ SS.screencast_duration | sec_to_time}} {% else %} Err! {% endif %}
                                | {% if not SS.is_videos_ok %} Err! {% endif %}

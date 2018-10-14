@@ -64,12 +64,6 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
-def start_subtep_montage(substep_id):
-    substep = SubStep.objects.get(id=substep_id)
-    cutter = RawCutter()
-    cutter.raw_cut_async(substep)
-
-
 def delete_substep_files(**kwargs):
     folder_path = kwargs['user_profile'].serverFilesFolder
     data = kwargs['data']

@@ -4,7 +4,8 @@ import re
 from wsgiref.util import FileWrapper
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
+    JsonResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
@@ -13,6 +14,7 @@ from django.db.models import Max
 from django.template import RequestContext
 
 from stepicstudio.forms import LessonForm, StepForm
+from stepicstudio.postprocessing import start_subtep_montage
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
@@ -344,11 +346,17 @@ def montage(request, substep_id):
 
 @login_required(login_url='/login')
 def substep_status(request, substep_id):
+    if not request.is_ajax():
+        raise Http404
+
     substep = SubStep.objects.all().get(id=substep_id)
-    if substep.is_locked:
-        return HttpResponse(status=451)
-    else:
-        return HttpResponse('Ok')
+    is_locked = substep.is_locked
+    is_automontage_exists = substep.automontage_exist
+
+    args = {'islocked': is_locked,
+            'isexists': is_automontage_exists}
+
+    return JsonResponse(args)
 
 
 @login_required(login_url='/login')
