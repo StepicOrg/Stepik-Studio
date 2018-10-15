@@ -190,9 +190,20 @@ var elements_subscriptor = function() {
             data: {
                 "action": "create_step_montage"
             },
-            success: function(data){
+            error: function(data){
+                alert(data.responseText);
+            }
+        });
+    });
 
-            },
+    $('.raw_cut_lesson').on('click', function(event){
+        event.stopPropagation();
+        $(this).text("Processing");
+        var lesson_id = $(this).parents('.ui-state-default').attr('lessonID');
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: "/create_lesson_montage/" + lesson_id + "/",
             error: function(data){
                 alert(data.responseText);
             }
@@ -231,10 +242,11 @@ var elements_subscriptor = function() {
         });
     });
 
-    $(window).on('load', function(){
+    $(window).on('load', function(event){
         var poller_id;
        $(this).on('unload', function(){
             clearInterval(poller_id);
+            event.preventDefault();
         });
         poller_id = setInterval(function(){
             $('.substep-list').each(function(index, value) {

@@ -14,7 +14,7 @@ from django.db.models import Max
 from django.template import RequestContext
 
 from stepicstudio.forms import LessonForm, StepForm
-from stepicstudio.postprocessing import start_subtep_montage, start_step_montage
+from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
@@ -351,8 +351,15 @@ def step_montage(request, step_id):
     if not request.is_ajax():
         raise Http404
 
-    print(step_id)
     start_step_montage(step_id)
+    return HttpResponse('Ok')
+
+
+def lesson_montage(request, lesson_id):
+    if not request.is_ajax():
+        raise Http404
+
+    start_lesson_montage(lesson_id)
     return HttpResponse('Ok')
 
 
