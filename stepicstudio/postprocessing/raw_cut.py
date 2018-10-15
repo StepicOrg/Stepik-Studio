@@ -19,15 +19,21 @@ class RawCutter(object):
         self.__logger = logging.getLogger(__name__)
         self.__process = None
 
-    def raw_cut_async(self, substep: SubStep):
+    def raw_cut_async(self, substep_id: int):
         try:
-            thread = Thread(target=self.raw_cut, args=[substep])
+            thread = Thread(target=self.raw_cut, args=[substep_id])
             thread.start()
         except Exception as e:
             self.__logger.warning('Can\'t launch raw_cut asynchronously: %s', e)
 
-    def raw_cut(self, substep: SubStep) -> InternalOperationResult:
+    def raw_cut(self, substep_id: int) -> InternalOperationResult:
+        substep = SubStep.objects.get(pk=substep_id)
+
+        if substep.automontage_exist:
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+
         dir_path = substep.dir_path
+
         if not self._fs_client.is_dir_valid(dir_path):
             self.__logger.warning('Invalid path to substep: %s', dir_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
@@ -44,10 +50,25 @@ class RawCutter(object):
         substep.is_locked = True
         substep.save()
         internal_status = self._internal_raw_cut(screen_full_path, prof_full_path, full_output)
+        substep = SubStep.objects.get(pk=substep_id)
         substep.is_locked = False
         substep.save()
 
         return internal_status
+
+    def raw_cut_step_async(self, step_id: int):
+        try:
+            substep_ids = SubStep.objects.all().filter(from_step=step_id).values_list('id', flat=True)
+            thread = Thread(target=self._internal_raw_cut_step, args=[substep_ids])
+            thread.start()
+        except Exception as e:
+            self.__logger.warning('Can\'t launch raw_cut_step asynchronously: %s', e)
+
+    def _internal_raw_cut_step(self, substep_ids):
+        for id in substep_ids:
+            # self.raw_cut(id)
+            print(SubStep.objects.all().filter(pk=id).os_path)
+
 
     def _internal_raw_cut(self, video_path1: str, video_path2: str, output_path: str) -> InternalOperationResult:
         status_1 = self._fs_client.is_file_valid(video_path1)

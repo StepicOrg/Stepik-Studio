@@ -9,6 +9,5 @@ def synchronize_videos(path_1, path_2):
 
 
 def start_subtep_montage(substep_id):
-    substep = SubStep.objects.get(id=substep_id)
     cutter = RawCutter()
-    cutter.raw_cut_async(substep)
+    cutter.raw_cut_async(substep_id)
