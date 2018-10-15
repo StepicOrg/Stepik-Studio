@@ -200,6 +200,7 @@ var elements_subscriptor = function() {
                         $(this).css("background", "#141628");
                         $(this).css("pointer-events", "none");
                         $(this).css("cursor", "default");
+                        $(this).data('ss_locked', "True");
                     }
                 });
             },
@@ -212,16 +213,19 @@ var elements_subscriptor = function() {
 
     $(window).on('load', function(){
         var poller_id;
-        $(window).on('unload', function(){
-            console.info(poller_id);
+       $(this).on('unload', function(){
             clearInterval(poller_id);
         });
         poller_id = setInterval(function(){
             $('.substep-list').each(function(index, value) {
                 var ss_id = $(this).data("ss_id");
+                var ss_islocked = $(this).data("ss_locked");
+
+                if (ss_islocked === "False")
+                    return true;
+
                 var elem = $(this);
                 var show_montage = elem.children('.show-montage');
-                var start_montage = elem.children('.start-montage');
 
                 $.ajax({
                     beforeSend: cookie_csrf_updater,
@@ -234,11 +238,17 @@ var elements_subscriptor = function() {
                             elem.css("background", "#141628");
                             elem.css("pointer-events", "none");
                             elem.css("cursor", "default");
+                            elem.data('ss_locked', "True");
                         } else if (data.isexists){
                             elem.css("background", "#FFFFFF");
                             elem.css("pointer-events", "auto");
+                            elem.data('ss_locked', "False");
                             show_montage.show();
                         } else if (!data.isexists){
+                            elem.data('ss_locked', "False");
+                            elem.css("background", "#FFFFFF");
+                            elem.css("pointer-events", "auto");
+                            elem.data('ss_locked', "False");
                             show_montage.hide();
                         }
                     },

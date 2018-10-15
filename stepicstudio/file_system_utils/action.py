@@ -54,7 +54,10 @@ def delete_substep_on_disc(**kwargs: dict) -> True | False:
     if not os.path.isdir(f_c_l_s_substep):
         return False
     else:
-        shutil.rmtree(f_c_l_s_substep)
+        try:
+            shutil.rmtree(f_c_l_s_substep)
+        except:
+            return True
         while os.path.exists(f_c_l_s_substep):
             pass
         return True

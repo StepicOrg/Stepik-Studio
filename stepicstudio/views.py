@@ -417,11 +417,8 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
 
     substep_deleted = delete_substep_files(user_id=request.user.id,
                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
-    if not substep_deleted:
-        args = {'go_back': request.META['HTTP_REFERER']}
-        args.update(csrf(request))
-        return render_to_response('file_in_use.html', args, context_instance=RequestContext(request))
-    substep.delete()
+    if substep_deleted:
+        substep.delete()
     return HttpResponseRedirect(post_url)
 
 
@@ -440,22 +437,19 @@ def delete_step(request, course_id, lesson_id, step_id):
     substeps = SubStep.objects.all().filter(from_step=step_id)
     step_deleted = delete_step_files(user_id=request.user.id,
                                      user_profile=UserProfile.objects.get(user=request.user.id), data=args)
-    if not step_deleted:
-        args = {'go_back': request.META['HTTP_REFERER']}
-        args.update(csrf(request))
-        return render_to_response('file_in_use.html', args, context_instance=RequestContext(request))
-    for substep in substeps:
-        substep.delete()
-    step.delete()
+    if step_deleted:
+        for substep in substeps:
+            substep.delete()
+        step.delete()
     return HttpResponseRedirect(post_url)
 
 
 @login_required(login_url='/login/')
 def user_profile(request):
-    return render_to_response('UserProfile.html', {'full_name': request.user.username,
-                                                   'settings': UserProfile.objects.get(user_id=request.user.id),
-
-                                                   }, context_instance=RequestContext(request))
+    return render_to_response('UserProfile.html',
+                              {'full_name': request.user.username,
+                               'settings': UserProfile.objects.get(user_id=request.user.id)},
+                              context_instance=RequestContext(request))
 
 
 # TODO: Refactor
