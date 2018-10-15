@@ -178,14 +178,33 @@ var elements_subscriptor = function() {
         callback();
     }
 
+    $('.raw_cut_step').on('click', function(event){
+        event.stopPropagation();
+        $(this).text("Processing");
+        var step_id = $(this).parents('.ui-state-default').attr('stepID');
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: "/create_step_montage/" + step_id + "/",
+
+            data: {
+                "action": "create_step_montage"
+            },
+            success: function(data){
+
+            },
+            error: function(data){
+                alert(data.responseText);
+            }
+        });
+    });
+
     $('.start-montage').on('click', function(event){
         event.stopPropagation();
-        $(this).text("").click(function(){
-                return false;
-        });
+        $(this).hide();
+        var elem = $(this);
         var redir_url = $(this).data("urllink");
         var ss_id = $(this).data("ss_id");
-        $(this).off();
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
@@ -201,12 +220,13 @@ var elements_subscriptor = function() {
                         $(this).css("pointer-events", "none");
                         $(this).css("cursor", "default");
                         $(this).data('ss_locked', "True");
+                        $(this).children('.show-montage').show();
                     }
                 });
             },
             error: function(data){
                 alert(data.responseText);
-                $(this).text("Raw Cut")
+                elem.show();
             }
         });
     });
@@ -221,11 +241,9 @@ var elements_subscriptor = function() {
                 var ss_id = $(this).data("ss_id");
                 var ss_islocked = $(this).data("ss_locked");
 
-                if (ss_islocked === "False")
-                    return true;
-
                 var elem = $(this);
                 var show_montage = elem.children('.show-montage');
+                var start_montage = elem.children('.start-montage');
 
                 $.ajax({
                     beforeSend: cookie_csrf_updater,
@@ -243,6 +261,7 @@ var elements_subscriptor = function() {
                             elem.css("background", "#FFFFFF");
                             elem.css("pointer-events", "auto");
                             elem.data('ss_locked', "False");
+                            start_montage.hide();
                             show_montage.show();
                         } else if (!data.isexists){
                             elem.data('ss_locked', "False");
@@ -250,6 +269,7 @@ var elements_subscriptor = function() {
                             elem.css("pointer-events", "auto");
                             elem.data('ss_locked', "False");
                             show_montage.hide();
+                            start_montage.show();
                         }
                     },
                 });

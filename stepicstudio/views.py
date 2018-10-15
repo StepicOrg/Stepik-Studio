@@ -14,7 +14,7 @@ from django.db.models import Max
 from django.template import RequestContext
 
 from stepicstudio.forms import LessonForm, StepForm
-from stepicstudio.postprocessing import start_subtep_montage
+from stepicstudio.postprocessing import start_subtep_montage, start_step_montage
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
@@ -340,7 +340,19 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 
 @login_required(login_url='/login')
 def montage(request, substep_id):
+    if not request.is_ajax():
+        raise Http404
+
     start_subtep_montage(substep_id)
+    return HttpResponse('Ok')
+
+
+def step_montage(request, step_id):
+    if not request.is_ajax():
+        raise Http404
+
+    print(step_id)
+    start_step_montage(step_id)
     return HttpResponse('Ok')
 
 
@@ -415,10 +427,9 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
             'currSubStep': substep,
             }
 
-    substep_deleted = delete_substep_files(user_id=request.user.id,
+    delete_substep_files(user_id=request.user.id,
                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
-    if substep_deleted:
-        substep.delete()
+    substep.delete()
     return HttpResponseRedirect(post_url)
 
 

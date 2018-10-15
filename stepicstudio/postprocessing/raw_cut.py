@@ -65,10 +65,8 @@ class RawCutter(object):
             self.__logger.warning('Can\'t launch raw_cut_step asynchronously: %s', e)
 
     def _internal_raw_cut_step(self, substep_ids):
-        for id in substep_ids:
-            # self.raw_cut(id)
-            print(SubStep.objects.all().filter(pk=id).os_path)
-
+        for ss_id in substep_ids:
+            self.raw_cut(ss_id)
 
     def _internal_raw_cut(self, video_path1: str, video_path2: str, output_path: str) -> InternalOperationResult:
         status_1 = self._fs_client.is_file_valid(video_path1)
