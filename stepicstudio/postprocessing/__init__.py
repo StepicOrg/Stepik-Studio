@@ -18,6 +18,5 @@ def start_step_montage(step_id):
 
 
 def start_lesson_montage(lesson_id):
-    print(lesson_id)
     cutter = RawCutter()
     cutter.raw_cut_lesson_async(lesson_id)
