@@ -114,3 +114,11 @@ class FileSystemClient(object):
             return []
 
         return [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+
+    def create_recursively(self, path: str) -> InternalOperationResult:
+        try:
+            os.makedirs(path, exist_ok=True, mode=777)
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+        except Exception as e:
+            self.logger.error('Can\'t create dirs recursively: %s', e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)

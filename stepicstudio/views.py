@@ -367,15 +367,17 @@ def lesson_montage(request, lesson_id):
 def substep_status(request, substep_id):
     if not request.is_ajax():
         raise Http404
+    try:
+        substep = SubStep.objects.all().get(id=substep_id)
+        is_locked = substep.is_locked
+        is_automontage_exists = substep.automontage_exist
 
-    substep = SubStep.objects.all().get(id=substep_id)
-    is_locked = substep.is_locked
-    is_automontage_exists = substep.automontage_exist
+        args = {'islocked': is_locked,
+                'isexists': is_automontage_exists}
 
-    args = {'islocked': is_locked,
-            'isexists': is_automontage_exists}
-
-    return JsonResponse(args)
+        return JsonResponse(args)
+    except:
+        return HttpResponseServerError()
 
 
 @login_required(login_url='/login')
@@ -435,7 +437,8 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
             }
 
     delete_substep_files(user_id=request.user.id,
-                                           user_profile=UserProfile.objects.get(user=request.user.id), data=args)
+                         user_profile=UserProfile.objects.get(user=request.user.id),
+                         data=args)
     substep.delete()
     return HttpResponseRedirect(post_url)
 
@@ -588,7 +591,7 @@ def video_screen_view(request, substep_id):
 def show_montage(request, substep_id):
     try:
         substep = SubStep.objects.all().get(id=substep_id)
-        path = substep.os_automontage_path
+        path = substep.os_automontage_file
         file = FileWrapper(open(path, 'rb'))
         response = HttpResponse(file, content_type='video/mp4')
         response['Content-Disposition'] = 'inline; filename=' + substep.name + RAW_MONTAGE_LABEL

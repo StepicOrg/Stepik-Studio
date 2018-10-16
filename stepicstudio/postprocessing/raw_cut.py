@@ -36,7 +36,14 @@ class RawCutter(object):
 
         screen_full_path = os.path.join(dir_path, screen)
         prof_full_path = os.path.join(dir_path, prof)
-        full_output = os.path.join(dir_path, substep.name + RAW_MONTAGE_LABEL + MP4_EXTENSION)
+
+        output_dir = substep.os_automontage_path
+        status = self._fs_client.create_recursively(output_dir)
+
+        if status.status is not ExecutionStatus.SUCCESS:
+            return status
+
+        full_output = os.path.join(output_dir, substep.name + RAW_MONTAGE_LABEL + MP4_EXTENSION)
 
         substep.is_locked = True
         substep.save()

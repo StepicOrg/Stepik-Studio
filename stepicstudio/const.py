@@ -28,6 +28,8 @@ PROFESSOR_IP = settings.PROFESSOR_IP
 
 FFMPEG_PATH = settings.FFMPEG_PATH
 
+RAW_MONTAGE_FOLDER_NAME = 'RawMontage'
+
 if _platform == "linux" or _platform == "linux2" or _platform == "darwin":
     FFPROBE_RUN_PATH = 'ffprobe'
 else:

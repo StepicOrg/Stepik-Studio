@@ -284,6 +284,7 @@ var elements_subscriptor = function() {
                             start_montage.show();
                         }
                     },
+                    error: function(data){}
                 });
             });
         }, 1000);
