@@ -1,11 +1,10 @@
 import logging
 import os
 import time
-from functools import partial
 
 from django.contrib.auth.models import User
+from django.conf import settings
 
-from STEPIC_STUDIO.settings import LINUX_DIR
 from stepicstudio import const
 from stepicstudio.const import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
@@ -15,6 +14,7 @@ from stepicstudio.models import CameraStatus
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
+from stepicstudio.postprocessing.raw_cut import RawCutter
 from stepicstudio.scheduling.task_manager import TaskManager
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
@@ -24,7 +24,7 @@ logger = logging.getLogger('stepic_studio.file_system_utils.action')
 
 
 def to_linux_translate(win_path: str, username: str) -> str:
-    linux_path = LINUX_DIR + username + '/' + '/'.join(win_path.split('/')[1:])
+    linux_path = settings.LINUX_DIR + username + '/' + '/'.join(win_path.split('/')[1:])
     logger.debug('to_linux_translate() This is linux path %s', linux_path)
     return linux_path
 
@@ -37,11 +37,6 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     add_file_to_test(folder_path=folder_path, data=data)
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
 
-    ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
-                                                           data['currSubStep'].name + SUBSTEP_PROFESSOR)
-    if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
-        return ffmpeg_status
-
     filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
     folder = to_linux_translate(substep_folder, username)
 
@@ -51,8 +46,14 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
         remote_status = InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
     if remote_status.status is not ExecutionStatus.SUCCESS:
-        ServerCameraRecorder().stop_recording()
         return remote_status
+
+    ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
+                                                           data['currSubStep'].name + SUBSTEP_PROFESSOR)
+
+    if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
+        TabletScreenRecorder().stop_recording()
+        return ffmpeg_status
 
     db_camera = CameraStatus.objects.get(id='1')
     if not db_camera.status:
@@ -61,15 +62,6 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
         db_camera.save()
 
     return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-
-def start_subtep_montage(substep_id):
-    substep = SubStep.objects.get(id=substep_id)
-    video_path_list = substep.os_path_all_variants
-    screencast_path_list = substep.os_screencast_path_all_variants
-    substep.is_locked = True
-    substep.save()
-    run_ffmpeg_raw_montage(video_path_list, screencast_path_list, substep_id)
 
 
 def delete_substep_files(**kwargs):
@@ -96,11 +88,11 @@ def stop_cam_recording() -> True | False:
     camstat.status = False
     camstat.save()
 
-    stop_camera_status = ServerCameraRecorder().stop_recording()
     stop_screen_status = TabletScreenRecorder().stop_recording()
+    stop_camera_status = ServerCameraRecorder().stop_recording()
 
     if stop_camera_status.status is not ExecutionStatus.SUCCESS or \
-        stop_screen_status.status is not ExecutionStatus.SUCCESS:
+                    stop_screen_status.status is not ExecutionStatus.SUCCESS:
         return False
 
     tablet_client = TabletClient()
@@ -116,18 +108,18 @@ def stop_cam_recording() -> True | False:
     convert_mkv_to_mp4(ServerCameraRecorder().last_processed_path,
                        TabletScreenRecorder().last_processed_file)
 
-    TaskManager().run_while_idle_once_time(partial(synchronize_videos, professor_video, screen_video))
+    TaskManager().run_once_time(synchronize_videos, args=[professor_video, screen_video])
 
     return True
 
 
 def convert_mkv_to_mp4(path: str, filename: str):
-    new_filename = os.path.splitext(filename)[0] + ".mp4"  # change file extension from .mkv to .mp4
+    new_filename = os.path.splitext(filename)[0] + MP4_EXTENSION  # change file extension from .mkv to .mp4
     source_file = os.path.join(path, filename)
     target_file = os.path.join(path, new_filename)
     fs_client = FileSystemClient()
 
-    if not fs_client.validate_file(source_file):
+    if not fs_client.is_file_valid(source_file):
         logger.error('Converting mkv to mp4 failed; file %s doesn\'t exist', source_file)
         return
 

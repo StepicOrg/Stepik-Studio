@@ -13,6 +13,9 @@ logger = logging.getLogger('stepicstudio.middleware')
 
 class SetLastVisitMiddleware(object):
     def process_response(self, request, response):
+        if request.is_ajax:
+            return response
+
         try:
             if hasattr(request, 'user') and request.user.is_authenticated():
                 UserProfile.objects.filter(pk=request.user.pk).update(last_visit=now())
@@ -31,6 +34,9 @@ class SetStorageCapacityMiddleware(object):
             self.tablet_client = None
 
     def process_response(self, request, response):
+        if request.is_ajax:
+            return response
+
         try:
             if hasattr(request, 'user') and request.user.is_authenticated():
                 self.handle_server_space_info(request)
