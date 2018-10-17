@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 
-from stepicstudio.models import SubStep
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.utils.utils import bytes2human
@@ -15,6 +14,7 @@ def collect_garbage():
     tablet_client = TabletClient()
     result_size = 0
     ss_count = 0
+    from stepicstudio.models import SubStep
     for substep in SubStep.objects.all():
         if is_outdated(substep):
             folder_path = get_full_linux_path(substep)

@@ -248,7 +248,7 @@ def show_step(request, course_id, lesson_id, step_id):
             elif start_status.status is ExecutionStatus.FATAL_ERROR:
                 return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
         elif user_action == 'stop':
-            stop_status = stop_cam_recording()  # stop_recording(request, course_id, lesson_id, step_id)
+            stop_status = stop_cam_recording()
             if stop_status:
                 return HttpResponse('Ok')
             else:
@@ -257,7 +257,7 @@ def show_step(request, course_id, lesson_id, step_id):
     all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
     summ_time = update_time_records(all_substeps)
     step_obj.is_fresh = True
-    step_obj.duration = summ_time
+    step_obj.duration += summ_time
     step_obj.save()
     args = {'full_name': request.user.username,
             'Course': Course.objects.all().get(id=course_id),
@@ -310,11 +310,10 @@ def update_substep_tmpl(request):
 def start_new_step_recording(request, course_id, lesson_id, step_id) -> InternalOperationResult:
     substep = SubStep()
     substep.from_step = step_id
-    substep_index = len(SubStep.objects.all().filter(from_step=step_id)) + 1
+    substep_index = SubStep.objects.filter(from_step=step_id).count() + 1
     substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
-    while SubStep.objects.filter(name=substep.name).count():
-        substep_index += 1
-        substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+    substep_index += SubStep.objects.filter(name=substep.name).count()
+    substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
     substep.save()
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
