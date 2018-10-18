@@ -42,10 +42,28 @@ class TSConverter(PostprocessorInterface):
         reencode_command = settings.FFMPEG_PATH + ' ' + \
                            settings.CAMERA_REENCODE_TEMPLATE.format(source_file, target_file)
 
-        result, _ = self.fs_client.execute_command(reencode_command)
+        result = self.fs_client.execute_command_sync(reencode_command)
 
         if result.status is ExecutionStatus.SUCCESS:
             self.logger.info('Successfully start converting TS to mp4 (FFMPEG command: %s)', reencode_command)
         else:
             self.logger.error('Converting failed: %s; FFMPEG command: %s', result.message, reencode_command)
         return path, new_filename
+
+
+class FileRemover(PostprocessorInterface):
+    def __init__(self):
+        self.fs_client = FileSystemClient()
+        self.logger = logging.getLogger(__name__)
+
+    def process(self, path: str, filename: str) -> (str, str):
+        path = os.path.join(path, filename)
+        if not self.fs_client.is_file_valid(path):
+            return path, filename
+
+        remove_status = self.fs_client.remove_file(path)
+
+        if not remove_status:
+            self.logger.error('Removing file %s failed: %s', path, remove_status.message)
+
+        return path, filename
