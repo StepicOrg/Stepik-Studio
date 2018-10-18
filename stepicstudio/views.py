@@ -312,8 +312,9 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
     substep.from_step = step_id
     substep_index = SubStep.objects.filter(from_step=step_id).count() + 1
     substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
-    substep_index += SubStep.objects.filter(name=substep.name).count()
-    substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+    while SubStep.objects.filter(name=substep.name).count():
+        substep_index += 1
+        substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
     substep.save()
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
