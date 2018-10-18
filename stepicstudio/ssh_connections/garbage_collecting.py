@@ -17,7 +17,11 @@ def collect_garbage():
     from stepicstudio.models import SubStep
     for substep in SubStep.objects.all():
         if is_outdated(substep):
-            folder_path = get_full_linux_path(substep)
+            try:
+                folder_path = get_full_linux_path(substep)
+            except:
+                substep.delete()
+                continue
             status, size = tablet_client.delete_folder(folder_path)
 
             if status.status is ExecutionStatus.SUCCESS:
