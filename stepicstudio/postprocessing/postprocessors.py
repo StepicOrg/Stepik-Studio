@@ -43,7 +43,7 @@ class TSConverter(PostprocessorInterface):
         reencode_command = settings.FFMPEG_PATH + ' ' + \
                            settings.CAMERA_REENCODE_TEMPLATE.format(source_file, target_file)
 
-        result = self.fs_client.execute_command(reencode_command)
+        result, _ = self.fs_client.execute_command(reencode_command)
 
         if result.status is ExecutionStatus.SUCCESS:
             self.logger.info('Successfully start converting TS to mp4 (FFMPEG command: %s)', reencode_command)
