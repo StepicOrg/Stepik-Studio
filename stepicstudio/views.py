@@ -254,7 +254,7 @@ def show_step(request, course_id, lesson_id, step_id):
             else:
                 return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
 
-    all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
+    all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('-start_time')
     summ_time = update_time_records(all_substeps)
     step_obj.is_fresh = True
     step_obj.duration += summ_time
