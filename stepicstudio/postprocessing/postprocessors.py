@@ -1,9 +1,10 @@
 import logging
 import os
+from time import sleep
 
 from django.conf import settings
 
-from stepicstudio.const import MP4_EXTENSION
+from stepicstudio.const import MP4_EXTENSION, TS_EXTENSION
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
@@ -42,7 +43,7 @@ class TSConverter(PostprocessorInterface):
         reencode_command = settings.FFMPEG_PATH + ' ' + \
                            settings.CAMERA_REENCODE_TEMPLATE.format(source_file, target_file)
 
-        result = self.fs_client.execute_command_sync(reencode_command)
+        result = self.fs_client.execute_command(reencode_command)
 
         if result.status is ExecutionStatus.SUCCESS:
             self.logger.info('Successfully start converting TS to mp4 (FFMPEG command: %s)', reencode_command)
@@ -57,13 +58,15 @@ class FileRemover(PostprocessorInterface):
         self.logger = logging.getLogger(__name__)
 
     def process(self, path: str, filename: str) -> (str, str):
-        path = os.path.join(path, filename)
+        file_to_remove = os.path.splitext(filename)[0] + TS_EXTENSION
+        path = os.path.join(path, file_to_remove)
         if not self.fs_client.is_file_valid(path):
+            self.logger.warning('Removing .TS file failed: file %s is not valid.', path)
             return path, filename
 
         remove_status = self.fs_client.remove_file(path)
 
-        if not remove_status:
+        if remove_status.status is not ExecutionStatus.SUCCESS:
             self.logger.error('Removing file %s failed: %s', path, remove_status.message)
 
         return path, filename
