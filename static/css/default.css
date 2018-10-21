@@ -89,7 +89,7 @@
             white-space: nowrap;
             overflow:hidden !important;
             text-overflow: ellipsis;
-            width: 70%;
+            width: 60%;
         }
 
         #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
@@ -139,12 +139,16 @@
             cursor: pointer;
         }
 
+        .start-montage {
+            cursor: pointer;
+        }
+
         .lesson_info {
             font-size: 0.8em;
             display: inline-block;
             float: right;
-            text-align: left;
-            width: 170px;
+            text-align: right;
+            width: 320px;
             color: #565656;
             cursor: pointer;
 

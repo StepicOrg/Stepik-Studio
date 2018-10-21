@@ -44,23 +44,6 @@ def add_file_to_test(**kwargs: dict) -> None:
         os.makedirs(folder_p)
 
 
-def run_ffmpeg_raw_montage(video_path_list: list, screencast_path_list: list, substep_id):
-    try:
-        video_path = [i for i in video_path_list if os.path.exists(i)][0]
-        screencast_path = [i for i in screencast_path_list if os.path.exists(i)][0]
-        to_folder_path = os.path.dirname(screencast_path)
-        filename_to_create = os.path.basename(os.path.dirname(screencast_path)) + '_Raw_Montage.mp4'
-        command = FFMPEG_PATH + r' -i ' + video_path + r' -i ' + screencast_path + r' -filter_complex \
-        "[0:v]setpts=PTS-STARTPTS, pad=iw*2:ih[bg]; \
-        [1:v]setpts=PTS-STARTPTS[fg]; [bg][fg]overlay=w; \
-        amerge,pan=stereo:c0<c0+c1:c1<c1+c0" ' + to_folder_path + '/' + filename_to_create + ' -y'
-        proc = subprocess.Popen(command, shell=True)
-        CURRENT_TASKS_DICT.update({proc: substep_id})
-
-    except Exception as e:
-        logger.debug('run_ffmepg_raw_mongage: Error')
-
-
 def delete_substep_on_disc(**kwargs: dict) -> True | False:
     folder = kwargs['folder_path']
     data = kwargs['data']
@@ -71,7 +54,10 @@ def delete_substep_on_disc(**kwargs: dict) -> True | False:
     if not os.path.isdir(f_c_l_s_substep):
         return False
     else:
-        shutil.rmtree(f_c_l_s_substep)
+        try:
+            shutil.rmtree(f_c_l_s_substep)
+        except:
+            return True
         while os.path.exists(f_c_l_s_substep):
             pass
         return True
@@ -113,7 +99,7 @@ def search_as_files_and_update_info(args: dict) -> dict:
 # TODO: Let's not check if it's fine? Return True anyway?
 def delete_files_on_server(path: str) -> True | False:
     if os.path.exists(path):
-        shutil.rmtree(path)
+        shutil.rmtree(path, ignore_errors=True)
         return True
     else:
         logger.debug('%s No folder was found and can\'t be deleted.(This is BAD!)', path)
@@ -125,6 +111,10 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
         message = 'File with name \'{0}\' already exists'.format(to_obj.name)
         logger.error(message)
         return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR, message)
+
+    if not os.path.exists(from_obj.os_path):
+        #  it may means that step created just now - it's OK
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
 
     if not os.path.isdir(from_obj.os_path):
         message = 'Cannot rename non-existent file: \'{0}\' doesn\'t exist'.format(from_obj.os_path)

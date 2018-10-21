@@ -90,11 +90,14 @@ class FileSystemClient(object):
             self.logger.warning('Can\'t get information about total disk capacity: %s', str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, str(e)), None
 
-    def validate_file(self, file: str) -> bool:
+    def is_file_valid(self, file: str) -> bool:
         return os.path.isfile(file)
 
+    def is_dir_valid(self, path: str) -> bool:
+        return os.path.isdir(path)
+
     def remove_file(self, file: str) -> InternalOperationResult:
-        if not self.validate_file(file):
+        if not self.is_file_valid(file):
             self.logger.warning('Can\'t delete non-existing file %s ', file)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
@@ -105,3 +108,9 @@ class FileSystemClient(object):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
         return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+    def listdir_files(self, path: str):
+        if not os.path.isdir(path):
+            return []
+
+        return [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]

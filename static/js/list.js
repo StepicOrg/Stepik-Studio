@@ -83,7 +83,7 @@ var elements_subscriptor = function() {
             var reorderingType = reorderingSteps ? "step" : "lesson";
             $.ajax({
                 beforeSend: cookie_csrf_updater,
-                //alert("in ajax");
+
                 type: "POST",
                 url: "/reorder_lists/",
 
@@ -177,6 +177,117 @@ var elements_subscriptor = function() {
         el.fadeTo("fast", .5).removeAttr("href");
         callback();
     }
+
+    $('.raw_cut_step').on('click', function(event){
+        event.stopPropagation();
+        $(this).text("Processing");
+        var step_id = $(this).parents('.ui-state-default').attr('stepID');
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: "/create_step_montage/" + step_id + "/",
+
+            data: {
+                "action": "create_step_montage"
+            },
+            error: function(data){
+                alert(data.responseText);
+            }
+        });
+    });
+
+    $('.raw_cut_lesson').on('click', function(event){
+        event.stopPropagation();
+        $(this).text("Processing");
+        var lesson_id = $(this).parents('.ui-state-default').attr('lessonID');
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: "/create_lesson_montage/" + lesson_id + "/",
+            error: function(data){
+                alert(data.responseText);
+            }
+        });
+    });
+
+    $('.start-montage').on('click', function(event){
+        event.stopPropagation();
+        $(this).hide();
+        var elem = $(this);
+        var redir_url = $(this).data("urllink");
+        var ss_id = $(this).data("ss_id");
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: redir_url,
+
+            data: {
+                "action": "start_montage"
+            },
+            success: function(data){
+                $('.substep-list').each(function() {
+                    if ($(this).data("ss_id") === ss_id) {
+                        $(this).css("background", "#141628");
+                        $(this).css("pointer-events", "none");
+                        $(this).css("cursor", "default");
+                        $(this).data('ss_locked', "True");
+                        $(this).children('.show-montage').show();
+                    }
+                });
+            },
+            error: function(data){
+                alert(data.responseText);
+                elem.show();
+            }
+        });
+    });
+
+    $(window).on('load', function(event){
+        var poller_id;
+       $(this).on('unload', function(){
+            clearInterval(poller_id);
+            event.preventDefault();
+        });
+        poller_id = setInterval(function(){
+            $('.substep-list').each(function(index, value) {
+                var ss_id = $(this).data("ss_id");
+                var ss_islocked = $(this).data("ss_locked");
+
+                var elem = $(this);
+                var show_montage = elem.children('.show-montage');
+                var start_montage = elem.children('.start-montage');
+
+                $.ajax({
+                    beforeSend: cookie_csrf_updater,
+                    type: "GET",
+                    url: "/substep_status/" + ss_id,
+                    dataType: "json",
+
+                    success: function(data){
+                        if (data.islocked) {
+                            elem.css("background", "#141628");
+                            elem.css("pointer-events", "none");
+                            elem.css("cursor", "default");
+                            elem.data('ss_locked', "True");
+                        } else if (data.isexists){
+                            elem.css("background", "#FFFFFF");
+                            elem.css("pointer-events", "auto");
+                            elem.data('ss_locked', "False");
+                            start_montage.hide();
+                            show_montage.show();
+                        } else if (!data.isexists){
+                            elem.data('ss_locked', "False");
+                            elem.css("background", "#FFFFFF");
+                            elem.css("pointer-events", "auto");
+                            elem.data('ss_locked', "False");
+                            show_montage.hide();
+                            start_montage.show();
+                        }
+                    },
+                });
+            });
+        }, 1000);
+    });
 
     $('.start-recording').off().on('click', function(){
         $(this).text("Starting...").click(function(){

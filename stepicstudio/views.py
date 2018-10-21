@@ -4,7 +4,8 @@ import re
 from wsgiref.util import FileWrapper
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
+    JsonResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
@@ -13,6 +14,7 @@ from django.db.models import Max
 from django.template import RequestContext
 
 from stepicstudio.forms import LessonForm, StepForm
+from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
@@ -338,10 +340,42 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 
 @login_required(login_url='/login')
 def montage(request, substep_id):
+    if not request.is_ajax():
+        raise Http404
+
     start_subtep_montage(substep_id)
-    args = {'go_back': request.META['HTTP_REFERER']}
-    args.update(csrf(request))
-    return render_to_response('montage_page.html', args, context_instance=RequestContext(request))
+    return HttpResponse('Ok')
+
+
+def step_montage(request, step_id):
+    if not request.is_ajax():
+        raise Http404
+
+    start_step_montage(step_id)
+    return HttpResponse('Ok')
+
+
+def lesson_montage(request, lesson_id):
+    if not request.is_ajax():
+        raise Http404
+
+    start_lesson_montage(lesson_id)
+    return HttpResponse('Ok')
+
+
+@login_required(login_url='/login')
+def substep_status(request, substep_id):
+    if not request.is_ajax():
+        raise Http404
+
+    substep = SubStep.objects.all().get(id=substep_id)
+    is_locked = substep.is_locked
+    is_automontage_exists = substep.automontage_exist
+
+    args = {'islocked': is_locked,
+            'isexists': is_automontage_exists}
+
+    return JsonResponse(args)
 
 
 @login_required(login_url='/login')
@@ -400,12 +434,8 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
             'currSubStep': substep,
             }
 
-    substep_deleted = delete_substep_files(user_id=request.user.id,
+    delete_substep_files(user_id=request.user.id,
                                            user_profile=UserProfile.objects.get(user=request.user.id), data=args)
-    if not substep_deleted:
-        args = {'go_back': request.META['HTTP_REFERER']}
-        args.update(csrf(request))
-        return render_to_response('file_in_use.html', args, context_instance=RequestContext(request))
     substep.delete()
     return HttpResponseRedirect(post_url)
 
@@ -425,22 +455,19 @@ def delete_step(request, course_id, lesson_id, step_id):
     substeps = SubStep.objects.all().filter(from_step=step_id)
     step_deleted = delete_step_files(user_id=request.user.id,
                                      user_profile=UserProfile.objects.get(user=request.user.id), data=args)
-    if not step_deleted:
-        args = {'go_back': request.META['HTTP_REFERER']}
-        args.update(csrf(request))
-        return render_to_response('file_in_use.html', args, context_instance=RequestContext(request))
-    for substep in substeps:
-        substep.delete()
-    step.delete()
+    if step_deleted:
+        for substep in substeps:
+            substep.delete()
+        step.delete()
     return HttpResponseRedirect(post_url)
 
 
 @login_required(login_url='/login/')
 def user_profile(request):
-    return render_to_response('UserProfile.html', {'full_name': request.user.username,
-                                                   'settings': UserProfile.objects.get(user_id=request.user.id),
-
-                                                   }, context_instance=RequestContext(request))
+    return render_to_response('UserProfile.html',
+                              {'full_name': request.user.username,
+                               'settings': UserProfile.objects.get(user_id=request.user.id)},
+                              context_instance=RequestContext(request))
 
 
 # TODO: Refactor
@@ -505,7 +532,7 @@ def video_view(request, substep_id):
         path = substep.os_path
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.validate_file(base_path + '.mp4'):
+        if fs_client.is_file_valid(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -522,7 +549,7 @@ def video_view(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
-        return error_description(request, 'File is missing.')
+        return error_description(request, 'File is missed.')
     except Exception as e:
         return error500_handler(request)
 
@@ -536,7 +563,7 @@ def video_screen_view(request, substep_id):
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.validate_file(base_path + '.mp4'):
+        if fs_client.is_file_valid(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -552,9 +579,9 @@ def video_screen_view(request, substep_id):
 
         return response
     except FileNotFoundError as e:
-        logger.warning('Missing file: %s', str(e))
-        return error_description(request, 'File is missing.')
-    except Exception as e:
+        logger.warning('Missed file: %s', str(e))
+        return error_description(request, 'File is missed.')
+    except Exception:
         return error500_handler(request)
 
 
@@ -563,11 +590,14 @@ def show_montage(request, substep_id):
         substep = SubStep.objects.all().get(id=substep_id)
         path = substep.os_automontage_path
         file = FileWrapper(open(path, 'rb'))
-        response = HttpResponse(file, content_type='video/ts')
-        response['Content-Disposition'] = 'inline; filename=' + substep.name + '_' + 'Raw_montage.mp4'
+        response = HttpResponse(file, content_type='video/mp4')
+        response['Content-Disposition'] = 'inline; filename=' + substep.name + RAW_MONTAGE_LABEL
         return response
-    except Exception as e:
-        return HttpResponse('Unknown Error')
+    except FileNotFoundError as e:
+        logger.warning('Missed file: %s', str(e))
+        return error_description(request, 'File is missed.')
+    except Exception:
+        return error500_handler(request)
 
 
 def rename_elem(request):

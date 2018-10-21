@@ -29,6 +29,12 @@ class Course(models.Model):
         return user_folder + '/' + translate_non_alphanumerics(self.name) + '/'
 
     @property
+    def tablet_path(self):
+        user_id = self.editors
+        user_folder = UserProfile.objects.all().get(user_id=user_id).user
+        return str(user_folder) + '/' + translate_non_alphanumerics(self.name) + '/'
+
+    @property
     def url(self):
         return '/' + COURSE_ULR_NAME + '/' + str(self.id) + '/'
 
@@ -51,6 +57,10 @@ class Lesson(models.Model):
         course = Course.objects.all().get(id=self.from_course)
         return course.os_path + translate_non_alphanumerics(self.name) + '/'
 
+    @property
+    def tablet_path(self):
+        course = Course.objects.all().get(id=self.from_course)
+        return course.tablet_path + translate_non_alphanumerics(self.name) + '/'
 
 class Step(models.Model):
     name = models.CharField(max_length=400)
@@ -69,6 +79,11 @@ class Step(models.Model):
         lesson = Lesson.objects.all().get(id=self.from_lesson)
         return lesson.os_path + translate_non_alphanumerics(self.name) + '/'
 
+    @property
+    def tablet_path(self):
+        lesson = Lesson.objects.all().get(id=self.from_lesson)
+        return lesson.tablet_path + translate_non_alphanumerics(self.name) + '/'
+
 
 class SubStep(models.Model):
     name = models.CharField(max_length=400)
@@ -83,6 +98,12 @@ class SubStep(models.Model):
         return self.name + ' from step id =' + str(self.from_step)
 
     @property
+    def dir_path(self):
+        step = Step.objects.all().get(id=self.from_step)
+        parh = step.os_path + translate_non_alphanumerics(self.name)
+        return parh.replace('/', os.sep)
+
+    @property
     def os_path(self):
         step = Step.objects.all().get(id=self.from_step)
         return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_PROFESSOR
@@ -91,6 +112,11 @@ class SubStep(models.Model):
     def os_path_v1(self):
         step = Step.objects.all().get(id=self.from_step)
         return step.os_path + translate_non_alphanumerics(self.name) + '/' + SUBSTEP_PROFESSOR_v1
+
+    @property
+    def os_tablet_path(self):
+        step = Step.objects.all().get(id=self.from_step)
+        return step.tablet_path + translate_non_alphanumerics(self.name)
 
     @property
     def os_path_all_variants(self):

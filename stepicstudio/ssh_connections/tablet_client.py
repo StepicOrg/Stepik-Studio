@@ -17,7 +17,10 @@ class TabletClient(object):
         self.__logger = logging.getLogger('stepikstudio.ssh_connections.tablet_client')
         self.__ssh = None
         self.__sftp = None
-        self.__connect()
+        try:
+            self.__connect()
+        except:
+            pass
 
     def __del__(self):
         try:
@@ -39,6 +42,28 @@ class TabletClient(object):
 
         if read_output:
             return stdout.readlines()
+
+    def delete_folder(self, path: str) -> (InternalOperationResult, int):
+        if not self.__is_alive():
+            self.__connect()
+
+        status, size = self.__is_exists(path)
+        if status is False:
+            return InternalOperationResult(ExecutionStatus.SUCCESS), 0
+
+        try:
+            files = self.__sftp.listdir(path=path)
+            size = 0
+
+            for f in files:
+                size += self.get_file_size(path + '/' + f)
+                self.__sftp.remove(path + '/' + f)
+
+            self.__sftp.rmdir(path)
+            return InternalOperationResult(ExecutionStatus.SUCCESS), size
+        except Exception as e:
+            self.__logger.error('Can\'t delete folder: %s', e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR), 0
 
     def check_and_create_folder(self, path):
         if not self.__is_alive():
@@ -85,6 +110,23 @@ class TabletClient(object):
         total_capacity_bytes = re.findall(r'\d+', raw_string_total[0])
         return int(free_capacity_bytes[0]), int(total_capacity_bytes[0])
 
+    def get_file_size(self, path: str) -> int:
+        if not self.__is_alive():
+            self.__connect()
+
+        info = self.__sftp.stat(path)
+        return info.st_size
+
+    def __is_exists(self, path: str) -> (bool, int):
+        if not self.__is_alive():
+            self.__connect()
+
+        try:
+            stat = self.__sftp.stat(path)
+            return True, stat.st_size
+        except Exception:
+            return False, 0
+
     def __get_free_space_info(self, folder_path) -> str:
         if not self.__is_alive():
             self.__connect()
@@ -116,4 +158,7 @@ class TabletClient(object):
             raise Exception('Invalid ssh connection')
 
     def __is_alive(self):
-        return self.__ssh.get_transport().is_alive()
+        try:
+            return self.__ssh.get_transport().is_alive()
+        except:
+            return False
