@@ -29,6 +29,12 @@ class Course(models.Model):
         return user_folder + '/' + translate_non_alphanumerics(self.name) + '/'
 
     @property
+    def os_automontage_path(self):
+        user_id = self.editors
+        user_folder = UserProfile.objects.all().get(user_id=user_id).serverFilesFolder
+        return user_folder + '/' + RAW_MONTAGE_FOLDER_NAME + '/' + translate_non_alphanumerics(self.name) + '/'
+
+    @property
     def tablet_path(self):
         user_id = self.editors
         user_folder = UserProfile.objects.all().get(user_id=user_id).user
@@ -58,9 +64,15 @@ class Lesson(models.Model):
         return course.os_path + translate_non_alphanumerics(self.name) + '/'
 
     @property
+    def os_automontage_path(self):
+        course = Course.objects.all().get(id=self.from_course)
+        return course.os_automontage_path + translate_non_alphanumerics(self.name) + '/'
+
+    @property
     def tablet_path(self):
         course = Course.objects.all().get(id=self.from_course)
         return course.tablet_path + translate_non_alphanumerics(self.name) + '/'
+
 
 class Step(models.Model):
     name = models.CharField(max_length=400)
@@ -78,6 +90,11 @@ class Step(models.Model):
     def os_path(self):
         lesson = Lesson.objects.all().get(id=self.from_lesson)
         return lesson.os_path + translate_non_alphanumerics(self.name) + '/'
+
+    @property
+    def os_automontage_path(self):
+        lesson = Lesson.objects.all().get(id=self.from_lesson)
+        return lesson.os_automontage_path + translate_non_alphanumerics(self.name) + '/'
 
     @property
     def tablet_path(self):
@@ -100,13 +117,19 @@ class SubStep(models.Model):
     @property
     def dir_path(self):
         step = Step.objects.all().get(id=self.from_step)
-        parh = step.os_path + translate_non_alphanumerics(self.name)
-        return parh.replace('/', os.sep)
+        path = step.os_path + translate_non_alphanumerics(self.name)
+        return path.replace('/', os.sep)
 
     @property
     def os_path(self):
         step = Step.objects.all().get(id=self.from_step)
         return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_PROFESSOR
+
+    @property
+    def os_automontage_path(self):
+        step = Step.objects.all().get(id=self.from_step)
+        path = step.os_automontage_path + translate_non_alphanumerics(self.name)
+        return path.replace('/', os.sep)
 
     @property
     def os_path_v1(self):
@@ -141,13 +164,12 @@ class SubStep(models.Model):
         return self.screencast_duration - self.duration < 7 and self.screencast_duration > 0 and self.duration > 0
 
     @property
-    def os_automontage_path(self):
-        step = Step.objects.all().get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + FAST_MONTAGE
+    def os_automontage_file(self):
+        return os.path.join(self.os_automontage_path, self.name + FAST_MONTAGE)
 
     @property
     def automontage_exist(self):
-        return file_exist(self.os_automontage_path)
+        return file_exist(self.os_automontage_file)
 
 
 class UserProfile(models.Model):

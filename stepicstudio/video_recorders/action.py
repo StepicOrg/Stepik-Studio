@@ -105,8 +105,9 @@ def stop_cam_recording() -> True | False:
     screen_video = os.path.join(ServerCameraRecorder().last_processed_path,
                                 TabletScreenRecorder().last_processed_file)
 
-    convert_mkv_to_mp4(ServerCameraRecorder().last_processed_path,
-                       TabletScreenRecorder().last_processed_file)
+    if settings.REENCODE_TABLET:
+        convert_mkv_to_mp4(ServerCameraRecorder().last_processed_path,
+                           TabletScreenRecorder().last_processed_file)
 
     TaskManager().run_once_time(synchronize_videos, args=[professor_video, screen_video])
 
@@ -119,7 +120,7 @@ def convert_mkv_to_mp4(path: str, filename: str):
     target_file = os.path.join(path, new_filename)
     fs_client = FileSystemClient()
 
-    if not fs_client.is_file_valid(source_file):
+    if not os.path.isfile(source_file):
         logger.error('Converting mkv to mp4 failed; file %s doesn\'t exist', source_file)
         return
 

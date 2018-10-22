@@ -17,7 +17,7 @@ RAW_MONTAGE_LABEL = '_Raw_Montage'
 
 SUBSTEP_PROFESSOR = '_Professor' + TS_EXTENSION
 SUBSTEP_PROFESSOR_v1 = 'Professor' + TS_EXTENSION
-SUBSTEP_SCREEN = '_Screen' + MKV_EXTENSION
+SUBSTEP_SCREEN = '_Screen' + MP4_EXTENSION
 SUBSTEP_SCREEN_v1 = 'Screen' + MKV_EXTENSION
 FAST_MONTAGE = RAW_MONTAGE_LABEL + MP4_EXTENSION
 
@@ -27,6 +27,8 @@ PROFESSOR_LABEL = os.path.splitext(SUBSTEP_PROFESSOR)[0]
 PROFESSOR_IP = settings.PROFESSOR_IP
 
 FFMPEG_PATH = settings.FFMPEG_PATH
+
+RAW_MONTAGE_FOLDER_NAME = 'RawMontage'
 
 if _platform == "linux" or _platform == "linux2" or _platform == "darwin":
     FFPROBE_RUN_PATH = 'ffprobe'

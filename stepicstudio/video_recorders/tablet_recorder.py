@@ -3,11 +3,9 @@ import logging
 from django.conf import settings
 from singleton_decorator import singleton
 
-from stepicstudio import const
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections.tablet_client import TabletClient
-from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
 
 
 @singleton

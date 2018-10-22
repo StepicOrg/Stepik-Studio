@@ -51,6 +51,7 @@ def delete_substep_on_disc(**kwargs: dict) -> True | False:
     f_c_lesson = f_course + '/' + translate_non_alphanumerics(data['Lesson'].name)
     f_c_l_step = f_c_lesson + '/' + translate_non_alphanumerics(data['Step'].name)
     f_c_l_s_substep = f_c_l_step + '/' + translate_non_alphanumerics(data['currSubStep'].name)
+    delete_files_on_server(data['currSubStep'].os_automontage_path)
     if not os.path.isdir(f_c_l_s_substep):
         return False
     else:
@@ -69,6 +70,7 @@ def delete_step_on_disc(**kwargs: dict) -> True | False:
     f_course = folder + '/' + translate_non_alphanumerics(data['Course'].name)
     f_c_lesson = f_course + '/' + translate_non_alphanumerics(data['Lesson'].name)
     f_c_l_step = f_c_lesson + '/' + translate_non_alphanumerics(data['Step'].name)
+    delete_files_on_server(data['Step'].os_automontage_path)
     return delete_files_on_server(f_c_l_step)
 
 
@@ -123,11 +125,17 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
 
     try:
         os.rename(from_obj.os_path, to_obj.os_path)
-        return InternalOperationResult(ExecutionStatus.SUCCESS)
     except Exception as e:
         message = 'Cannot rename element on disk: {0}'.format(str(e))
         logger.exception('Cannot rename element on disk')
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
+
+    try:
+        os.rename(from_obj.os_automontage_path, to_obj.os_automontage_path)
+    except Exception as e:
+        logger.exception('Cannot rename element on disk: %s', e)
+
+    return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
 def get_length_in_sec(filename: str) -> int:
@@ -168,6 +176,8 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
                 new_step_obj.save()
     summ = 0
     for substep in substep_list:
+        if substep.duration != 0:
+            continue
         for substep_path in substep.os_path_all_variants:
             if os.path.exists(substep_path):
                 if not new_step_only:

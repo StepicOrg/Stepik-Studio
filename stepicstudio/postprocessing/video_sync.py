@@ -27,8 +27,8 @@ class VideoSynchronizer(object):
     def sync(self, screen_path, camera_path) -> InternalOperationResult:
         screen_path = os.path.splitext(screen_path)[0] + '.mp4'
         camera_path = os.path.splitext(camera_path)[0] + '.mp4'
-        if not self.__fs_client.is_file_valid(screen_path) or \
-                not self.__fs_client.is_file_valid(camera_path):
+        if not os.path.isfile(screen_path) or \
+                not os.path.isfile(camera_path):
             self.__logger.warning('Invalid paths to videos: (%s; %s)', screen_path, camera_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
