@@ -28,7 +28,7 @@ class PostprocessableRecorder(object):
             return
         source_file = os.path.join(path, filename)
 
-        if not self.__fs_client.is_file_valid(source_file):
+        if not os.path.isfile(source_file):
             self.__logger.error('Can\'t apply postprocessing pipe to %s: it\'s not a file', source_file)
             return
         result_path = path

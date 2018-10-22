@@ -120,7 +120,7 @@ def convert_mkv_to_mp4(path: str, filename: str):
     target_file = os.path.join(path, new_filename)
     fs_client = FileSystemClient()
 
-    if not fs_client.is_file_valid(source_file):
+    if not os.path.isfile(source_file):
         logger.error('Converting mkv to mp4 failed; file %s doesn\'t exist', source_file)
         return
 

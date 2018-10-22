@@ -535,7 +535,7 @@ def video_view(request, substep_id):
         path = substep.os_path
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.is_file_valid(base_path + '.mp4'):
+        if os.path.isfile(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -552,7 +552,7 @@ def video_view(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
-        return error_description(request, 'File is missed.')
+        return error_description(request, 'File is missing.')
     except Exception as e:
         return error500_handler(request)
 
@@ -566,7 +566,7 @@ def video_screen_view(request, substep_id):
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.is_file_valid(base_path + '.mp4'):
+        if os.path.isfile(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -583,7 +583,7 @@ def video_screen_view(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missed file: %s', str(e))
-        return error_description(request, 'File is missed.')
+        return error_description(request, 'File is missing.')
     except Exception:
         return error500_handler(request)
 
@@ -598,7 +598,7 @@ def show_montage(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missed file: %s', str(e))
-        return error_description(request, 'File is missed.')
+        return error_description(request, 'File is missing.')
     except Exception:
         return error500_handler(request)
 

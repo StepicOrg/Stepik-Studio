@@ -25,7 +25,7 @@ class RawCutter(object):
 
         dir_path = substep.dir_path
 
-        if not self._fs_client.is_dir_valid(dir_path):
+        if not os.path.isdir(dir_path):
             self.__logger.warning('Invalid path to substep: %s', dir_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
@@ -62,8 +62,8 @@ class RawCutter(object):
             self.__logger.warning('Can\'t launch raw_cut asynchronously: %s', e)
 
     def _internal_raw_cut(self, video_path1: str, video_path2: str, output_path: str) -> InternalOperationResult:
-        status_1 = self._fs_client.is_file_valid(video_path1)
-        status_2 = self._fs_client.is_file_valid(video_path2)
+        status_1 = os.path.isfile(video_path1)
+        status_2 = os.path.isfile(video_path2)
 
         if not status_1 or not status_2:
             self.__logger.warning('Can\'t process invalid videos: %s, %s', video_path1, video_path2)
