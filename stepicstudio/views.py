@@ -14,6 +14,7 @@ from django.db.models import Max
 from django.template import RequestContext
 
 from stepicstudio.forms import LessonForm, StepForm
+from stepicstudio.models import UserProfile
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
@@ -530,7 +531,6 @@ def view_stat(request, course_id):
 @login_required(login_url='/login/')
 def video_view(request, substep_id):
     try:
-        fs_client = FileSystemClient()
         substep = SubStep.objects.all().get(id=substep_id)
         path = substep.os_path
         base_path = os.path.splitext(path)[0]
@@ -561,7 +561,6 @@ def video_view(request, substep_id):
 @login_required(login_url='/login/')
 def video_screen_view(request, substep_id):
     try:
-        fs_client = FileSystemClient()
         substep = SubStep.objects.all().get(id=substep_id)
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         base_path = os.path.splitext(path)[0]

@@ -1,20 +1,16 @@
-import logging
-import os
 import time
 
 from django.contrib.auth.models import User
-from django.conf import settings
 
 from stepicstudio import const
 from stepicstudio.const import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
 from stepicstudio.file_system_utils.action import *
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
-from stepicstudio.models import CameraStatus
+from stepicstudio.models import CameraStatus, SubStep, Lesson
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
-from stepicstudio.postprocessing.raw_cut import RawCutter
 from stepicstudio.scheduling.task_manager import TaskManager
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
