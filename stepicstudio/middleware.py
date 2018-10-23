@@ -28,7 +28,7 @@ class SetLastVisitMiddleware(object):
 class SetStorageCapacityMiddleware(object):
     def __init__(self):
         try:
-            self.tablet_client = TabletClient()
+            self.tablet_client = TabletClient(connect_timeout=0.25)
         except Exception as e:
             logger.error('Can\'t connect to tablet: %s', str(e))
             self.tablet_client = None
