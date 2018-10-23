@@ -2,9 +2,11 @@ var rename_step_f_tmplt;
 var rename_lesson_f_tmplt;
 var rename_substep_tmplt_f_tmplt;
 var isRecording = false;
+const start_sound = new Audio("/static/sounds/start_sound.wav");
+const stop_sound = new Audio("/static/sounds/stop_sound.wav");
 
 function isInstanceName(value){
-  return !(value == null || value == " " || value =="  " || value == "" || value == undefined);
+  return !(value == null || value === " " || value ==="  " || value === "" || value === undefined);
 }
 
 $(function  () {
@@ -219,6 +221,7 @@ var elements_subscriptor = function() {
             },
             success: function () {
                 isRecording = true;
+                start_sound.play();
                 record_started(elements_subscriptor);
 
             },
@@ -248,6 +251,7 @@ var elements_subscriptor = function() {
                 "action": "stop"
             },
             success: function () {
+                stop_sound.play();
                 record_stopped(elements_subscriptor);
                 isRecording = false;
                 location.reload(true);
