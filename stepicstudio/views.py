@@ -16,6 +16,7 @@ from django.template import RequestContext
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.models import UserProfile
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
+from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
@@ -189,7 +190,7 @@ def delete_lesson(request, course_id, lesson_id):
     lesson_obj = Lesson.objects.get(id=lesson_id)
     redirect_to_course_page = request.path.split('/')
     if not delete_files_associated(redirect_to_course_page):
-        raise Exception('Cant delete files')
+        return error_description(request, 'Sorry, can\'t delete lesson files. Error log will sent to developers.')
     for step in Step.objects.all().filter(from_lesson=lesson_id):
         for substep in SubStep.objects.all().filter(from_step=step.pk):
             substep.delete()
@@ -437,9 +438,17 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
             'currSubStep': substep,
             }
 
-    delete_substep_files(user_id=request.user.id,
-                         user_profile=UserProfile.objects.get(user=request.user.id),
-                         data=args)
+    server_remove_status = delete_server_substep_files(user_id=request.user.id,
+                                                       user_profile=UserProfile.objects.get(user=request.user.id),
+                                                       data=args)
+    tablet_remove_status = delete_tablet_substep_files(substep)
+
+    if server_remove_status.status is not ExecutionStatus.SUCCESS:
+        return error_description(request, server_remove_status.message)
+
+    if tablet_remove_status.status is not ExecutionStatus.SUCCESS:
+        return error_description(request, tablet_remove_status.message)
+
     substep.delete()
     return HttpResponseRedirect(post_url)
 
@@ -457,13 +466,19 @@ def delete_step(request, course_id, lesson_id, step_id):
             'SubSteps': SubStep.objects.all().filter(from_step=step_id),
             }
     substeps = SubStep.objects.all().filter(from_step=step_id)
-    step_deleted = delete_step_files(user_id=request.user.id,
-                                     user_profile=UserProfile.objects.get(user=request.user.id), data=args)
-    if step_deleted:
+    server_step_files_deleted = delete_server_step_files(user_id=request.user.id,
+                                                         user_profile=UserProfile.objects.get(user=request.user.id),
+                                                         data=args)
+    tablet_step_files_deleted = delete_tablet_step_files(step)
+
+    if server_step_files_deleted and tablet_step_files_deleted:
         for substep in substeps:
             substep.delete()
         step.delete()
-    return HttpResponseRedirect(post_url)
+        return HttpResponseRedirect(post_url)
+    else:
+        logger.warning('Failed to delete step files.')
+        return error_description(request, 'Sorry, can\'t delete step files. Error log will sent to developers.')
 
 
 @login_required(login_url='/login/')

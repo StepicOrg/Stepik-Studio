@@ -60,20 +60,21 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
-def delete_substep_files(**kwargs):
+def delete_server_substep_files(**kwargs):
     folder_path = kwargs['user_profile'].serverFilesFolder
     data = kwargs['data']
     if data['currSubStep'].is_locked:
-        return False
+        return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR,
+                                       'File is locked. Please wait for unlocking.')
+
     return delete_substep_on_disc(folder_path=folder_path, data=data)
 
 
-def delete_step_files(**kwargs):
+def delete_server_step_files(**kwargs):
     folder_path = kwargs['user_profile'].serverFilesFolder
     data = kwargs['data']
     substeps = SubStep.objects.all().filter(from_step=data['Step'].id)
     for ss in substeps:
-        print(ss.name)
         if ss.is_locked:
             return False
     return delete_step_on_disc(folder_path=folder_path, data=data)
@@ -130,8 +131,3 @@ def convert_mkv_to_mp4(path: str, filename: str):
     else:
         logger.error('Converting mkv to mp4 failed: %s; FFMPEG command: %s', result.message, reencode_command)
 
-
-def delete_files_associated(url_args) -> True | False:
-    lesson_id = int(url_args[url_args.index(COURSE_ULR_NAME) + 3])
-    folder_on_server = Lesson.objects.get(id=lesson_id).os_path
-    return delete_files_on_server(folder_on_server)

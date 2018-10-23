@@ -62,8 +62,27 @@ class TabletClient(object):
             self.__sftp.rmdir(path)
             return InternalOperationResult(ExecutionStatus.SUCCESS), size
         except Exception as e:
-            self.__logger.error('Can\'t delete folder: %s', e)
+            self.__logger.error('Can\'t delete folder %s: %s', path, e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR), 0
+
+    def delete_folder_recursively(self, path: str):
+        if not self.__is_alive():
+            self.__connect()
+
+        status, _ = self.__is_exists(path)
+        if status is False:
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+        files = self.__sftp.listdir(path=path)
+
+        for f in files:
+            filepath = path + '/' + f
+            try:
+                self.__sftp.remove(filepath)
+            except IOError:
+                self.delete_folder_recursively(filepath)
+
+        self.__sftp.rmdir(path)
 
     def check_and_create_folder(self, path):
         if not self.__is_alive():

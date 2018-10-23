@@ -355,6 +355,9 @@ var elements_subscriptor = function() {
     });
 
     $(document).keyup(function (event) {
+        if (!$('br').is('.step_view'))
+            return false;
+
         event.stopImmediatePropagation();
         if (event.which === 32) {
             if (!isRecording)

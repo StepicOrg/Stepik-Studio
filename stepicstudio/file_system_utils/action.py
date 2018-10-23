@@ -2,13 +2,15 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 
 import psutil
 
-from stepicstudio.const import FFPROBE_RUN_PATH
-from stepicstudio.models import Step
+from stepicstudio.const import FFPROBE_RUN_PATH, COURSE_ULR_NAME
+from stepicstudio.models import Step, Lesson
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
+from stepicstudio.ssh_connections import delete_tablet_lesson_files
 from stepicstudio.utils.extra import translate_non_alphanumerics
 
 logger = logging.getLogger('stepic_studio.file_system_utils.action')
@@ -44,24 +46,33 @@ def add_file_to_test(**kwargs: dict) -> None:
         os.makedirs(folder_p)
 
 
-def delete_substep_on_disc(**kwargs: dict) -> True | False:
+def delete_substep_on_disc(**kwargs: dict) -> InternalOperationResult:
     folder = kwargs['folder_path']
     data = kwargs['data']
-    f_course = folder + '/' + translate_non_alphanumerics(data['Course'].name)
-    f_c_lesson = f_course + '/' + translate_non_alphanumerics(data['Lesson'].name)
-    f_c_l_step = f_c_lesson + '/' + translate_non_alphanumerics(data['Step'].name)
-    f_c_l_s_substep = f_c_l_step + '/' + translate_non_alphanumerics(data['currSubStep'].name)
+    f_course = os.path.join(folder, translate_non_alphanumerics(data['Course'].name))
+    f_c_lesson = os.path.join(f_course, translate_non_alphanumerics(data['Lesson'].name))
+    f_c_l_step = os.path.join(f_c_lesson, translate_non_alphanumerics(data['Step'].name))
+    f_c_l_s_substep = os.path.join(f_c_l_step, translate_non_alphanumerics(data['currSubStep'].name))
+
     delete_files_on_server(data['currSubStep'].os_automontage_path)
+
+    if not os.path.exists(f_c_l_s_substep):
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
+
     if not os.path.isdir(f_c_l_s_substep):
-        return False
+        logger.warning('Server file removing failed: %s is not directory', f_c_l_s_substep)
+        return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR,
+                                       '{} is not directory'.format(f_c_l_s_substep))
     else:
         try:
             shutil.rmtree(f_c_l_s_substep)
-        except:
-            return True
-        while os.path.exists(f_c_l_s_substep):
-            pass
-        return True
+        except Exception as e:
+            logger.warning('Server file removing failed: %s', e)
+            return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR,
+                                           'Error while deleting substep. Files may be in use by other application.')
+        if os.path.exists(f_c_l_s_substep):
+            time.sleep(0.75)
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
 def delete_step_on_disc(**kwargs: dict) -> True | False:
@@ -213,3 +224,10 @@ def get_storage_capacity(path) -> int:
 
 def get_server_disk_info(path) -> (int, int):
     return get_free_space(path), get_storage_capacity(path)
+
+
+def delete_files_associated(url_args) -> True | False:
+    lesson_id = int(url_args[url_args.index(COURSE_ULR_NAME) + 3])
+    lesson = Lesson.objects.get(id=lesson_id)
+    folder_on_server = lesson.os_path
+    return delete_files_on_server(folder_on_server) and delete_tablet_lesson_files(lesson)
