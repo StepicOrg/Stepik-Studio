@@ -5,7 +5,7 @@
 
         {% if Recording != True %}
             <!--ADD BACK BUTTON -->
-<br class="step_view">this page is for Step "{{ Step.name }}":
+            <br class="step_view">this page is for Step "{{ Step.name }}":
             <br>
             <h3>
             from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
@@ -14,6 +14,8 @@
             <div ALIGN="CENTER">
                 <h1><span class="start-recording">Start Recording </span>
                 </h1>
+                <h5>Click the mouse or press spacebar
+                </h5>
             </div>
             <br>
                 {% for SS in SubSteps  %}

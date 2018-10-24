@@ -90,6 +90,7 @@ function show_video_popup(ref, elem, width=1080, height=720) {
         },
         close: function () {
             $("video").remove();
+            $(".modal").remove();
         },
     });
 }
@@ -193,13 +194,17 @@ var elements_subscriptor = function() {
             },
             buttons: {
                     "Yes": function () {
-                    $(this).dialog("close");
-                    window.location.replace(redir_url);
-                },
+                        $(this).dialog("close");
+                        window.location.replace(redir_url);
+                    },
                     "No": function () {
-                    $(this).dialog("close");
-                }
-            }
+                        $(this).dialog("close");
+                    }
+            },
+            close: function () {
+                $("video").remove();
+                $(".modal").remove();
+            },
         });
     });
 
@@ -304,7 +309,6 @@ var elements_subscriptor = function() {
                 record_stopped(elements_subscriptor);
                 isRecording = false;
                 location.reload(true);
-
             },
             error: function (data) {
                 alert(data.responseText);
@@ -404,8 +408,12 @@ var elements_subscriptor = function() {
     });
 
     $(document).keyup(function (event) {
-        if (!$('br').is('.step_view'))
+        if ($(".modal").length > 0) { //to disable handler when dialog is open
             return false;
+        }
+        if (!$('br').is('.step_view')) { //to disable handler on other pages
+            return false;
+        }
 
         event.stopImmediatePropagation();
         if (event.which === 32) {

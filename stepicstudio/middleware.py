@@ -40,9 +40,11 @@ class SetStorageCapacityMiddleware(object):
         if request.is_ajax():
             return response
 
+        if not self.is_triggered():
+            return response
+
         try:
-            if self.is_triggered() and \
-                    hasattr(request, 'user') and \
+            if hasattr(request, 'user') and \
                     request.user.is_authenticated():
                 self.handle_server_space_info(request)
                 self.handle_tablet_space_info(request)
