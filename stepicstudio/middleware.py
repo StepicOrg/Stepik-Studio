@@ -10,6 +10,8 @@ from stepicstudio.utils.utils import bytes2human
 
 logger = logging.getLogger('stepicstudio.middleware')
 
+POLL_FREQUENCY = 5  # every 5 request
+
 
 class SetLastVisitMiddleware(object):
     def process_response(self, request, response):
@@ -27,8 +29,9 @@ class SetLastVisitMiddleware(object):
 
 class SetStorageCapacityMiddleware(object):
     def __init__(self):
+        self.trigger_count = 0
         try:
-            self.tablet_client = TabletClient(connect_timeout=0.25)
+            self.tablet_client = TabletClient(connect_timeout=0.5)
         except Exception as e:
             logger.error('Can\'t connect to tablet: %s', str(e))
             self.tablet_client = None
@@ -38,7 +41,9 @@ class SetStorageCapacityMiddleware(object):
             return response
 
         try:
-            if hasattr(request, 'user') and request.user.is_authenticated():
+            if self.is_triggered() and \
+                    hasattr(request, 'user') and \
+                    request.user.is_authenticated():
                 self.handle_server_space_info(request)
                 self.handle_tablet_space_info(request)
             else:
@@ -98,3 +103,7 @@ class SetStorageCapacityMiddleware(object):
             logger.exception('Can\'t get information about tablet disk capacity: %s', str(e))
             request.session['tablet_space_info'] = 'unknown'
             request.session['tablet_space_status'] = 'unknown'
+
+    def is_triggered(self):
+        self.trigger_count = (self.trigger_count % POLL_FREQUENCY) + 1
+        return self.trigger_count == 1
