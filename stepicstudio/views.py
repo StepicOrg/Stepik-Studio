@@ -1,11 +1,12 @@
 import itertools
 import copy
+import mimetypes
 import re
 from wsgiref.util import FileWrapper
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
-    JsonResponse
+    JsonResponse, StreamingHttpResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
@@ -21,6 +22,7 @@ from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
+from stepicstudio.video_streaming import stream_video
 
 logger = logging.getLogger('stepicstudio.views')
 
@@ -551,24 +553,14 @@ def video_view(request, substep_id):
         base_path = os.path.splitext(path)[0]
 
         if os.path.isfile(base_path + '.mp4'):
-            path_to_show = base_path + '.mp4'
-            file = FileWrapper(open(path_to_show, 'rb'))
-            response = HttpResponse(file, content_type='video/mp4')
-            response['Content-Disposition'] = 'inline; filename=' + \
-                                              substep.name + '_' + \
-                                              os.path.splitext(SUBSTEP_PROFESSOR)[0] + '.mp4'
+            path_to_mp4 = base_path + '.mp4'
+            return stream_video(request, path_to_mp4)
         else:
-            file = FileWrapper(open(path, 'rb'))
-            response = HttpResponse(file, content_type='video/TS')
-            response['Content-Disposition'] = 'inline; filename=' + \
-                                              substep.name + '_' + \
-                                              SUBSTEP_PROFESSOR
-
-        return response
+            return stream_video(request, path)
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
         return error_description(request, 'File is missing.')
-    except Exception as e:
+    except:
         return error500_handler(request)
 
 
@@ -581,20 +573,10 @@ def video_screen_view(request, substep_id):
         base_path = os.path.splitext(path)[0]
 
         if os.path.isfile(base_path + '.mp4'):
-            path_to_show = base_path + '.mp4'
-            file = FileWrapper(open(path_to_show, 'rb'))
-            response = HttpResponse(file, content_type='video/mp4')
-            response['Content-Disposition'] = 'inline; filename=' + \
-                                              substep.name + '_' + \
-                                              os.path.splitext(SUBSTEP_SCREEN)[0] + '.mp4'
+            path_to_mp4 = base_path + '.mp4'
+            return stream_video(request, path_to_mp4)
         else:
-            file = FileWrapper(open(path, 'rb'))
-            response = HttpResponse(file, content_type='video/TS')
-            response['Content-Disposition'] = 'inline; filename=' + \
-                                              substep.name + '_' + \
-                                              SUBSTEP_SCREEN
-
-        return response
+            return stream_video(request, path)
     except FileNotFoundError as e:
         logger.warning('Missed file: %s', str(e))
         return error_description(request, 'File is missing.')
@@ -606,10 +588,7 @@ def show_montage(request, substep_id):
     try:
         substep = SubStep.objects.all().get(id=substep_id)
         path = substep.os_automontage_file
-        file = FileWrapper(open(path, 'rb'))
-        response = HttpResponse(file, content_type='video/mp4')
-        response['Content-Disposition'] = 'inline; filename=' + substep.name + RAW_MONTAGE_LABEL
-        return response
+        return stream_video(request, path)
     except FileNotFoundError as e:
         logger.warning('Missed file: %s', str(e))
         return error_description(request, 'File is missing.')

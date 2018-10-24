@@ -35,7 +35,6 @@ var cookie_csrf_updater = function(xhr){
             cookVal = decodeURIComponent(cookie.substring("csrftoken".length + 1));
             break;
         }
-
     }
 
     xhr.setRequestHeader("X-CSRFToken", cookVal)
@@ -66,6 +65,33 @@ function record_start_failed(callback) {
 function record_stopped(callback) {
     $(".stop-recording").removeClass("stop-recording").addClass("start-recording").text("Start Recording");
     callback();
+}
+
+function show_video_popup(ref, elem, width=1080, height=720) {
+    elem.append("<div class='modal video_popup'><video controls preload='none' width='100%' height='100%'>" +
+                    "<source class='video' src=" + ref + ">" +
+                    "</video></div>");
+    elem.find(".modal").dialog({
+        resizable: false,
+        draggable: false,
+        modal: true,
+        height: height,
+        width: width,
+        position: {
+            my: "center",
+            at: "top",
+            of: window
+        },
+        open: function () {
+            $("video").get(0).play();
+            $('.ui-widget-overlay').bind('click', function () {
+                $(".modal").dialog('close');
+            });
+        },
+        close: function () {
+            $("video").remove();
+        },
+    });
 }
 
 var elements_subscriptor = function() {
@@ -160,6 +186,11 @@ var elements_subscriptor = function() {
             title: _name,
             height: 250,
             width: 400,
+            position: {
+                my: "center",
+                at: "top",
+                of: window
+            },
             buttons: {
                     "Yes": function () {
                     $(this).dialog("close");
@@ -170,6 +201,24 @@ var elements_subscriptor = function() {
                 }
             }
         });
+    });
+
+    $(".showcontent").on("click", function (event) {
+        event.stopPropagation();
+        const ss_id = $(this).data("ss_id");
+        show_video_popup("/showcontent/" + ss_id +"/", $(this));
+    });
+
+    $(".showscreencontent").on("click", function (event) {
+        event.stopPropagation();
+        const ss_id = $(this).data("ss_id");
+        show_video_popup("/showscreencontent/" + ss_id +"/", $(this));
+    });
+
+    $(".show-montage").on("click", function (event) {
+        event.stopPropagation();
+        const ss_id = $(this).data("ss_id");
+        show_video_popup("/show_montage/" + ss_id +"/", $(this), width=1800, height=600);
     });
 
     function fader(el) {
