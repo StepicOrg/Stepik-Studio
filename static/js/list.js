@@ -172,7 +172,14 @@ var elements_subscriptor = function() {
     });
 
     $(".delete_button").on("click", function(event) {
-        event.stopPropagation();
+        console.info("Hey??");
+        event.stopImmediatePropagation();
+
+        if (isRecording) {
+            alert("Please stop recording before");
+            return false;
+        }
+
         var redir_url = $(this).find(".delete-url").data("urllink");
         var _ss_name = $(this).parents(".substep-list").find(".substep-name").text().split(/ /)[0];
         var _s_name = $(this).parents(".ui-state-default").find(".step_name").text();
@@ -289,7 +296,7 @@ var elements_subscriptor = function() {
         });
     }
 
-    $(window).off().on("beforeunload", function () {
+    $(window).on("beforeunload", function () {
          $(".start-recording").off();
     });
 

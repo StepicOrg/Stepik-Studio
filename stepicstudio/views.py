@@ -451,6 +451,7 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
     if tablet_remove_status.status is not ExecutionStatus.SUCCESS:
         return error_description(request, tablet_remove_status.message)
 
+    args.update({'Recording': camera_curr_status()})
     substep.delete()
     return HttpResponseRedirect(post_url)
 
