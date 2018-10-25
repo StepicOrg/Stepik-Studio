@@ -48,6 +48,9 @@ class FileSystemClient(object):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR), None
 
     def kill_process(self, pid, including_parent=True) -> InternalOperationResult:
+        if not psutil.pid_exists(pid):
+            InternalOperationResult(ExecutionStatus.SUCCESS)
+
         try:
             parent = psutil.Process(pid)
         except Exception as e:
