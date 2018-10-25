@@ -65,7 +65,7 @@ function record_start_failed(callback) {
 
 function record_stopped(callback) {
     $(".stop-recording").removeClass("stop-recording").addClass("start-recording").text("Start Recording");
-    $(".tip-text").text("Click the mouse or press spacebar to start");
+    $(".tip-text").text("Click the mouse or press the spacebar to start");
     callback();
 }
 
