@@ -12,9 +12,9 @@ class FileSystemClient(object):
     def __init__(self):
         self.logger = logging.getLogger('stepic_studio.file_system_utils.file_system_client')
 
-    def execute_command(self, command: str, stdout=None) -> (InternalOperationResult, subprocess.Popen):
+    def execute_command(self, command: str, stdout=None, stdin=None) -> (InternalOperationResult, subprocess.Popen):
         try:
-            proc = subprocess.Popen(command, shell=True, stdout=stdout)
+            proc = subprocess.Popen(command, shell=True, stdout=stdout, stdin=stdin)
             # process still running when returncode is None
             if proc.returncode is not None and proc.returncode != 0:
                 _, error = proc.communicate()
@@ -67,6 +67,13 @@ class FileSystemClient(object):
                 return InternalOperationResult(ExecutionStatus.FATAL_ERROR, str(e))
 
         return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+    def send_quit_signal(self, process):
+        try:
+            process.stdin.write(bytes('^q', 'UTF-8'))
+            process.stdin.close()
+        except Exception as e:
+            self.logger.error('Can\'t send quit signal to process %s: %s', process.pid, e)
 
     def is_process_exists(self, pid: int) -> bool:
         return psutil.pid_exists(pid)

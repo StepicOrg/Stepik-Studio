@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 
 from django.conf import settings
 from singleton_decorator import singleton
@@ -31,7 +32,7 @@ class ServerCameraRecorder(PostprocessableRecorder):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'Camera is actually recording')
 
         local_command = self.__command + os.path.join(path, filename)
-        result, self.__process = self.__fs_client.execute_command(local_command)
+        result, self.__process = self.__fs_client.execute_command(local_command, stdin=subprocess.PIPE)
 
         if result.status is ExecutionStatus.SUCCESS:
             self.__logger.info('Successfully start camera recording (FFMPEG PID: %s; FFMPEG command: %s)',
@@ -54,6 +55,7 @@ class ServerCameraRecorder(PostprocessableRecorder):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
                                            'Camera isn\'t active: can\'t stop non existing FFMPEG process')
 
+        self.__fs_client.send_quit_signal(self.__process)
         result = self.__fs_client.kill_process(self.__process.pid)
 
         if result.status is ExecutionStatus.SUCCESS:

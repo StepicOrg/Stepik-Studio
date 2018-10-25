@@ -120,7 +120,7 @@ class TabletClient(object):
 
             return InternalOperationResult(ExecutionStatus.SUCCESS)
         except Exception as e:
-            self.__logger.error('Can\t download remote file %s to %s: %s', remote_dir, remote_path, e)
+            self.__logger.error('Can\'t download remote file %s from %s: %s', remote_dir, remote_path, e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
 
     def get_disk_info(self) -> (int, int):
