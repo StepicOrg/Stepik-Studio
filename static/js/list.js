@@ -51,9 +51,10 @@ var cookie_csrf_updater = function(xhr){
     }
 
 function record_started(callback) {
-    $(".start-recording").removeClass("start-recording").addClass("stop-recording").text("Recording. Press here to stop.");
+    $(".start-recording").removeClass("start-recording").addClass("stop-recording").text("Recording");
     var curr_sec_from_epoch = new Date().getTime() / 1000;
     $(".stop-recording").append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
+    $(".tip-text").text("Click the mouse or press the spacebar to stop");
     callback();
 }
 
@@ -64,6 +65,7 @@ function record_start_failed(callback) {
 
 function record_stopped(callback) {
     $(".stop-recording").removeClass("stop-recording").addClass("start-recording").text("Start Recording");
+    $(".tip-text").text("Click the mouse or press spacebar to start");
     callback();
 }
 
@@ -287,6 +289,10 @@ var elements_subscriptor = function() {
         });
     }
 
+    $(window).off().on("beforeunload", function () {
+         $(".start-recording").off();
+    });
+
     function stop_rec() {
         const elem = $(".stop-recording");
         elem.text("Preparing...").click(function () {
@@ -313,7 +319,6 @@ var elements_subscriptor = function() {
             error: function (data) {
                 alert(data.responseText);
             }
-
         });
     }
 
@@ -418,9 +423,9 @@ var elements_subscriptor = function() {
         event.stopImmediatePropagation();
         if (event.which === 32) {
             if (!isRecording)
-                start_rec();
+                $(".start-recording").trigger("click");
             else
-                stop_rec();
+                $(".stop-recording").trigger("click");
         }
     });
 
@@ -491,7 +496,6 @@ var elements_subscriptor = function() {
     });
 };
 
-
 const func_listener = function(){
 
     elements_subscriptor();
@@ -509,9 +513,7 @@ const func_listener = function(){
    window.onunload=function(){void(0);}
 };
 
-
 $(document).ready(func_listener);
-
 
 function rectime(sec) {
 	var hr = Math.floor(sec / 3600);

@@ -14,7 +14,7 @@
             <div ALIGN="CENTER">
                 <h1><span class="start-recording">Start Recording </span>
                 </h1>
-                <h5>Click the mouse or press spacebar
+                <h5><span class="tip-text">Click the mouse or press the spacebar to start</span>
                 </h5>
             </div>
             <br>
@@ -44,10 +44,6 @@
 
 
 
-            <div>
-
-
-
             <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
 
 
@@ -67,8 +63,7 @@
             <div ALIGN = center>
             <h3> Recording started</h3>
             <br>
-            <h1><a href={{ postUrl }}stop/ class="stop-recording">Stop Recording</a>
-
+            <h1><a href="{{ postUrl }}stop/" class="stop-recording">Stop Recording</a>
             </h1>
             <div id = "timer" data-starttime="{{ StartTime }}">00:00</div>
             </div>
