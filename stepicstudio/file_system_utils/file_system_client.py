@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+from time import sleep
 
 import psutil
 
@@ -74,6 +75,7 @@ class FileSystemClient(object):
     def send_quit_signal(self, process):
         try:
             process.stdin.write(bytes('^q', 'UTF-8'))
+            sleep(0.6)
             process.stdin.close()
         except Exception as e:
             self.logger.error('Can\'t send quit signal to process %s: %s', process.pid, e)
