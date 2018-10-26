@@ -377,7 +377,7 @@ def substep_status(request, substep_id):
         is_automontage_exists = substep.automontage_exist
 
         args = {'islocked': is_locked,
-                'isexists': is_automontage_exists}
+                'exists': is_automontage_exists}
 
         return JsonResponse(args)
     except:
@@ -389,11 +389,11 @@ def recording_page(request, course_id, lesson_id, step_id):
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
     args = {'full_name': request.user.username,
-            'Course': Course.objects.all().filter(id=course_id)[0],
+            'Course': Course.objects.filter(id=course_id)[0],
             'postUrl': post_url,
-            'Lesson': Lesson.objects.all().filter(id=lesson_id)[0],
-            'Step': Step.objects.all().filter(id=step_id)[0],
-            'SubSteps': SubStep.objects.all().filter(from_step=step_id),
+            'Lesson': Lesson.objects.filter(id=lesson_id)[0],
+            'Step': Step.objects.filter(id=step_id)[0],
+            'SubSteps': SubStep.objects.filter(from_step=step_id),
 
             }
     args.update({'Recording': camera_curr_status})
@@ -411,16 +411,16 @@ def stop_recording(request, course_id, lesson_id, step_id):
     post_url = '/' + COURSE_ULR_NAME + '/' + str(course_id) + '/' + LESSON_URL_NAME + '/' + str(lesson_id) + '/' + \
                STEP_URL_NAME + '/' + str(step_id) + '/'
     args = {'full_name': request.user.username,
-            'Course': Course.objects.all().filter(id=course_id)[0],
-            'postUrl': post_url, 'Lesson': Lesson.objects.all().filter(id=lesson_id)[0],
-            'Step': Step.objects.all().filter(id=step_id)[0],
-            'SubSteps': SubStep.objects.all().filter(from_step=step_id)}
+            'Course': Course.objects.filter(id=course_id)[0],
+            'postUrl': post_url, 'Lesson': Lesson.objects.filter(id=lesson_id)[0],
+            'Step': Step.objects.filter(id=step_id)[0],
+            'SubSteps': SubStep.objects.filter(from_step=step_id)}
     args.update(csrf(request))
     stop_cam_status = stop_cam_recording()
     args.update({'Recording': camera_curr_status})
-    last_substep_time = SubStep.objects.all().filter(from_step=step_id) \
+    last_substep_time = SubStep.objects.filter(from_step=step_id) \
         .aggregate(Max('start_time'))['start_time__max']
-    recorded_substep = SubStep.objects.all().filter(start_time=last_substep_time)[0]
+    recorded_substep = SubStep.objects.filter(start_time=last_substep_time)[0]
     add_stat_info(recorded_substep.id)
     return stop_cam_status
 
@@ -432,11 +432,11 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
     args = {'full_name': request.user.username,
-            'Course': Course.objects.all().filter(id=course_id)[0],
-            'Lesson': Lesson.objects.all().filter(id=lesson_id)[0],
-            'Step': Step.objects.all().filter(id=step_id)[0],
+            'Course': Course.objects.filter(id=course_id)[0],
+            'Lesson': Lesson.objects.filter(id=lesson_id)[0],
+            'Step': Step.objects.filter(id=step_id)[0],
             'postUrl': post_url,
-            'SubSteps': SubStep.objects.all().filter(from_step=step_id),
+            'SubSteps': SubStep.objects.filter(from_step=step_id),
             'currSubStep': substep,
             }
 
@@ -459,16 +459,16 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def delete_step(request, course_id, lesson_id, step_id):
-    step = Step.objects.all().get(id=step_id)
+    step = Step.objects.get(id=step_id)
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/'
     args = {'full_name': request.user.username,
-            'Course': Course.objects.all().filter(id=course_id)[0],
-            'Lesson': Lesson.objects.all().filter(id=lesson_id)[0],
-            'Step': Step.objects.all().filter(id=step_id)[0],
+            'Course': Course.objects.filter(id=course_id)[0],
+            'Lesson': Lesson.objects.filter(id=lesson_id)[0],
+            'Step': Step.objects.filter(id=step_id)[0],
             'postUrl': post_url,
-            'SubSteps': SubStep.objects.all().filter(from_step=step_id),
+            'SubSteps': SubStep.objects.filter(from_step=step_id),
             }
-    substeps = SubStep.objects.all().filter(from_step=step_id)
+    substeps = SubStep.objects.filter(from_step=step_id)
     server_step_files_deleted = delete_server_step_files(user_id=request.user.id,
                                                          user_profile=UserProfile.objects.get(user=request.user.id),
                                                          data=args)
@@ -519,15 +519,15 @@ def reorder_elements(request):
 @can_edit_page
 def show_course_struct(request, course_id):
     args = {'full_name': request.user.username,
-            'Course': Course.objects.all().get(id=course_id),
+            'Course': Course.objects.get(id=course_id),
             }
     args.update({'user_profile': UserProfile.objects.get(user=request.user.id)})
     args.update({'Recording': camera_curr_status})
-    all_lessons = Lesson.objects.all().filter(from_course=course_id)
+    all_lessons = Lesson.objects.filter(from_course=course_id)
     args.update({'all_course_lessons': all_lessons})
     all_steps = ()
     for l in all_lessons:
-        steps = Step.objects.all().filter(from_lesson=l.pk)
+        steps = Step.objects.filter(from_lesson=l.pk)
         all_steps = itertools.chain(all_steps, steps)
     all_steps = list(all_steps)
     args.update({'all_steps': all_steps})
@@ -540,7 +540,7 @@ def show_course_struct(request, course_id):
 @can_edit_page
 def view_stat(request, course_id):
     args = {'full_name': request.user.username,
-            'Course': Course.objects.all().get(id=course_id),
+            'Course': Course.objects.get(id=course_id),
             }
     return render_to_response('stat.html', args, context_instance=RequestContext(request))
 
@@ -549,7 +549,7 @@ def view_stat(request, course_id):
 @login_required(login_url='/login/')
 def video_view(request, substep_id):
     try:
-        substep = SubStep.objects.all().get(id=substep_id)
+        substep = SubStep.objects.get(id=substep_id)
         path = substep.os_path
         base_path = os.path.splitext(path)[0]
 
@@ -569,7 +569,7 @@ def video_view(request, substep_id):
 @login_required(login_url='/login/')
 def video_screen_view(request, substep_id):
     try:
-        substep = SubStep.objects.all().get(id=substep_id)
+        substep = SubStep.objects.get(id=substep_id)
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         base_path = os.path.splitext(path)[0]
 
@@ -587,7 +587,7 @@ def video_screen_view(request, substep_id):
 
 def show_montage(request, substep_id):
     try:
-        substep = SubStep.objects.all().get(id=substep_id)
+        substep = SubStep.objects.get(id=substep_id)
         path = substep.os_automontage_file
         return stream_video(request, path)
     except FileNotFoundError as e:
@@ -602,9 +602,9 @@ def rename_elem(request):
         rest_data = dict(request.POST.lists())
         if 'step' in rest_data['type'] or 'lesson' in rest_data['type']:
             if 'step' in rest_data['type']:
-                obj_to_rename = Step.objects.all().get(id=rest_data['id'][0])
+                obj_to_rename = Step.objects.get(id=rest_data['id'][0])
             else:
-                obj_to_rename = Lesson.objects.all().get(id=rest_data['id'][0])
+                obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
 
             logger.debug('Renaming: %s', obj_to_rename.os_path)
             tmp_step = copy.copy(obj_to_rename)
@@ -629,7 +629,7 @@ def rename_elem(request):
 
 
 def clear_all_locked_substeps(request):
-    all_locked = SubStep.objects.all().filter(is_locked=True)
+    all_locked = SubStep.objects.filter(is_locked=True)
     for ss in all_locked:
         ss.is_locked = False
         ss.save()
@@ -640,10 +640,10 @@ def clear_all_locked_substeps(request):
 
 
 def generate_notes_page(request, course_id):
-    lessons = Lesson.objects.all().filter(from_course=course_id)
+    lessons = Lesson.objects.filter(from_course=course_id)
     notes = list()
     for l in lessons:
-        steps = Step.objects.all().filter(from_lesson=l.id).order_by('id')
+        steps = Step.objects.filter(from_lesson=l.id).order_by('id')
         for s in steps:
             notes.append({'id': 'Step' + str(s.id) + 'from' + str(s.from_lesson), 'text': s.text_data})
     args = {'notes': notes}

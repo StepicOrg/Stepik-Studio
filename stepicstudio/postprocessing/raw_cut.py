@@ -5,7 +5,7 @@ from threading import Thread
 from django.conf import settings
 
 from stepicstudio.const import SYNC_LABEL, SCREEN_LABEL, PROFESSOR_LABEL, MP4_EXTENSION, MKV_EXTENSION, TS_EXTENSION, \
-    RAW_MONTAGE_LABEL
+    RAW_CUT_LABEL
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.models import SubStep, Step
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
@@ -43,7 +43,7 @@ class RawCutter(object):
         if status.status is not ExecutionStatus.SUCCESS:
             return status
 
-        full_output = os.path.join(output_dir, substep.name + RAW_MONTAGE_LABEL + MP4_EXTENSION)
+        full_output = os.path.join(output_dir, substep.name + RAW_CUT_LABEL + MP4_EXTENSION)
 
         substep.is_locked = True
         substep.save()

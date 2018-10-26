@@ -60,7 +60,7 @@ class FileRemover(PostprocessorInterface):
         file_to_remove = os.path.splitext(filename)[0] + TS_EXTENSION
         path = os.path.join(path, file_to_remove)
         if not os.path.isfile(path):
-            self.logger.warning('Removing .TS file failed: file %s is not valid.', path)
+            self.logger.warning('Removing %s file failed: file %s is not valid.', TS_EXTENSION, path)
             return path, filename
 
         remove_status = self.fs_client.remove_file(path)

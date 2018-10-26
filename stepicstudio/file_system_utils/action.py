@@ -187,8 +187,8 @@ def update_time_records(substep_list, new_step_only=False, new_step_obj=None) ->
                 new_step_obj.save()
     summ = 0
     for substep in substep_list:
-        if substep.duration != 0 \
-                and substep.screencast_duration != 0 \
+        if substep.duration \
+                and substep.screencast_duration \
                 and abs(substep.duration - substep.screencast_duration) < MIN_ACCEPTABLE_DIFF:
             continue
         for substep_path in substep.os_path_all_variants:

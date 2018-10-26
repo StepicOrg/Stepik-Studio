@@ -394,7 +394,7 @@ var elements_subscriptor = function() {
                                 .css("pointer-events", "none")
                                 .css("cursor", "default")
                                 .data("ss_locked", "True");
-                        } else if (data.isexists) {
+                        } else if (data.exists) {
                             elem.css("background", "#FFFFFF")
                                 .css("pointer-events", "auto")
                                 .data("ss_locked", "False");
