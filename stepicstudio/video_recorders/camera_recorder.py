@@ -9,7 +9,10 @@ from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.const import FFMPEGcommand
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
+from stepicstudio.scheduling.task_manager import TaskManager
 from stepicstudio.video_recorders.postprocessable_recorder import PostprocessableRecorder
+
+KILL_DELAY = 3
 
 
 @singleton
@@ -55,8 +58,9 @@ class ServerCameraRecorder(PostprocessableRecorder):
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
                                            'Camera isn\'t active: can\'t stop non existing FFMPEG process')
 
-        self.__fs_client.send_quit_signal(self.__process)
-        result = self.__fs_client.kill_process(self.__process.pid)
+        result = self.__fs_client.send_quit_signal(self.__process)
+        TaskManager().remove_all_tasks()
+        TaskManager().run_with_delay(FileSystemClient.kill_process, [self.__process.pid], delay=KILL_DELAY)
 
         if result.status is ExecutionStatus.SUCCESS:
             self.__logger.info('Successfully stop camera recording (FFMPEG PID: %s)', self.__process.pid)
