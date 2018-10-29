@@ -13,6 +13,7 @@ from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.db.models import Max
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_exempt
 
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.models import UserProfile
@@ -400,7 +401,7 @@ def recording_page(request, course_id, lesson_id, step_id):
     return render_to_response('step_view.html', args, context_instance=RequestContext(request))
 
 
-@login_required(login_url='/login')
+@csrf_exempt
 def stop_all_recording(request):
     stop_cam_recording()
     return HttpResponse('Ok')

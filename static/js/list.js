@@ -211,7 +211,6 @@ var elements_subscriptor = function() {
                     }
             },
             close: function () {
-                $("video").remove();
                 $(".modal").remove();
             },
         });
@@ -264,17 +263,14 @@ var elements_subscriptor = function() {
             return false;
         });
         elem.off();
+
         $(window).on("beforeunload", function () {
             return "Are you sure want to leave page? Recording will stop on leave.";
         });
         $(window).on("unload", function () {
-            $.ajax({
-                beforeSend: cookie_csrf_updater,
-                type: "GET",
-                url: "/stop_recording/",
-                async: false
-            });
+            navigator.sendBeacon("/stop_recording/");
         });
+
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
