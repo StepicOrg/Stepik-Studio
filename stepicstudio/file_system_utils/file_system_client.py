@@ -53,6 +53,8 @@ class FileSystemClient(object):
 
         try:
             parent = psutil.Process(pid)
+        except psutil.NoSuchProcess:
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
         except Exception as e:
             logger.error(str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, str(e))
