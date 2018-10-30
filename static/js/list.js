@@ -4,6 +4,7 @@ var rename_substep_tmplt_f_tmplt;
 var isRecording = false;
 const start_sound = new Audio("/static/sounds/start_sound.wav");
 const stop_sound = new Audio("/static/sounds/stop_sound.wav");
+const af_confirmation = new Audio("/static/sounds/af_confirmation.mp3");
 
 function isInstanceName(value){
   return !(value == null || value === " " || value ==="  " || value === "" || value === undefined);
@@ -172,7 +173,6 @@ var elements_subscriptor = function() {
     });
 
     $(".delete_button").on("click", function(event) {
-        console.info("Hey??");
         event.stopImmediatePropagation();
 
         if (isRecording) {
@@ -253,6 +253,56 @@ var elements_subscriptor = function() {
             error: function(data){
                 alert(data.responseText);
             }
+        });
+    });
+
+    $(".af_button").on("click", function (event) {
+        if (isRecording) {
+            return false;
+        }
+
+        const defaultColor = $(this).css("color");
+
+        $(this).text("Processing...")
+            .click(function () { return false; })
+            .prop('disabled', true)
+            .fadeTo("fast", .5)
+            .css("color", "initial");
+
+        const elem = $(this);
+
+        var unlock = function(element) {
+            element.text("Autofocus")
+                .prop('disabled', false)
+                .fadeTo("fast", 1);
+        };
+
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "GET",
+            url: "/autofocus_camera/",
+            timeout: 4000,
+
+            success: function () {
+                setTimeout(function () {
+                    unlock(elem);
+                    elem.css("color", "green");
+                    af_confirmation.play();
+                }, 1500);
+            },
+            error: function () {
+                unlock(elem);
+                elem.css("color", "red");
+            },
+        }).done(function () {
+            setTimeout(function () {
+                elem.css("color", defaultColor);
+            }, 3000);
+        }).fail(function () {
+            elem.css("color", "red")
+            setTimeout(function () {
+                elem.css("color", defaultColor);
+            }, 3000);
         });
     });
 
