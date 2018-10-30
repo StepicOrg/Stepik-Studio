@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from django.conf import settings
 from singleton_decorator import singleton
@@ -9,6 +11,8 @@ URI_LOGIN = '/api/acnt/login'
 URI_AF = '/api/cam/drivelens?af=oneshot'
 
 TIMEOUT = 3  # seconds
+
+logging.getLogger('requests').setLevel(logging.WARNING)
 
 
 @singleton
