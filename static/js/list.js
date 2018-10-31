@@ -460,7 +460,7 @@ var elements_subscriptor = function() {
     });
 
     $(document).keypress(function (event) {
-        if (event.which === 32) {
+        if (event.which === 32 && event.target.type !== "text" && event.target.type !== "textarea") {
             event.preventDefault();
         }
     });
@@ -469,6 +469,11 @@ var elements_subscriptor = function() {
         if ($(".modal").length > 0) { //to disable handler when dialog is open
             return false;
         }
+
+        if (event.target.type === "text" || event.target.type === "textarea")  {
+            return false;
+        }
+
         if (!$('br').is('.step_view')) { //to disable handler on other pages
             return false;
         }
