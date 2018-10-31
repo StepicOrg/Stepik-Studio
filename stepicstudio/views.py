@@ -314,12 +314,18 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
     target_substeps = SubStep.objects.filter(from_step=step_id)
 
     try:
-        last_ss_name = target_substeps.latest('name').name  # alphabetic order
+        last_ss_name = target_substeps.latest('start_time').name
+        print(last_ss_name)
         substep_index = int(re.search(r'\d+', last_ss_name).group()) + 1  # index of latest substep
     except:
         substep_index = 1
 
     substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+
+    while target_substeps.filter(name=substep.name).count():
+        substep_index += 1
+        substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+
     substep.save()
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
