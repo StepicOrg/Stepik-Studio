@@ -315,7 +315,6 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 
     try:
         last_ss_name = target_substeps.latest('start_time').name
-        print(last_ss_name)
         substep_index = int(re.search(r'\d+', last_ss_name).group()) + 1  # index of latest substep
     except:
         substep_index = 1
