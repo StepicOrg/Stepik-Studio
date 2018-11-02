@@ -54,7 +54,7 @@ function record_started(callback) {
     $(".start_recording").removeClass("start_recording").addClass("stop_recording").text("Recording");
     var curr_sec_from_epoch = new Date().getTime() / 1000;
     $(".stop_recording").append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
-    $(".tip-text").text("Click the mouse or press the spacebar to stop");
+    $(".tip-text").text("Click here or press the spacebar to stop");
     callback();
 }
 
@@ -65,7 +65,7 @@ function record_start_failed(callback) {
 
 function record_stopped(callback) {
     $(".stop_recording").removeClass("stop_recording").addClass("start_recording").text("Start Recording");
-    $(".tip-text").text("Click the mouse or press the spacebar to start");
+    $(".tip-text").text("Click here or press the spacebar to start");
     callback();
 }
 

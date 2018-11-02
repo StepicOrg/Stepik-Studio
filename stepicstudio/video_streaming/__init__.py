@@ -1,3 +1,6 @@
+# Original code:
+# http://codegist.net/snippet/python/range_streamingpy_dcwatson_python
+
 import mimetypes
 import os
 import re
@@ -48,21 +51,13 @@ def stream_video(request, path):
     if range_match:
         first_byte, last_byte = range_match.groups()
 
-        if first_byte:
-            first_byte = int(first_byte)
-        else:
-            first_byte = 0
-
-        if last_byte:
-            last_byte = int(last_byte)
-        else:
-            last_byte = size - 1
-
-        if last_byte >= size:
-            last_byte = size - 1
+        first_byte = int(first_byte or 0)
+        last_byte = int(last_byte or size - 1)
+        last_byte = min(last_byte, size - 1)
 
         length = last_byte - first_byte + 1
-        resp = StreamingHttpResponse(RangeFileWrapper(open(path, 'rb'), offset=first_byte, length=length), status=206,
+        resp = StreamingHttpResponse(RangeFileWrapper(open(path, 'rb'), offset=first_byte, length=length),
+                                     status=206,
                                      content_type=content_type)
         resp['Content-Length'] = str(length)
         resp['Content-Range'] = 'bytes %s-%s/%s' % (first_byte, last_byte, size)

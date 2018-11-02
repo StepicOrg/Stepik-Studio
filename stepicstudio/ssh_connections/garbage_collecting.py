@@ -16,7 +16,7 @@ def collect_garbage():
     result_size = 0
     ss_count = 0
     from stepicstudio.models import SubStep
-    for substep in SubStep.objects.all():
+    for substep in SubStep.objects:
         if is_outdated(substep):
             try:
                 folder_path = get_full_linux_path(substep)

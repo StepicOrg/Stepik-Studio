@@ -3,7 +3,7 @@ from stepicstudio.models import Lesson, Course, Step, SubStep
 
 
 def get_my_courses(userId):
-    courses = Course.objects.all().filter(editors=userId)
+    courses = Course.objects.filter(editors=userId)
     result = set()
     for i, C in enumerate(courses):
         result.add((C.id, C))
@@ -17,7 +17,7 @@ class LessonForm(forms.ModelForm):
         super(LessonForm, self).__init__(*args, **kwargs)
 
         self.fields['from_courseName'] = forms.ChoiceField(
-            choices=get_my_courses(self.user), initial=Course.objects.all().filter(id=self.from_course)[0].id)
+            choices=get_my_courses(self.user), initial=Course.objects.filter(id=self.from_course)[0].id)
 
     class Meta:
         model = Lesson
