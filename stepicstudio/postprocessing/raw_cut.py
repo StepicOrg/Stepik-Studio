@@ -79,14 +79,14 @@ class RawCutter(object):
 
     def raw_cut_step(self, step_id: int):
         try:
-            substep_ids = SubStep.objects.all().filter(from_step=step_id).values_list('id', flat=True)
+            substep_ids = SubStep.objects.filter(from_step=step_id).values_list('id', flat=True)
             self._internal_raw_cut_step(substep_ids)
         except Exception as e:
             self.__logger.warning('Can\'t launch raw_cut_step: %s', e)
 
     def raw_cut_step_async(self, step_id: int):
         try:
-            substep_ids = SubStep.objects.all().filter(from_step=step_id).values_list('id', flat=True)
+            substep_ids = SubStep.objects.filter(from_step=step_id).values_list('id', flat=True)
             thread = Thread(target=self._internal_raw_cut_step, args=[substep_ids])
             thread.start()
         except Exception as e:
@@ -98,7 +98,7 @@ class RawCutter(object):
 
     def raw_cut_lesson_async(self, lesson_id: int):
         try:
-            step_ids = Step.objects.all().filter(from_lesson=lesson_id).values_list('id', flat=True)
+            step_ids = Step.objects.filter(from_lesson=lesson_id).values_list('id', flat=True)
             thread = Thread(target=self._internal_raw_cut_lesson, args=[step_ids])
             thread.start()
         except Exception as e:

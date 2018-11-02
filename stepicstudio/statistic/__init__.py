@@ -4,7 +4,7 @@ from stepicstudio.models import StatInfo, SubStep
 
 
 def add_stat_info(substep_id):
-    substep = SubStep.objects.all().get(id=substep_id)
+    substep = SubStep.objects.get(id=substep_id)
     substep_stat = StatInfo()
     substep_stat.substep = substep_id
     substep_stat.substep_uuid = substep.start_time

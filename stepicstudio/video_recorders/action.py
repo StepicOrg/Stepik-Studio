@@ -27,7 +27,7 @@ def to_linux_translate(win_path: str, username: str) -> str:
 
 def start_recording(**kwargs: dict) -> InternalOperationResult:
     user_id = kwargs['user_id']
-    username = User.objects.all().get(id=int(user_id)).username
+    username = User.objects.get(id=int(user_id)).username
     folder_path = kwargs['user_profile'].serverFilesFolder
     data = kwargs['data']
     add_file_to_test(folder_path=folder_path, data=data)
@@ -73,7 +73,7 @@ def delete_server_substep_files(**kwargs):
 def delete_server_step_files(**kwargs):
     folder_path = kwargs['user_profile'].serverFilesFolder
     data = kwargs['data']
-    substeps = SubStep.objects.all().filter(from_step=data['Step'].id)
+    substeps = SubStep.objects.filter(from_step=data['Step'].id)
     for ss in substeps:
         if ss.is_locked:
             return False
