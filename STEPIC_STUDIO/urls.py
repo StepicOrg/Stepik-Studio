@@ -18,7 +18,7 @@ courseurlpatterns = patterns(
 
 urlpatterns = patterns(
     '',
-    url(r'^rename_elem/$', 'stepicstudio.views.rename_elem'),
+    url(r'^rename-elem/$', 'stepicstudio.views.rename_elem'),
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^settings/update_substep_template/', 'stepicstudio.views.update_substep_tmpl'),
@@ -29,31 +29,33 @@ urlpatterns = patterns(
     url(r'^logout/$', 'stepicstudio.views.logout'),
     url(r'^auth/$', 'stepicstudio.views.auth_view'),
 
-    url(r'^reorder_lists/$', 'stepicstudio.views.reorder_elements'),
+    url(r'^reorder-lists/$', 'stepicstudio.views.reorder_elements'),
 
-    url(r'^stop_recording/', 'stepicstudio.views.stop_all_recording'),
+    url(r'^stop-recording/', 'stepicstudio.views.stop_all_recording'),
 
     url(r'^course/(?P<course_id>[0-9]+)/', include(courseurlpatterns)),
 
     url(r'^courses/', 'stepicstudio.views.get_user_courses'),
-    url(r'^unlock_all/', 'stepicstudio.views.clear_all_locked_substeps'),
+    url(r'^unlock-all/', 'stepicstudio.views.clear_all_locked_substeps'),
 
-    url(r'^add_lesson/', 'stepicstudio.views.add_lesson'),
+    url(r'^add-lesson/', 'stepicstudio.views.add_lesson'),
 
-    url(r'^all_notes/(?P<course_id>[0-9]+)/', 'stepicstudio.views.generate_notes_page'),
+    url(r'^all-notes/(?P<course_id>[0-9]+)/', 'stepicstudio.views.generate_notes_page'),
 
     url(r'^showcontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_view'),
     url(r'^showscreencontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_screen_view'),
 
     url(r'^create_montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.montage'),
-    url(r'^create_step_montage/(?P<step_id>[0-9]+)/', 'stepicstudio.views.step_montage'),
-    url(r'^create_lesson_montage/(?P<lesson_id>[0-9]+)/', 'stepicstudio.views.lesson_montage'),
-    url(r'^show_montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.show_montage'),
+    url(r'^create-step-montage/(?P<step_id>[0-9]+)/', 'stepicstudio.views.step_montage'),
+    url(r'^create-lesson-montage/(?P<lesson_id>[0-9]+)/', 'stepicstudio.views.lesson_montage'),
+    url(r'^show-montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.show_montage'),
 
-    url(r'^substep_status/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.substep_status'),
+    url(r'^substep-status/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.substep_status'),
 
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
     url(r'^notes/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.notes'),
+
+    url(r'^autofocus-camera/', 'stepicstudio.views.autofocus_camera'),
 )
 
 handler500 = 'stepicstudio.views.error500_handler'

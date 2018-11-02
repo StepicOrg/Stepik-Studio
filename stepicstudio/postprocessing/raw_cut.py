@@ -5,7 +5,7 @@ from threading import Thread
 from django.conf import settings
 
 from stepicstudio.const import SYNC_LABEL, SCREEN_LABEL, PROFESSOR_LABEL, MP4_EXTENSION, MKV_EXTENSION, TS_EXTENSION, \
-    RAW_MONTAGE_LABEL
+    RAW_CUT_LABEL
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.models import SubStep, Step
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
@@ -43,7 +43,7 @@ class RawCutter(object):
         if status.status is not ExecutionStatus.SUCCESS:
             return status
 
-        full_output = os.path.join(output_dir, substep.name + RAW_MONTAGE_LABEL + MP4_EXTENSION)
+        full_output = os.path.join(output_dir, substep.name + RAW_CUT_LABEL + MP4_EXTENSION)
 
         substep.is_locked = True
         substep.save()
@@ -79,14 +79,14 @@ class RawCutter(object):
 
     def raw_cut_step(self, step_id: int):
         try:
-            substep_ids = SubStep.objects.all().filter(from_step=step_id).values_list('id', flat=True)
+            substep_ids = SubStep.objects.filter(from_step=step_id).values_list('id', flat=True)
             self._internal_raw_cut_step(substep_ids)
         except Exception as e:
             self.__logger.warning('Can\'t launch raw_cut_step: %s', e)
 
     def raw_cut_step_async(self, step_id: int):
         try:
-            substep_ids = SubStep.objects.all().filter(from_step=step_id).values_list('id', flat=True)
+            substep_ids = SubStep.objects.filter(from_step=step_id).values_list('id', flat=True)
             thread = Thread(target=self._internal_raw_cut_step, args=[substep_ids])
             thread.start()
         except Exception as e:
@@ -98,7 +98,7 @@ class RawCutter(object):
 
     def raw_cut_lesson_async(self, lesson_id: int):
         try:
-            step_ids = Step.objects.all().filter(from_lesson=lesson_id).values_list('id', flat=True)
+            step_ids = Step.objects.filter(from_lesson=lesson_id).values_list('id', flat=True)
             thread = Thread(target=self._internal_raw_cut_lesson, args=[step_ids])
             thread.start()
         except Exception as e:

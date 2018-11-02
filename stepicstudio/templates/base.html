@@ -3,8 +3,7 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title> {%  block title %}Stepic Studio Server{% endblock %}</title>
-<head>
-    <link rel="icon" href="{% static "icons/favicon.ico" %}">
+    <link rel = "icon" href="{% static "icons/favicon.ico" %}">
     <link rel = "stylesheet" type="text/css" href="{% static "css/default.css" %}" >
     <link rel = "stylesheet" type="text/css" href="{% static "css/jquery-ui.css" %}" >
     <link rel = "stylesheet" type="text/css" href="{% static "css/jquery-ui.theme.css" %}" >
@@ -14,10 +13,6 @@
     <script src={% static "extra/jquery-ui-1.11.2.custom/jquery-ui.js" %}></script>
     <script src={%  static "extra/handlebars-v3.0.3.js" %}></script>
     <script src={%  static "extra/hb_templates/templates.js" %}></script>
-
-
-
-
 </head>
 <body>
     {% if say_hello == True %}

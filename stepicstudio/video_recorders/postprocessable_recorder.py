@@ -24,6 +24,8 @@ class PostprocessableRecorder(object):
                 self.__postprocessor_pipe.append(pp_instance.process)
 
     def _apply_pipe(self, path: str, filename: str):
+        if len(self.__postprocessor_pipe) == 0:
+            return
         if path is None or filename is None:
             return
         source_file = os.path.join(path, filename)

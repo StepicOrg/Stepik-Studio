@@ -17,7 +17,7 @@ class TabletScreenRecorder(object):
         self.last_processed_file = None
 
         try:
-            self.__tablet_client = TabletClient()
+            self.__tablet_client = TabletClient(connect_timeout=10)
         except Exception as e:
             self.__logger.error('Can\'t initialize tablet client: %s', e)
             raise e

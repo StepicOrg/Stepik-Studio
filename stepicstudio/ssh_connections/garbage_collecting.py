@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
+from stepicstudio.ssh_connections import get_full_linux_path
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.utils.utils import bytes2human
 
@@ -15,7 +16,7 @@ def collect_garbage():
     result_size = 0
     ss_count = 0
     from stepicstudio.models import SubStep
-    for substep in SubStep.objects.all():
+    for substep in SubStep.objects:
         if is_outdated(substep):
             try:
                 folder_path = get_full_linux_path(substep)
@@ -35,10 +36,6 @@ def collect_garbage():
                 bytes2human(result_size),
                 ss_count,
                 settings.GARBAGE_COLLECT_DELAY)
-
-
-def get_full_linux_path(substep):
-    return settings.LINUX_DIR + substep.os_tablet_path
 
 
 def is_outdated(substep) -> bool:

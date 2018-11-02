@@ -13,10 +13,11 @@ logging.getLogger('paramiko').setLevel(logging.WARNING)
 
 
 class TabletClient(object):
-    def __init__(self):
+    def __init__(self, connect_timeout=None):
         self.__logger = logging.getLogger('stepikstudio.ssh_connections.tablet_client')
         self.__ssh = None
         self.__sftp = None
+        self.timeout = connect_timeout
         try:
             self.__connect()
         except:
@@ -29,11 +30,11 @@ class TabletClient(object):
         except:
             pass
 
-    def execute_remote(self, command: str, allowable_code=0, read_output=False) -> str:
+    def execute_remote(self, command: str, allowable_code=0, read_output=False, timeout=None) -> str:
         if not self.__is_alive():
             self.__connect()
 
-        _, stdout, _ = self.__ssh.exec_command(command)
+        _, stdout, _ = self.__ssh.exec_command(command, timeout=timeout)
         exit_status = stdout.channel.recv_exit_status()
 
         if exit_status > 0 and exit_status is not allowable_code:
@@ -62,8 +63,27 @@ class TabletClient(object):
             self.__sftp.rmdir(path)
             return InternalOperationResult(ExecutionStatus.SUCCESS), size
         except Exception as e:
-            self.__logger.error('Can\'t delete folder: %s', e)
+            self.__logger.error('Can\'t delete folder %s: %s', path, e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR), 0
+
+    def delete_folder_recursively(self, path: str):
+        if not self.__is_alive():
+            self.__connect()
+
+        status, _ = self.__is_exists(path)
+        if status is False:
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+        files = self.__sftp.listdir(path=path)
+
+        for f in files:
+            filepath = path + '/' + f
+            try:
+                self.__sftp.remove(filepath)
+            except IOError:
+                self.delete_folder_recursively(filepath)
+
+        self.__sftp.rmdir(path)
 
     def check_and_create_folder(self, path):
         if not self.__is_alive():
@@ -100,7 +120,7 @@ class TabletClient(object):
 
             return InternalOperationResult(ExecutionStatus.SUCCESS)
         except Exception as e:
-            self.__logger.error('Can\t download remote file %s to %s: %s', remote_dir, remote_path, e)
+            self.__logger.error('Can\'t download remote directory %s: %s', remote_dir, e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
 
     def get_disk_info(self) -> (int, int):
@@ -142,20 +162,23 @@ class TabletClient(object):
         return self.execute_remote(command, read_output=True)
 
     def __connect(self, attempts=1):
-        for _ in range(0, attempts):
-            self.__ssh = paramiko.SSHClient()
-            self.__ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.__ssh.connect(settings.PROFESSOR_IP,
-                               username=settings.UBUNTU_USERNAME,
-                               password=settings.UBUNTU_PASSWORD)
+        try:
+            for _ in range(0, attempts):
+                self.__ssh = paramiko.SSHClient()
+                self.__ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                self.__ssh.connect(settings.PROFESSOR_IP,
+                                   username=settings.UBUNTU_USERNAME,
+                                   password=settings.UBUNTU_PASSWORD,
+                                   timeout=self.timeout)
 
-            transport = paramiko.Transport((settings.PROFESSOR_IP, 22))
-            transport.connect(username=settings.UBUNTU_USERNAME, password=settings.UBUNTU_PASSWORD)
-            self.__sftp = paramiko.SFTPClient.from_transport(transport)
+                transport = paramiko.Transport((settings.PROFESSOR_IP, 22))
+                transport.connect(username=settings.UBUNTU_USERNAME,
+                                  password=settings.UBUNTU_PASSWORD)
+                self.__sftp = paramiko.SFTPClient.from_transport(transport)
 
-        if not self.__is_alive():
-            self.__logger.warning('SSH connection failed. Reconnecting failed.')
-            raise Exception('Invalid ssh connection')
+        except Exception as e:
+            self.__logger.error('SSH connection failed. Reconnecting failed: %s', e)
+            raise e
 
     def __is_alive(self):
         try:
