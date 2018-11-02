@@ -75,7 +75,10 @@
             width: 270px;
         }
 
-
+        .af_button {
+            cursor: pointer;
+            font-weight: bold;
+        }
 
         #header {
             background: #d1e2cb;

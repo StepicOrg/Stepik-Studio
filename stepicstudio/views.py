@@ -1,12 +1,10 @@
 import itertools
 import copy
-import mimetypes
 import re
-from wsgiref.util import FileWrapper
 
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
-    JsonResponse, StreamingHttpResponse
+    JsonResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
@@ -15,6 +13,7 @@ from django.db.models import Max
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 
+from stepicstudio.camera_controls import AutofocusController
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.models import UserProfile
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
@@ -554,8 +553,8 @@ def video_view(request, substep_id):
         path = substep.os_path
         base_path = os.path.splitext(path)[0]
 
-        if os.path.isfile(base_path + '.mp4'):
-            path_to_mp4 = base_path + '.mp4'
+        if os.path.isfile(base_path + MP4_EXTENSION):
+            path_to_mp4 = base_path + MP4_EXTENSION
             return stream_video(request, path_to_mp4)
         else:
             return stream_video(request, path)
@@ -574,8 +573,8 @@ def video_screen_view(request, substep_id):
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         base_path = os.path.splitext(path)[0]
 
-        if os.path.isfile(base_path + '.mp4'):
-            path_to_mp4 = base_path + '.mp4'
+        if os.path.isfile(base_path + MP4_EXTENSION):
+            path_to_mp4 = base_path + MP4_EXTENSION
             return stream_video(request, path_to_mp4)
         else:
             return stream_video(request, path)
@@ -649,6 +648,19 @@ def generate_notes_page(request, course_id):
             notes.append({'id': 'Step' + str(s.id) + 'from' + str(s.from_lesson), 'text': s.text_data})
     args = {'notes': notes}
     return render_to_response('notes_page.html', args, context_instance=RequestContext(request))
+
+
+def autofocus_camera(request):
+    if not request.is_ajax or not settings.ENABLE_REMOTE_AUTOFOCUS:
+        raise Http404
+
+    result = AutofocusController().focus_camera()
+
+    if result.status is ExecutionStatus.SUCCESS:
+        return HttpResponse('Ok')
+    else:
+        logger.warning('Camera autofocus error: %s', result.message)
+        return HttpResponseServerError(result.message)
 
 
 def error500_handler(request):

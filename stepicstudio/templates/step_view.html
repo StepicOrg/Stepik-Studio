@@ -4,8 +4,14 @@
     {%  block content %}
 
         {% if Recording != True %}
-            <br class="step_view">this page is for Step "{{ Step.name }}":
-            <br>
+            <!--ADD BACK BUTTON -->
+            <div>
+                <span>this page is for Step "{{ Step.name }}":</span>
+                {% if AF_ENABLED == True %}
+                <span class="af_button right">Autofocus</span>
+                {% endif %}
+            </div>
+            <br class="step_view">
             <h3>
             from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
             </h3>
