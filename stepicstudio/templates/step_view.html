@@ -10,6 +10,12 @@
             <h3>
             from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
             </h3>
+            <br>
+            <div ALIGN="CENTER">
+                <h1><span class="start-recording">Start Recording </span>
+                </h1>
+            </div>
+            <br>
                 {% for SS in SubSteps  %}
                        <div class="substep-list" data-ss_id="{{ SS.id }}" data-ss_locked="{{ SS.is_locked }}" {% if SS.is_locked %} style="background: #141628; pointer-events: none; cursor: default" {% endif %}>
                                <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}}
@@ -32,12 +38,9 @@
                                 </div>
                         </div>
                 {% endfor %}
-            <br>
 
-            <div ALIGN="CENTER">
-                <h1><span class="start-recording">Start Recording </span>
-                </h1>
-            </div>
+
+
 
             <div>
 

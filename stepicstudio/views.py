@@ -248,16 +248,16 @@ def show_step(request, course_id, lesson_id, step_id):
             elif start_status.status is ExecutionStatus.FATAL_ERROR:
                 return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
         elif user_action == 'stop':
-            stop_status = stop_cam_recording()  # stop_recording(request, course_id, lesson_id, step_id)
+            stop_status = stop_cam_recording()
             if stop_status:
                 return HttpResponse('Ok')
             else:
                 return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
 
-    all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('start_time')
+    all_substeps = SubStep.objects.all().filter(from_step=step_id).order_by('-start_time')
     summ_time = update_time_records(all_substeps)
     step_obj.is_fresh = True
-    step_obj.duration = summ_time
+    step_obj.duration += summ_time
     step_obj.save()
     args = {'full_name': request.user.username,
             'Course': Course.objects.all().get(id=course_id),
@@ -310,7 +310,7 @@ def update_substep_tmpl(request):
 def start_new_step_recording(request, course_id, lesson_id, step_id) -> InternalOperationResult:
     substep = SubStep()
     substep.from_step = step_id
-    substep_index = len(SubStep.objects.all().filter(from_step=step_id)) + 1
+    substep_index = SubStep.objects.filter(from_step=step_id).count() + 1
     substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
     while SubStep.objects.filter(name=substep.name).count():
         substep_index += 1
@@ -367,15 +367,17 @@ def lesson_montage(request, lesson_id):
 def substep_status(request, substep_id):
     if not request.is_ajax():
         raise Http404
+    try:
+        substep = SubStep.objects.all().get(id=substep_id)
+        is_locked = substep.is_locked
+        is_automontage_exists = substep.automontage_exist
 
-    substep = SubStep.objects.all().get(id=substep_id)
-    is_locked = substep.is_locked
-    is_automontage_exists = substep.automontage_exist
+        args = {'islocked': is_locked,
+                'isexists': is_automontage_exists}
 
-    args = {'islocked': is_locked,
-            'isexists': is_automontage_exists}
-
-    return JsonResponse(args)
+        return JsonResponse(args)
+    except:
+        return HttpResponseServerError()
 
 
 @login_required(login_url='/login')
@@ -435,7 +437,8 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
             }
 
     delete_substep_files(user_id=request.user.id,
-                                           user_profile=UserProfile.objects.get(user=request.user.id), data=args)
+                         user_profile=UserProfile.objects.get(user=request.user.id),
+                         data=args)
     substep.delete()
     return HttpResponseRedirect(post_url)
 
@@ -532,7 +535,7 @@ def video_view(request, substep_id):
         path = substep.os_path
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.is_file_valid(base_path + '.mp4'):
+        if os.path.isfile(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -549,7 +552,7 @@ def video_view(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missing file: %s', str(e))
-        return error_description(request, 'File is missed.')
+        return error_description(request, 'File is missing.')
     except Exception as e:
         return error500_handler(request)
 
@@ -563,7 +566,7 @@ def video_screen_view(request, substep_id):
         path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
         base_path = os.path.splitext(path)[0]
 
-        if fs_client.is_file_valid(base_path + '.mp4'):
+        if os.path.isfile(base_path + '.mp4'):
             path_to_show = base_path + '.mp4'
             file = FileWrapper(open(path_to_show, 'rb'))
             response = HttpResponse(file, content_type='video/mp4')
@@ -580,7 +583,7 @@ def video_screen_view(request, substep_id):
         return response
     except FileNotFoundError as e:
         logger.warning('Missed file: %s', str(e))
-        return error_description(request, 'File is missed.')
+        return error_description(request, 'File is missing.')
     except Exception:
         return error500_handler(request)
 
@@ -588,14 +591,14 @@ def video_screen_view(request, substep_id):
 def show_montage(request, substep_id):
     try:
         substep = SubStep.objects.all().get(id=substep_id)
-        path = substep.os_automontage_path
+        path = substep.os_automontage_file
         file = FileWrapper(open(path, 'rb'))
         response = HttpResponse(file, content_type='video/mp4')
         response['Content-Disposition'] = 'inline; filename=' + substep.name + RAW_MONTAGE_LABEL
         return response
     except FileNotFoundError as e:
         logger.warning('Missed file: %s', str(e))
-        return error_description(request, 'File is missed.')
+        return error_description(request, 'File is missing.')
     except Exception:
         return error500_handler(request)
 

@@ -34,7 +34,7 @@ class SetStorageCapacityMiddleware(object):
             self.tablet_client = None
 
     def process_response(self, request, response):
-        if request.is_ajax:
+        if request.is_ajax():
             return response
 
         try:

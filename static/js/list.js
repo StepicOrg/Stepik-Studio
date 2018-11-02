@@ -1,34 +1,35 @@
 var rename_step_f_tmplt;
 var rename_lesson_f_tmplt;
 var rename_substep_tmplt_f_tmplt;
+var isRecording = false;
 
 function isInstanceName(value){
-  return !(value == null || value == ' ' || value =='  ' || value == '' || value == undefined);
+  return !(value == null || value == " " || value =="  " || value == "" || value == undefined);
 }
 
 $(function  () {
-    var context_tmplt_1 = [{name:'NoName'}];
-    var compiledTemplate_1 = JST['static/extra/hb_templates/renameStep.handlebars'];
+    var context_tmplt_1 = [{name:"NoName"}];
+    var compiledTemplate_1 = JST["static/extra/hb_templates/renameStep.handlebars"];
     rename_step_f_tmplt = compiledTemplate_1(context_tmplt_1);
 
-    var context_tmplt_2 = [{name:'NoName'}];
-    var compiledTemplate_2 = JST['static/extra/hb_templates/renameLesson.handlebars'];
+    var context_tmplt_2 = [{name:"NoName"}];
+    var compiledTemplate_2 = JST["static/extra/hb_templates/renameLesson.handlebars"];
     rename_lesson_f_tmplt = compiledTemplate_2(context_tmplt_2);
 
-    var context_tmplt_3 = [{name:'NoName'}];
-    var compiledTemplate_3 = JST['static/extra/hb_templates/renameSubstepTemplate.handlebars'];
+    var context_tmplt_3 = [{name:"NoName"}];
+    var compiledTemplate_3 = JST["static/extra/hb_templates/renameSubstepTemplate.handlebars"];
     rename_substep_tmplt_f_tmplt = compiledTemplate_3(context_tmplt_3);
 });
 
 var cookie_csrf_updater = function(xhr){
     var cookie = null;
     var cookVal = null;
-    var cookies = document.cookie.split(';');
+    var cookies = document.cookie.split(";");
 
     for (var i=0; i < cookies.length; i++) {
         cookie = jQuery.trim(cookies[i]);
 
-        if(cookie.substring(0, "csrftoken".length+1) == "csrftoken=") {
+        if(cookie.substring(0, "csrftoken".length+1) === "csrftoken=") {
             cookVal = decodeURIComponent(cookie.substring("csrftoken".length + 1));
             break;
         }
@@ -38,34 +39,30 @@ var cookie_csrf_updater = function(xhr){
     xhr.setRequestHeader("X-CSRFToken", cookVal)
 };
 
-
     function upd_deleted_el(new_name, deleted_element) {
         if (new_name != null && new_name.length > 0) {
             var jq_deleted = $(deleted_element);
-            var replace = $('<div/>').append(jq_deleted.clone());
-            $(replace).find('.obj_name').html(new_name);
+            var replace = $("<div/>").append(jq_deleted.clone());
+            $(replace).find(".obj_name").html(new_name);
             deleted_element = replace.html();
         }
         return deleted_element;
     }
 
-function record_started(callback)
-{
-    $('.start-recording').removeClass('start-recording').addClass('stop-recording').text('Recording. Press here to stop.');
+function record_started(callback) {
+    $(".start-recording").removeClass("start-recording").addClass("stop-recording").text("Recording. Press here to stop.");
     var curr_sec_from_epoch = new Date().getTime() / 1000;
-    $('.stop-recording').append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
+    $(".stop-recording").append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
     callback();
 }
 
-function record_start_failed(callback)
-{
-    $('.start-recording').text('Start Recording');
+function record_start_failed(callback) {
+    $(".start-recording").text("Start Recording");
     callback();
 }
 
-function record_stopped(callback)
-{
-    $('.stop-recording').removeClass('stop-recording').addClass('start-recording').text('Start Recording');
+function record_stopped(callback) {
+    $(".stop-recording").removeClass("stop-recording").addClass("start-recording").text("Start Recording");
     callback();
 }
 
@@ -75,11 +72,11 @@ var elements_subscriptor = function() {
     sortObj.sortable({
         start: function(e, ui) {
             if (!$("#isDraggable").is(":checked")) {
-                window.location = $(ui.item[0]).find("a").attr('href');
+                window.location = $(ui.item[0]).find("a").attr("href");
             }
         },
         stop : function(event, ui) {
-            var reorderingSteps = $(ui.item[0]).find("a").hasClass('step_name');
+            var reorderingSteps = $(ui.item[0]).find("a").hasClass("step_name");
             var reorderingType = reorderingSteps ? "step" : "lesson";
             $.ajax({
                 beforeSend: cookie_csrf_updater,
@@ -88,7 +85,7 @@ var elements_subscriptor = function() {
                 url: "/reorder_lists/",
 
                 data: {"type": reorderingType, "order": $(this).sortable("toArray"), "ids": $(this).sortable("toArray",
-                    {attribute: reorderingSteps ? 'stepID' : 'lessonID'})},
+                    {attribute: reorderingSteps ? "stepID" : "lessonID"})},
                 success: function(data){
                         //alert(data);
                 }
@@ -101,18 +98,18 @@ var elements_subscriptor = function() {
 
     var deleted_element;
 
-    $('.rename_button').off().on('click', function(e){
+    $(".rename_button").off().on("click", function(e) {
         e.stopPropagation();
-        var name = $(this).parents('.ui-state-default').find(".obj_name").text();
+        var name = $(this).parents(".ui-state-default").find(".obj_name").text();
         $(this).fadeOut("fast",  function(){
-            if ($(this).hasClass('step_rename')) {
+            if ($(this).hasClass("step_rename")) {
                 deleted_element = $(this).parent().parent().html();
                 $(this).parent().parent().html(rename_step_f_tmplt);
             }
-            else if ($(this).hasClass('lesson_rename')) {
+            else if ($(this).hasClass("lesson_rename")) {
                 deleted_element = $(this).parent().parent().html();
                 $(this).parent().parent().html(rename_lesson_f_tmplt);
-            } else if ($(this).hasClass('substep_tmpl_rename')) {
+            } else if ($(this).hasClass("substep_tmpl_rename")) {
                 deleted_element = $(this).parent().html();
                 $(this).parent().html(rename_substep_tmplt_f_tmplt);
             }
@@ -120,34 +117,34 @@ var elements_subscriptor = function() {
                 alert("TEMPLATE ERROR!");
             }
             elements_subscriptor();
-            $('#input-field-name').val(name);
+            $("#input-field-name").val(name);
             });
         });
 
-    $('#cancel-rename').off().live('click', function(event, new_name){
+    $("#cancel-rename").off().live("click", function(event, new_name) {
         $(this).fadeOut("fast",  function(){
             deleted_element = upd_deleted_el(new_name, deleted_element);
-            console.log('deleted_element:' , deleted_element);
-            console.log('new_element:', new_name);
-            $(this).parents('.input-step-name-field').html(deleted_element);
-            $(this).parents('.input-lesson-name-field').html(deleted_element);
-            $(this).parents('.rename-substep-template-field').html(deleted_element);
+            console.log("deleted_element:" , deleted_element);
+            console.log("new_element:", new_name);
+            $(this).parents(".input-step-name-field").html(deleted_element);
+            $(this).parents(".input-lesson-name-field").html(deleted_element);
+            $(this).parents(".rename-substep-template-field").html(deleted_element);
             elements_subscriptor();
         });
     });
 
 
-    $(".lesson_info").off().on('click',function(){
-        $(this).parent().find('.lesson_path').toggleClass('hiddenInfo');
-        $(this).parent().find('.lesson_info_link').toggleClass('hiddenInfo');
-        $(this).parent().find("a").toggleClass('hiddenInfo');
+    $(".lesson_info").off().on("click", function() {
+        $(this).parent().find(".lesson_path").toggleClass("hiddenInfo");
+        $(this).parent().find(".lesson_info_link").toggleClass("hiddenInfo");
+        $(this).parent().find("a").toggleClass("hiddenInfo");
     });
 
-    $('.delete_button').on('click', function(event){
+    $(".delete_button").on("click", function(event) {
         event.stopPropagation();
         var redir_url = $(this).find(".delete-url").data("urllink");
-        var _ss_name = $(this).parents('.substep-list').find('.substep-name').text().split(/ /)[0];
-        var _s_name = $(this).parents('.ui-state-default').find('.step_name').text();
+        var _ss_name = $(this).parents(".substep-list").find(".substep-name").text().split(/ /)[0];
+        var _s_name = $(this).parents(".ui-state-default").find(".step_name").text();
         var _name = undefined;
         if (isInstanceName(_s_name)){
             _name = _s_name;
@@ -163,25 +160,24 @@ var elements_subscriptor = function() {
             width: 400,
             buttons: {
                     "Yes": function () {
-                    $(this).dialog('close');
+                    $(this).dialog("close");
                     window.location.replace(redir_url);
                 },
                     "No": function () {
-                    $(this).dialog('close');
+                    $(this).dialog("close");
                 }
             }
         });
     });
 
-    function fader(el, callback) {
+    function fader(el) {
         el.fadeTo("fast", .5).removeAttr("href");
-        callback();
     }
 
-    $('.raw_cut_step').on('click', function(event){
+    $(".raw_cut_step").on("click", function(event) {
         event.stopPropagation();
         $(this).text("Processing");
-        var step_id = $(this).parents('.ui-state-default').attr('stepID');
+        var step_id = $(this).parents(".ui-state-default").attr("stepID");
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
@@ -196,108 +192,17 @@ var elements_subscriptor = function() {
         });
     });
 
-    $('.raw_cut_lesson').on('click', function(event){
-        event.stopPropagation();
-        $(this).text("Processing");
-        var lesson_id = $(this).parents('.ui-state-default').attr('lessonID');
-        $.ajax({
-            beforeSend: cookie_csrf_updater,
-            type: "POST",
-            url: "/create_lesson_montage/" + lesson_id + "/",
-            error: function(data){
-                alert(data.responseText);
-            }
+    function start_rec() {
+        const elem = $(".start-recording");
+        elem.text("Starting...").click(function () {
+            setTimeout(fader, 0, elem);
+            return false;
         });
-    });
-
-    $('.start-montage').on('click', function(event){
-        event.stopPropagation();
-        $(this).hide();
-        var elem = $(this);
-        var redir_url = $(this).data("urllink");
-        var ss_id = $(this).data("ss_id");
-        $.ajax({
-            beforeSend: cookie_csrf_updater,
-            type: "POST",
-            url: redir_url,
-
-            data: {
-                "action": "start_montage"
-            },
-            success: function(data){
-                $('.substep-list').each(function() {
-                    if ($(this).data("ss_id") === ss_id) {
-                        $(this).css("background", "#141628");
-                        $(this).css("pointer-events", "none");
-                        $(this).css("cursor", "default");
-                        $(this).data('ss_locked', "True");
-                        $(this).children('.show-montage').show();
-                    }
-                });
-            },
-            error: function(data){
-                alert(data.responseText);
-                elem.show();
-            }
+        elem.off();
+        $(window).on("beforeunload", function () {
+            return "Are you sure want to leave page? Recording will stop on leave.";
         });
-    });
-
-    $(window).on('load', function(event){
-        var poller_id;
-       $(this).on('unload', function(){
-            clearInterval(poller_id);
-            event.preventDefault();
-        });
-        poller_id = setInterval(function(){
-            $('.substep-list').each(function(index, value) {
-                var ss_id = $(this).data("ss_id");
-                var ss_islocked = $(this).data("ss_locked");
-
-                var elem = $(this);
-                var show_montage = elem.children('.show-montage');
-                var start_montage = elem.children('.start-montage');
-
-                $.ajax({
-                    beforeSend: cookie_csrf_updater,
-                    type: "GET",
-                    url: "/substep_status/" + ss_id,
-                    dataType: "json",
-
-                    success: function(data){
-                        if (data.islocked) {
-                            elem.css("background", "#141628");
-                            elem.css("pointer-events", "none");
-                            elem.css("cursor", "default");
-                            elem.data('ss_locked', "True");
-                        } else if (data.isexists){
-                            elem.css("background", "#FFFFFF");
-                            elem.css("pointer-events", "auto");
-                            elem.data('ss_locked', "False");
-                            start_montage.hide();
-                            show_montage.show();
-                        } else if (!data.isexists){
-                            elem.data('ss_locked', "False");
-                            elem.css("background", "#FFFFFF");
-                            elem.css("pointer-events", "auto");
-                            elem.data('ss_locked', "False");
-                            show_montage.hide();
-                            start_montage.show();
-                        }
-                    },
-                });
-            });
-        }, 1000);
-    });
-
-    $('.start-recording').off().on('click', function(){
-        $(this).text("Starting...").click(function(){
-                return false;
-        });
-        $(this).off();
-        $(window).on('beforeunload', function(){
-                return "Are you sure want to leave page? Recording will stop on leave.";
-        });
-        $(window).on('unload', function(){
+        $(window).on("unload", function () {
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 type: "GET",
@@ -309,74 +214,179 @@ var elements_subscriptor = function() {
             beforeSend: cookie_csrf_updater,
             type: "POST",
             url: window.location.pathname,
-
             data: {
                 "action": "start"
             },
-            success: function(data){
-                var el = $(this);
-                setTimeout(fader, 0, el);
+            success: function () {
+                isRecording = true;
                 record_started(elements_subscriptor);
 
             },
-            error: function(data){
+            error: function (data) {
                 $(window).off();
                 alert(data.responseText);
                 record_start_failed(elements_subscriptor);
             }
         });
-    });
+    }
 
-    $('.stop-recording').off().on('click', function(){
-        $(this).text('Preparing...').click(function(){
-                return false;
+    function stop_rec() {
+        const elem = $(".stop-recording");
+        elem.text("Preparing...").click(function () {
+            return false;
         });
-        $(this).off();
+        elem.off();
         $(window).off();
-        var el = $(this);
         $.ajax({
-            beforeSend:function(jqXHR, settings) {
+            beforeSend: function (jqXHR) {
                 cookie_csrf_updater(jqXHR);
-                setTimeout(fader, 0, el);
+                setTimeout(fader, 0, elem);
             },
             type: "POST",
             url: window.location.pathname,
-
-
             data: {
                 "action": "stop"
             },
-            success: function(data){
+            success: function () {
                 record_stopped(elements_subscriptor);
+                isRecording = false;
                 location.reload(true);
 
             },
-            error: function(data){
+            error: function (data) {
                 alert(data.responseText);
             }
 
         });
+    }
+
+    $(".raw_cut_lesson").on("click", function(event){
+        event.stopPropagation();
+        $(this).text("Processing");
+        const lesson_id = $(this).parents(".ui-state-default").attr("lessonID");
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: "/create_lesson_montage/" + lesson_id + "/",
+            error: function(data){
+                alert(data.responseText);
+            }
+        });
     });
 
-    $('#rename-step-form, #rename-lesson-form').off().on('keypress', function(e) {
+    $(".start-montage").on("click", function(event){
+        event.stopPropagation();
+        $(this).hide();
+        const elem = $(this);
+        const redir_url = $(this).data("urllink");
+        const ss_id = $(this).data("ss_id");
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: redir_url,
+            data: {
+                "action": "start_montage"
+            },
+            success: function(data){
+                $(".substep-list").each(function() {
+                    if ($(this).data("ss_id") === ss_id) {
+                        $(this).css("background", "#141628")
+                            .css("pointer-events", "none")
+                            .css("cursor", "default")
+                            .data("ss_locked", "True");
+                        $(this).children(".show-montage").show();
+                    }
+                });
+            },
+            error: function(data){
+                alert(data.responseText);
+                elem.show();
+            }
+        });
+    });
+
+    $(window).on("load", function(event){
+        var poller_id;
+       $(this).on("unload", function(){
+            clearInterval(poller_id);
+            event.preventDefault();
+        });
+        poller_id = setInterval(function(){
+            $(".substep-list").each(function(index, value) {
+                const ss_id = $(this).data("ss_id");
+                const elem = $(this);
+                const show_montage = elem.children(".show-montage");
+                const start_montage = elem.children(".start-montage");
+
+                $.getJSON("/substep_status/" + ss_id,
+                    function(data){
+                        if (data.islocked) {
+                            elem.css("background", "#141628")
+                                .css("pointer-events", "none")
+                                .css("cursor", "default")
+                                .data("ss_locked", "True");
+                        } else if (data.isexists) {
+                            elem.css("background", "#FFFFFF")
+                                .css("pointer-events", "auto")
+                                .data("ss_locked", "False");
+                            start_montage.hide();
+                            show_montage.show();
+                        } else {
+                            elem.css("background", "#FFFFFF")
+                                .css("pointer-events", "auto")
+                                .data("ss_locked", "False");
+                            show_montage.hide();
+                            start_montage.show();
+                        }
+                    }
+                );
+            });
+        }, 1000);
+    });
+
+    $(document).keypress(function (event) {
+        if (event.which === 32) {
+            event.preventDefault();
+        }
+    });
+
+    $(document).keyup(function (event) {
+        event.stopImmediatePropagation();
+        if (event.which === 32) {
+            if (!isRecording)
+                start_rec();
+            else
+                stop_rec();
+        }
+    });
+
+    $(".start-recording").off().on("click", function(){
+        start_rec();
+    });
+
+    $(".stop-recording").off().on("click", function(){
+        stop_rec();
+    });
+
+    $("#rename-step-form, #rename-lesson-form").off().on("keypress", function(e) {
         elem = $(this);
-        var stepRenaming = (elem.attr("id") == "rename-step-form");
-        if (e.keyCode == 13 && !e.shiftKey) {
+        var stepRenaming = (elem.attr("id") === "rename-step-form");
+        if (e.keyCode === 13 && !e.shiftKey) {
             e.preventDefault();
-            row = elem.parents('.ui-state-default');
-            var name_new = elem.parents('.ui-state-default').find('#input-field-name').val();
+            row = elem.parents(".ui-state-default");
+            var name_new = elem.parents(".ui-state-default").find("#input-field-name").val();
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 type: "POST",
                 url: "/rename_elem/",
 
                 data: {
-                    "id": stepRenaming ? elem.parents('.ui-state-default').attr('stepID') : elem.parents('.ui-state-default').attr('lessonID'),
-                    "type": stepRenaming ? 'step' : 'lesson',
+                    "id": stepRenaming ? elem.parents(".ui-state-default").attr("stepID") : elem.parents(".ui-state-default").attr("lessonID"),
+                    "type": stepRenaming ? "step" : "lesson",
                     "name_new": name_new
                 },
                 success: function (data) {
-                    $('#cancel-rename').trigger( "click", name_new );
+                    $("#cancel-rename").trigger( "click", name_new );
                     elements_subscriptor();
                 },
                 error: function(request, status, errorThrown) {
@@ -386,13 +396,13 @@ var elements_subscriptor = function() {
         }
     });
 
-    $('#rename-substep-template-form').off().on('keypress', function(e) {
+    $("#rename-substep-template-form").off().on("keypress", function(e) {
         elem = $(this);
         var stepRenaming = (elem.attr("id") === "rename-step-form");
         if (e.keyCode === 13 && !e.shiftKey) {
             e.preventDefault();
-            var name_new = elem.find('#input-field-name').val();
-            console.log(name_new);
+            const name_new = elem.find("#input-field-name").val();
+
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 type: "POST",
@@ -401,32 +411,31 @@ var elements_subscriptor = function() {
                 data: {
                     "template": name_new
                 },
-                success: function (data) {
-                    $('#cancel-rename').trigger( "click", name_new );
+                success: function () {
+                    $("#cancel-rename").trigger( "click", name_new );
                     elements_subscriptor();
                 },
-                error: function(request, status, errorThrown) {
+                error: function(request) {
                     alert(request.responseText);
                 }
             });
         }
     });
 
-    $('#edit-text').click(function() {
-        $('.form-edit-text').toggleClass('hiddenForm');
+    $("#edit-text").click(function() {
+        $(".form-edit-text").toggleClass("hiddenForm");
     });
 };
 
 
-var func_listener = function(){
+const func_listener = function(){
 
     elements_subscriptor();
 
-
     setInterval(function() {
         var seconds = new Date().getTime() / 1000;
-        var elem = $('#timer');
-        elem.text(rectime(parseInt(seconds - elem.data('starttime'))));
+        var elem = $("#timer");
+        elem.text(rectime(parseInt(seconds - elem.data("starttime"))));
     }, 1000); // 60 * 1000 milsec
 
    function noBack(){window.history.forward();}
@@ -444,11 +453,11 @@ function rectime(sec) {
 	var hr = Math.floor(sec / 3600);
 	var min = Math.floor((sec - (hr * 3600))/60);
 	sec -= ((hr * 3600) + (min * 60));
-	sec += ''; min += '';
-	while (min.length < 2) {min = '0' + min;}
-	while (sec.length < 2) {sec = '0' + sec;}
-	hr = (hr)?':'+hr:'';
-	return hr + min + ':' + sec;
+	sec += ""; min += "";
+	while (min.length < 2) {min = "0" + min;}
+	while (sec.length < 2) {sec = "0" + sec;}
+	hr = (hr)?":"+hr:"";
+	return hr + min + ":" + sec;
 }
 
 

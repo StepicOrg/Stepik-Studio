@@ -1,6 +1,7 @@
 import logging
-import subprocess
 import os
+import subprocess
+
 import psutil
 
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
@@ -90,14 +91,8 @@ class FileSystemClient(object):
             self.logger.warning('Can\'t get information about total disk capacity: %s', str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, str(e)), None
 
-    def is_file_valid(self, file: str) -> bool:
-        return os.path.isfile(file)
-
-    def is_dir_valid(self, path: str) -> bool:
-        return os.path.isdir(path)
-
     def remove_file(self, file: str) -> InternalOperationResult:
-        if not self.is_file_valid(file):
+        if not os.path.isfile(file):
             self.logger.warning('Can\'t delete non-existing file %s ', file)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
@@ -114,3 +109,11 @@ class FileSystemClient(object):
             return []
 
         return [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+
+    def create_recursively(self, path: str) -> InternalOperationResult:
+        try:
+            os.makedirs(path, exist_ok=True, mode=777)
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+        except Exception as e:
+            self.logger.error('Can\'t create dirs recursively: %s', e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
