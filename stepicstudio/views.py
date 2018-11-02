@@ -608,9 +608,9 @@ def rename_elem(request):
         rest_data = dict(request.POST.lists())
         if 'step' in rest_data['type'] or 'lesson' in rest_data['type']:
             if 'step' in rest_data['type']:
-                obj_to_rename = Step.objects.get(id=rest_data['id'].first())
+                obj_to_rename = Step.objects.get(id=rest_data['id'][0])
             else:
-                obj_to_rename = Lesson.objects.get(id=rest_data['id'].first())
+                obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
 
             logger.debug('Renaming: %s', obj_to_rename.os_path)
             tmp_step = copy.copy(obj_to_rename)
