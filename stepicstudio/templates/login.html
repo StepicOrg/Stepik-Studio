@@ -13,16 +13,16 @@
 
 </head>
 <body>
-    <form action="/auth/" method="post" class = "basic-grey">
+    <form action="/auth/" method="post" class = "basic_grey">
      {%  csrf_token %}
         {% if error %}
             <span style="background: #cd0a0a">Incorrect username or password</span>
         {% endif %}
         <label for="username"> User name:</label>
-        <input type="text" name = "username" value = "" id = "username" class = "basic-grey" >
+        <input type="text" name = "username" value = "" id = "username" class = "basic_grey" >
         <br>
         <label for="password">Password: </label>
-        <input type="password" name="password" value="" id = "password" class = "basic-grey" >
+        <input type="password" name="password" value="" id = "password" class = "basic_grey" >
         <br>
         <input type = "submit" name = "button" value = "login" class="button"/>
     </form>

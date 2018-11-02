@@ -12,25 +12,25 @@
             </h3>
             <br>
             <div ALIGN="CENTER">
-                <h1><span class="start-recording">Start Recording </span>
+                <h1><span class="start_recording">Start Recording </span>
                 </h1>
                 <h5><span class="tip-text">Click the mouse or press the spacebar to start</span>
                 </h5>
             </div>
             <br>
                 {% for SS in SubSteps  %}
-                       <div class="substep-list" data-ss_id="{{ SS.id }}" data-ss_locked="{{ SS.is_locked }}" {% if SS.is_locked %} style="background: #141628; pointer-events: none; cursor: default" {% endif %}>
-                               <span class="substep-name">{{ SS.name|to_custom_name:tmpl_name}}
+                       <div class="substep_list" data-ss_id="{{ SS.id }}" data-ss_locked="{{ SS.is_locked }}" {% if SS.is_locked %} style="background: #141628; pointer-events: none; cursor: default" {% endif %}>
+                               <span class="substep_name">{{ SS.name|to_custom_name:tmpl_name}}
                                </span>
-                               |<span class="showcontent" data-ss_id="{{ SS.id }}"><img src="/static/icons/video-camera.svg"></span>|
-                                <span class="showscreencontent" data-ss_id="{{ SS.id }}"><img src="/static/icons/display.svg"></span>
+                               |<span class="show_content" data-ss_id="{{ SS.id }}"><img src="/static/icons/video-camera.svg"></span>|
+                                <span class="show_screen_content" data-ss_id="{{ SS.id }}"><img src="/static/icons/display.svg"></span>
                                 {% if SS.automontage_exist %}|
-                                <span class="show-montage"data-ss_id="{{ SS.id }}"><img src="/static/icons/Film_strip_Silhouette_24.png"></span>
-                                <a target="_blank" class="start-montage" hidden="true" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
+                                <span class="show_montage" data-ss_id="{{ SS.id }}"><img src="/static/icons/Film_strip_Silhouette_24.png"></span>
+                                <a target="_blank" class="start_montage" hidden="true" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
                                 {% endif %}
                                 {% if not SS.automontage_exist %}|
-                                <span class="show-montage" hidden="true" data-ss_id="{{ SS.id }}"><img src="/static/icons/Film_strip_Silhouette_24.png"></span>
-                                <a target="_blank" class="start-montage" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
+                                <span class="show_montage" hidden="true" data-ss_id="{{ SS.id }}"><img src="/static/icons/Film_strip_Silhouette_24.png"></span>
+                                <a target="_blank" class="start_montage" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
                                 {% endif %}
                                | V: {% if SS.duration > 0 %} {{ SS.duration | sec_to_time}} {% else %} Err! {% endif %}
                                | Scr: {% if SS.screencast_duration > 0 %} {{ SS.screencast_duration | sec_to_time}} {% else %} Err! {% endif %}
@@ -51,7 +51,7 @@
             <p>Video Editing Notes:</p>
             {{ Step.text_data | formatting_text}}
             <input id = "edit-text" type="submit" value="Edit">
-            <div class="form-edit-text hiddenForm">
+            <div class="form-edit-text hidden_form">
                 <form action="/notes/step/{{ Step.id }}/" method="POST">
                     {% csrf_token %}
                 <textarea name="note" cols=60 rows=10>{{ Step.text_data }}
@@ -63,7 +63,7 @@
             <div ALIGN = center>
             <h3> Recording started</h3>
             <br>
-            <h1><a href="{{ postUrl }}stop/" class="stop-recording">Stop Recording</a>
+            <h1><a href="{{ postUrl }}stop/" class="stop_recording">Stop Recording</a>
             </h1>
             <div id = "timer" data-starttime="{{ StartTime }}">00:00</div>
             </div>

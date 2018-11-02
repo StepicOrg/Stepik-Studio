@@ -51,20 +51,20 @@ var cookie_csrf_updater = function(xhr){
     }
 
 function record_started(callback) {
-    $(".start-recording").removeClass("start-recording").addClass("stop-recording").text("Recording");
+    $(".start_recording").removeClass("start_recording").addClass("stop_recording").text("Recording");
     var curr_sec_from_epoch = new Date().getTime() / 1000;
-    $(".stop-recording").append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
+    $(".stop_recording").append('<div id = "timer" data-starttime='+curr_sec_from_epoch+'>00:00</div>');
     $(".tip-text").text("Click the mouse or press the spacebar to stop");
     callback();
 }
 
 function record_start_failed(callback) {
-    $(".start-recording").text("Start Recording");
+    $(".start_recording").text("Start Recording");
     callback();
 }
 
 function record_stopped(callback) {
-    $(".stop-recording").removeClass("stop-recording").addClass("start-recording").text("Start Recording");
+    $(".stop_recording").removeClass("stop_recording").addClass("start_recording").text("Start Recording");
     $(".tip-text").text("Click the mouse or press the spacebar to start");
     callback();
 }
@@ -148,7 +148,7 @@ var elements_subscriptor = function() {
                 alert("TEMPLATE ERROR!");
             }
             elements_subscriptor();
-            $("#input-field-name").val(name);
+            $("#input_field_name").val(name);
             });
         });
 
@@ -157,8 +157,8 @@ var elements_subscriptor = function() {
             deleted_element = upd_deleted_el(new_name, deleted_element);
             console.log("deleted_element:" , deleted_element);
             console.log("new_element:", new_name);
-            $(this).parents(".input-step-name-field").html(deleted_element);
-            $(this).parents(".input-lesson-name-field").html(deleted_element);
+            $(this).parents(".input_step_name_field").html(deleted_element);
+            $(this).parents(".input_lesson_name_field").html(deleted_element);
             $(this).parents(".rename-substep-template-field").html(deleted_element);
             elements_subscriptor();
         });
@@ -166,9 +166,9 @@ var elements_subscriptor = function() {
 
 
     $(".lesson_info").off().on("click", function() {
-        $(this).parent().find(".lesson_path").toggleClass("hiddenInfo");
-        $(this).parent().find(".lesson_info_link").toggleClass("hiddenInfo");
-        $(this).parent().find("a").toggleClass("hiddenInfo");
+        $(this).parent().find(".lesson_path").toggleClass("hidden_info");
+        $(this).parent().find(".lesson_info_link").toggleClass("hidden_info");
+        $(this).parent().find("a").toggleClass("hidden_info");
     });
 
     $(".delete_button").on("click", function(event) {
@@ -181,7 +181,7 @@ var elements_subscriptor = function() {
         }
 
         var redir_url = $(this).find(".delete-url").data("urllink");
-        var _ss_name = $(this).parents(".substep-list").find(".substep-name").text().split(/ /)[0];
+        var _ss_name = $(this).parents(".substep_list").find(".substep_name").text().split(/ /)[0];
         var _s_name = $(this).parents(".ui-state-default").find(".step_name").text();
         var _name = undefined;
         if (isInstanceName(_s_name)){
@@ -216,19 +216,19 @@ var elements_subscriptor = function() {
         });
     });
 
-    $(".showcontent").on("click", function (event) {
+    $(".show_content").on("click", function (event) {
         event.stopPropagation();
         const ss_id = $(this).data("ss_id");
         show_video_popup("/showcontent/" + ss_id +"/", $(this));
     });
 
-    $(".showscreencontent").on("click", function (event) {
+    $(".show_screen_content").on("click", function (event) {
         event.stopPropagation();
         const ss_id = $(this).data("ss_id");
         show_video_popup("/showscreencontent/" + ss_id +"/", $(this));
     });
 
-    $(".show-montage").on("click", function (event) {
+    $(".show_montage").on("click", function (event) {
         event.stopPropagation();
         const ss_id = $(this).data("ss_id");
         show_video_popup("/show_montage/" + ss_id +"/", $(this), width=1800, height=600);
@@ -257,7 +257,7 @@ var elements_subscriptor = function() {
     });
 
     function start_rec() {
-        const elem = $(".start-recording");
+        const elem = $(".start_recording");
         elem.text("Starting...").click(function () {
             setTimeout(fader, 0, elem);
             return false;
@@ -293,11 +293,11 @@ var elements_subscriptor = function() {
     }
 
     $(window).on("beforeunload", function () {
-         $(".start-recording").off();
+         $(".start_recording").off();
     });
 
     function stop_rec() {
-        const elem = $(".stop-recording");
+        const elem = $(".stop_recording");
         elem.text("Preparing...").click(function () {
             return false;
         });
@@ -339,7 +339,7 @@ var elements_subscriptor = function() {
         });
     });
 
-    $(".start-montage").on("click", function(event){
+    $(".start_montage").on("click", function(event){
         event.stopPropagation();
         $(this).hide();
         const elem = $(this);
@@ -353,13 +353,13 @@ var elements_subscriptor = function() {
                 "action": "start_montage"
             },
             success: function(data){
-                $(".substep-list").each(function() {
+                $(".substep_list").each(function() {
                     if ($(this).data("ss_id") === ss_id) {
                         $(this).css("background", "#141628")
                             .css("pointer-events", "none")
                             .css("cursor", "default")
                             .data("ss_locked", "True");
-                        $(this).children(".show-montage").show();
+                        $(this).children(".show_montage").show();
                     }
                 });
             },
@@ -377,11 +377,11 @@ var elements_subscriptor = function() {
             event.preventDefault();
         });
         poller_id = setInterval(function(){
-            $(".substep-list").each(function(index, value) {
+            $(".substep_list").each(function(index, value) {
                 const ss_id = $(this).data("ss_id");
                 const elem = $(this);
-                const show_montage = elem.children(".show-montage");
-                const start_montage = elem.children(".start-montage");
+                const show_montage = elem.children(".show_montage");
+                const start_montage = elem.children(".start_montage");
 
                 $.getJSON("/substep_status/" + ss_id,
                     function(data){
@@ -426,27 +426,27 @@ var elements_subscriptor = function() {
         event.stopImmediatePropagation();
         if (event.which === 32) {
             if (!isRecording)
-                $(".start-recording").trigger("click");
+                $(".start_recording").trigger("click");
             else
-                $(".stop-recording").trigger("click");
+                $(".stop_recording").trigger("click");
         }
     });
 
-    $(".start-recording").off().on("click", function(){
+    $(".start_recording").off().on("click", function(){
         start_rec();
     });
 
-    $(".stop-recording").off().on("click", function(){
+    $(".stop_recording").off().on("click", function(){
         stop_rec();
     });
 
-    $("#rename-step-form, #rename-lesson-form").off().on("keypress", function(e) {
+    $("#rename_step_form, #rename_lesson_form").off().on("keypress", function(e) {
         elem = $(this);
-        var stepRenaming = (elem.attr("id") === "rename-step-form");
+        var stepRenaming = (elem.attr("id") === "rename_step_form");
         if (e.keyCode === 13 && !e.shiftKey) {
             e.preventDefault();
             row = elem.parents(".ui-state-default");
-            var name_new = elem.parents(".ui-state-default").find("#input-field-name").val();
+            var name_new = elem.parents(".ui-state-default").find("#input_field_name").val();
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 type: "POST",
@@ -470,10 +470,10 @@ var elements_subscriptor = function() {
 
     $("#rename-substep-template-form").off().on("keypress", function(e) {
         elem = $(this);
-        var stepRenaming = (elem.attr("id") === "rename-step-form");
+        var stepRenaming = (elem.attr("id") === "rename_step_form");
         if (e.keyCode === 13 && !e.shiftKey) {
             e.preventDefault();
-            const name_new = elem.find("#input-field-name").val();
+            const name_new = elem.find("#input_field_name").val();
 
             $.ajax({
                 beforeSend: cookie_csrf_updater,
@@ -495,7 +495,7 @@ var elements_subscriptor = function() {
     });
 
     $("#edit-text").click(function() {
-        $(".form-edit-text").toggleClass("hiddenForm");
+        $(".form-edit-text").toggleClass("hidden_form");
     });
 };
 
