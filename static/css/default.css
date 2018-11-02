@@ -9,11 +9,11 @@
 
         }
 
-        .hiddenForm {
+        .hidden_form {
             display: none;
         }
 
-        #draggableCheckbox {
+        #draggable_checkbox {
             text-align: right;
         }
 
@@ -64,15 +64,15 @@
             cursor: pointer;
         }
 
-        .substep-list {
+        .substep_list {
             margin: 5px 5px 15px 5px;
             border-bottom: 1px dotted;
 
         }
 
-        .substep-name {
+        .substep_name {
             display: inline-block;
-            width: 300px;
+            width: 270px;
         }
 
 
@@ -131,15 +131,15 @@
             font-size: 22px;
         }
 
-        .stop-recording {
+        .stop_recording {
             cursor: pointer;
         }
 
-        .start-recording {
+        .start_recording {
             cursor: pointer;
         }
 
-        .start-montage {
+        .start_montage {
             cursor: pointer;
         }
 
@@ -159,7 +159,7 @@
             width:100%;
         }
 
-        #rename-step-form, #rename-lesson-form {
+        #rename_step_form, #rename_lesson_form {
             width:100%;
             height:auto;
             margin:auto;
@@ -179,16 +179,16 @@
             font-weight: bold;
         }
 
-        .helper-text {
+        .helper_text {
             font-size: 0.7em;
         }
 
-        .input-step-name-field, .input-lesson-name-field {
+        .input_step_name_field, .input_lesson_name_field {
             display: inline;
             width:auto;
         }
 
-        #input-field-name {
+        #input_field_name {
             width:80%;
             height: 40px;
         }
@@ -203,7 +203,7 @@
             display: inline-block;
         }
 
-        .hiddenInfo {
+        .hidden_info {
             display: none;
         }
 
@@ -218,6 +218,22 @@
             padding-left: 5px;
         }
 
+        .show_content {
+            cursor: pointer;
+        }
+
+        .show_screen_content {
+            cursor: pointer;
+        }
+
+        .show_montage {
+            cursor: pointer;
+        }
+
+        .video_popup {
+            position: center;
+        }
+
         .right {
             float: right;
             width: auto;
@@ -225,7 +241,7 @@
 
         /* Basic Grey */
 
-.basic-grey {
+.basic_grey {
     margin-left:auto;
     margin-right:auto;
     max-width: 500px;
@@ -234,7 +250,7 @@
     text-shadow: 1px 1px 1px #FFF;
     border:3px solid #eeeeee;
 }
-.basic-grey h1 {
+.basic_grey h1 {
     font-size: 25px;
     padding: 0px 0px 10px 40px;
     display: block;
@@ -242,15 +258,15 @@
     margin: -10px -15px 30px -10px;;
     color: #888;
 }
-.basic-grey h1>span {
+.basic_grey h1>span {
     display: block;
     font-size: 11px;
 }
-.basic-grey label {
+.basic_grey label {
     display: block;
     margin: 0px;
 }
-.basic-grey label>span {
+.basic_grey label>span {
     float: left;
     width: 20%;
     text-align: right;
@@ -258,7 +274,7 @@
     margin-top: 10px;
     color: #888;
 }
-.basic-grey input[type="text"], .basic-grey input[type="password"],.basic-grey textarea, .basic-grey select {
+.basic_grey input[type="text"], .basic_grey input[type="password"],.basic_grey textarea, .basic_grey select {
     border: 1px solid #DADADA;
     color: #888;
     height: 30px;
@@ -274,10 +290,10 @@
     -moz-box-shadow: inset 0px 1px 4px #ECECEC;
     -webkit-box-shadow: inset 0px 1px 4px #ECECEC;
 }
-.basic-grey textarea{
+.basic_grey textarea{
     padding: 5px 3px 3px 5px;
 }
-.basic-grey select {
+.basic_grey select {
     appearance:none;
     -webkit-appearance:none;
     -moz-appearance: none;
@@ -287,10 +303,10 @@
     height: 35px;
     line-height: 25px;
 }
-.basic-grey textarea{
+.basic_grey textarea{
     height:100px;
 }
-.basic-grey .button {
+.basic_grey .button {
     font-size: 19px;
     background: #7ab06f;
     border: none;
@@ -304,7 +320,7 @@
     font-family: "Myriad Pro Light", "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
     font-weight:lighter;
 }
-.basic-grey .button:hover {
+.basic_grey .button:hover {
     background: #528446
 }
 

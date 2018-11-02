@@ -1,11 +1,10 @@
-from stepicstudio.models import Course, Lesson, Step, SubStep, UserProfile, CameraStatus
+from stepicstudio.models import Course, CameraStatus
 from stepicstudio.const import *
 
 
 def url_to_args(url):
     answ = url.split('/')
     args = {}
-    # print(answ, COURSE_ULR_NAME)
     if COURSE_ULR_NAME in answ:
         id_ = answ[answ.index(COURSE_ULR_NAME) + 1]
         course = Course.objects.get(id=id_)

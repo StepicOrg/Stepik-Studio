@@ -48,6 +48,13 @@ class TaskManager(object):
                            launch_time,
                            datetime.now(self.scheduler.timezone))
 
+    def run_with_delay(self, job: callable, args, delay=0):
+        self.scheduler.add_job(func=job,
+                               trigger='date',
+                               next_run_time=datetime.now() + timedelta(seconds=delay),
+                               args=args,
+                               misfire_grace_time=misfire_grace_time)
+
     def run_while_idle_repeatable(self, job: callable, single=True):
         if single:
             for task in self.scheduler.get_jobs():
