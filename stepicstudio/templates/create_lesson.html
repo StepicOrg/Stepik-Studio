@@ -2,7 +2,7 @@
 {% if Recording == False %}
     {%  block content %}
 
-    <form action="/add_lesson/" method = "post" > {% csrf_token %}
+    <form action="/add-lesson/" method = "post" > {% csrf_token %}
         <ul>
             {{ form.as_ul }}
         </ul>
