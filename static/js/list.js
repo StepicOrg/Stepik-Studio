@@ -114,7 +114,7 @@ var elements_subscriptor = function() {
                 beforeSend: cookie_csrf_updater,
 
                 type: "POST",
-                url: "/reorder_lists/",
+                url: "/reorder-lists/",
 
                 data: {"type": reorderingType, "order": $(this).sortable("toArray"), "ids": $(this).sortable("toArray",
                     {attribute: reorderingSteps ? "stepID" : "lessonID"})},
@@ -231,7 +231,7 @@ var elements_subscriptor = function() {
     $(".show_montage").on("click", function (event) {
         event.stopPropagation();
         const ss_id = $(this).data("ss_id");
-        show_video_popup("/show_montage/" + ss_id +"/", $(this), width=1800, height=600);
+        show_video_popup("/show-montage/" + ss_id +"/", $(this), width=1800, height=600);
     });
 
     function fader(el) {
@@ -245,7 +245,7 @@ var elements_subscriptor = function() {
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
-            url: "/create_step_montage/" + step_id + "/",
+            url: "/create-step-montage/" + step_id + "/",
 
             data: {
                 "action": "create_step_montage"
@@ -280,7 +280,7 @@ var elements_subscriptor = function() {
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "GET",
-            url: "/autofocus_camera/",
+            url: "/autofocus-camera/",
             timeout: 4000,
 
             success: function () {
@@ -318,7 +318,7 @@ var elements_subscriptor = function() {
             return "Are you sure want to leave page? Recording will stop on leave.";
         });
         $(window).on("unload", function () {
-            navigator.sendBeacon("/stop_recording/");
+            navigator.sendBeacon("/stop-recording/");
         });
 
         $.ajax({
@@ -382,7 +382,7 @@ var elements_subscriptor = function() {
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
-            url: "/create_lesson_montage/" + lesson_id + "/",
+            url: "/create-lesson-montage/" + lesson_id + "/",
             error: function(data){
                 alert(data.responseText);
             }
@@ -433,7 +433,7 @@ var elements_subscriptor = function() {
                 const show_montage = elem.children(".show_montage");
                 const start_montage = elem.children(".start_montage");
 
-                $.getJSON("/substep_status/" + ss_id,
+                $.getJSON("/substep-status/" + ss_id,
                     function(data){
                         if (data.islocked) {
                             elem.css("background", "#141628")
@@ -460,7 +460,7 @@ var elements_subscriptor = function() {
     });
 
     $(document).keypress(function (event) {
-        if (event.which === 32) {
+        if (event.which === 32 && event.target.type !== "text" && event.target.type !== "textarea") {
             event.preventDefault();
         }
     });
@@ -469,6 +469,11 @@ var elements_subscriptor = function() {
         if ($(".modal").length > 0) { //to disable handler when dialog is open
             return false;
         }
+
+        if (event.target.type === "text" || event.target.type === "textarea")  {
+            return false;
+        }
+
         if (!$('br').is('.step_view')) { //to disable handler on other pages
             return false;
         }
@@ -500,7 +505,7 @@ var elements_subscriptor = function() {
             $.ajax({
                 beforeSend: cookie_csrf_updater,
                 type: "POST",
-                url: "/rename_elem/",
+                url: "/rename-elem/",
 
                 data: {
                     "id": stepRenaming ? elem.parents(".ui-state-default").attr("stepID") : elem.parents(".ui-state-default").attr("lessonID"),

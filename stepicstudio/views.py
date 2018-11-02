@@ -270,7 +270,6 @@ def show_step(request, course_id, lesson_id, step_id):
             'postUrl': request.path,
             'SubSteps': all_substeps,
             'tmpl_name': UserProfile.objects.get(user=request.user.id).substep_template,
-
             }
     args.update({'Recording': camera_curr_status})
     args.update(csrf(request))
@@ -308,17 +307,24 @@ def update_substep_tmpl(request):
     return HttpResponse('Ok')
 
 
-# TODO: TOKEN at POSTrequest to statistic server is insecure
-# TODO: Off by one error here with substep naming need fix ( no Step1From** will be created)
 @login_required(login_url='/login/')
 def start_new_step_recording(request, course_id, lesson_id, step_id) -> InternalOperationResult:
     substep = SubStep()
     substep.from_step = step_id
-    substep_index = SubStep.objects.filter(from_step=step_id).count() + 1
+    target_substeps = SubStep.objects.filter(from_step=step_id)
+
+    try:
+        last_ss_name = target_substeps.latest('start_time').name
+        substep_index = int(re.search(r'\d+', last_ss_name).group()) + 1  # index of latest substep
+    except:
+        substep_index = 1
+
     substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
-    while SubStep.objects.filter(name=substep.name).count():
+
+    while target_substeps.filter(name=substep.name).count():
         substep_index += 1
         substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+
     substep.save()
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
