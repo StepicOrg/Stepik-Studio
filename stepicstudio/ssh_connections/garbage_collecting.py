@@ -32,6 +32,7 @@ def collect_garbage():
                             bytes2human(size))
                 substep.delete()
 
+    tablet_client.close()
     logger.info('Collected %s of garbage (%s folders).\n GC delay: %s days.',
                 bytes2human(result_size),
                 ss_count,
