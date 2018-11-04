@@ -10,6 +10,7 @@ from stepicstudio.operations_statuses.operation_result import InternalOperationR
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
 from stepicstudio.scheduling.task_manager import TaskManager
+from stepicstudio.ssh_connections import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
@@ -89,7 +90,10 @@ def stop_cam_recording() -> True | False:
                     stop_screen_status.status is not ExecutionStatus.SUCCESS:
         return False
 
-    TabletScreenRecorder().download_last_recording(ServerCameraRecorder().last_processed_path)
+    tablet_client = TabletClient()
+    tablet_client.download_dir(TabletScreenRecorder().last_processed_path,
+                               ServerCameraRecorder().last_processed_path)
+    tablet_client.close()
 
     professor_video = os.path.join(ServerCameraRecorder().last_processed_path,
                                    ServerCameraRecorder().last_processed_file)

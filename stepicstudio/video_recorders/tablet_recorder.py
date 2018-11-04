@@ -71,6 +71,3 @@ class TabletScreenRecorder(object):
         except Exception as e:
             self.__logger.warning('Can\'t get screen recorder status: %s', e)
             return False
-
-    def download_last_recording(self, local_path: str):
-        self.__tablet_client.download_dir(self.last_processed_path, local_path)
