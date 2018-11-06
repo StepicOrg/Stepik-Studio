@@ -10,7 +10,7 @@ from singleton_decorator import singleton
 from tzlocal import get_localzone
 
 logging.getLogger('apscheduler').setLevel(logging.WARNING)
-logger = logging.getLogger('randomname')
+logger = logging.getLogger(__name__)
 
 # wait for resheduling missed tasks:
 MISFIRE_GRACE_TIME = 60 * 60 * 24 * 2  # 2 days in seconds
