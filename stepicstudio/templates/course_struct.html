@@ -10,7 +10,7 @@
             {{ L.name }}<br>
             {% for S, ind in all_steps %}
                 {% if S.from_lesson == L.id %}
-                    &nbsp;&nbsp;&nbsp;&nbsp;{{ S.name }} {% if ind == False %} (Not recorded) {% endif %} {% if S.duration != 0 %}, Duration =  {{ S.duration | sec_to_time }} {% endif %}
+                    &nbsp;&nbsp;&nbsp;&nbsp;{{ S.name }} {% if ind == False %} (Not recorded) {% endif %} {% if S.duration != 0.0 %}, Duration =  {{ S.duration | sec_to_time }} {% endif %}
                     <br>
                 {% endif %}
             {% endfor %}
