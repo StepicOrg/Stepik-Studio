@@ -1,5 +1,6 @@
 import itertools
 import copy
+import json
 import re
 
 from django.shortcuts import render_to_response
@@ -374,20 +375,18 @@ def lesson_montage(request, lesson_id):
 
 
 @login_required(login_url='/login')
-def substep_status(request, substep_id):
-    if not request.is_ajax():
-        raise Http404
-    try:
-        substep = SubStep.objects.get(id=substep_id)
+def substep_statuses(request):
+    ids = (dict(request.POST.lists()))['ids']
+    result = {}
+
+    for ss_id in ids:
+        substep = SubStep.objects.get(id=int(ss_id))
         is_locked = substep.is_locked
         is_automontage_exists = substep.automontage_exist
+        result[ss_id] = {'islocked': is_locked,
+                         'exists': is_automontage_exists}
 
-        args = {'islocked': is_locked,
-                'exists': is_automontage_exists}
-
-        return JsonResponse(args)
-    except:
-        return HttpResponseServerError()
+    return JsonResponse(result)
 
 
 @login_required(login_url='/login')
