@@ -27,7 +27,13 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     username = User.objects.get(id=int(user_id)).username
     folder_path = kwargs['user_profile'].serverFilesFolder
     data = kwargs['data']
-    add_file_to_test(folder_path=folder_path, data=data)
+
+    try:
+        add_file_to_test(folder_path=folder_path, data=data)
+    except Exception as e:
+        logger.error('Can\'t create folder for new substep: %s', e)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'OS error: can\'t create new folder.')
+
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
 
     filename = data['currSubStep'].name + const.SUBSTEP_SCREEN

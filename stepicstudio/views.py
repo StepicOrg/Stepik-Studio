@@ -1,6 +1,5 @@
 import itertools
 import copy
-import json
 import re
 
 from django.shortcuts import render_to_response
@@ -380,11 +379,14 @@ def substep_statuses(request):
     result = {}
 
     for ss_id in ids:
-        substep = SubStep.objects.get(id=int(ss_id))
-        is_locked = substep.is_locked
-        is_automontage_exists = substep.automontage_exist
-        result[ss_id] = {'islocked': is_locked,
-                         'exists': is_automontage_exists}
+        try:
+            substep = SubStep.objects.get(id=int(ss_id))
+            is_locked = substep.is_locked
+            is_automontage_exists = substep.automontage_exist
+            result[ss_id] = {'islocked': is_locked,
+                             'exists': is_automontage_exists}
+        except:
+            pass
 
     return JsonResponse(result)
 
@@ -433,9 +435,14 @@ def stop_recording(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def remove_substep(request, course_id, lesson_id, step_id, substep_id):
-    substep = SubStep.objects.get(id=substep_id)
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
+
+    try:
+        substep = SubStep.objects.get(id=substep_id)
+    except:
+        return error500_handler(request)
+
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id).first(),
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),
