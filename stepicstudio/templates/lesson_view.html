@@ -2,20 +2,23 @@
 
 {% if Recording == False %}
     {%  block content %}
-
-
-        <!--ADD BACK BUTTON -->
-        <br xmlns="http://www.w3.org/1999/html">this page is for Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}:</a>
+        <b>Course: <a class="reference_wo_underline" href = {{ Course.url }}>{{ Course.name}}</a></b>
         <br>
-        <h3>
-        from  <a href = {{ Course.url }}>{{ Course.name}}</a>
-        </h3>
+        <b>Lesson: <a class="reference_wo_underline" href href = {{ Lesson.url }}>{{ Lesson.name}}</a></b>
         <br>
-        <div id="draggable_checkbox">
-            <form>
-                Make Draggable <input id ="isDraggable" type="checkbox" value="Draggable">
-            </form>
+        <br>
+        <div style="height: 70px">
+            <div class="add_container">
+                <a class="add_button_ref" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
+            </div>
+
+            <div  id="draggable_checkbox">
+                <form style="float: right">
+                    Make Draggable <input id ="isDraggable" type="checkbox" value="Draggable">
+                </form>
+            </div>
         </div>
+
         <ul id="sortable">
             {% for S in Steps  %}
             <li id ='{{ S.position }}' stepID="{{ S.pk }}" class="ui-state-default">
@@ -29,19 +32,15 @@
                             <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/delete/" width="20" height="20" id="delete_svg">
                         </span>
                 </div>
-
             </li>
             {% endfor %}
             <br>
         </ul>
 
-        Add new steps here
-
     {% endblock %}
     {% block controls %}
-        <a href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
-        <div class="delete_button right">
-            <div class="delete-url" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/delete/">Delete lesson </div>
+        <div class="back button right">
+            <a href= {{Course.url}} >Back</a>
         </div>
     {% endblock %}
 {% endif %}

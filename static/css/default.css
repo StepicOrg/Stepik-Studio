@@ -14,7 +14,9 @@
         }
 
         #draggable_checkbox {
-            text-align: right;
+            width: 200px;
+            height: 100%;
+            float: right;
         }
 
         #navcontainer
@@ -88,8 +90,24 @@
         }
 
         .step_name {
+            word-wrap: break-word;
             display:inline-block;
-            white-space: nowrap;
+            overflow:hidden !important;
+            text-overflow: ellipsis;
+            width: 60%;
+        }
+
+        .course_name {
+            word-wrap: break-word;
+            display:inline-block;
+            overflow:hidden !important;
+            text-overflow: ellipsis;
+            width: 60%;
+        }
+
+        .lesson_name {
+            word-wrap: break-word;
+            display:inline-block;
             overflow:hidden !important;
             text-overflow: ellipsis;
             width: 60%;
@@ -154,9 +172,17 @@
             width: 320px;
             color: #565656;
             cursor: pointer;
-
         }
 
+        .add_button_ref {
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 24pt;
+        }
+
+        .reference_wo_underline{
+            text-decoration: none;
+        }
 
         #id_name {
             width:100%;
@@ -240,6 +266,16 @@
         .right {
             float: right;
             width: auto;
+        }
+
+        .listdiv {
+            padding-bottom: 10px;
+        }
+
+        .add_container {
+            width: 250px;
+            height: 100%;
+            float: left;
         }
 
         /* Basic Grey */

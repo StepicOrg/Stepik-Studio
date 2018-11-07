@@ -1,11 +1,14 @@
 {%  extends "base.html" %}
 {% if Recording == False %}
     {%  block content %}
-        <br>You can record:<br>
-        {%  for i in Courses %}
-        <b><a href="/course/{{i.id}}/"> {{i}} </a><br>
-
-
-        {% endfor %}
-        {% endblock %}
+        <b>Courses:</b><br>
+        <br>
+        <ul id="sortable">
+            {%  for i in Courses %}
+                <li class="ui-state-default">
+                    <a class="reference_wo_underline course_name" href="/course/{{i.id}}/"> {{i.name}} </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endblock %}
 {% endif %}

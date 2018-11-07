@@ -425,7 +425,6 @@ var elements_subscriptor = function() {
        $(this).on("unload", function() {
             clearInterval(poller_id);
             event.preventDefault();
-            list.empty();
         });
         const list = $(".substep_list")
             .map(function () {

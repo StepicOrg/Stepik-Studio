@@ -3,26 +3,23 @@
 
 {% if Recording == False %}
     {%  block content %}
-        <br>this page is for Course:
+        <b>Course: <a class="reference_wo_underline" href = {{ Course.url }}>{{ Course.name}}</a></b>
         <br>
-        <h3>
-        <b><a href = {{ Course.url }}>{{ Course.name}}</a></b> <br>
-        </h3>
+        <br>
         <br>
 
-        <style>
-        .listdiv {
-            padding-bottom: 10px;
-        }
-        </style>
+        <div style="height: 70px">
+            <div class="add_container">
+                <a class="add_button_ref" href="/add-lesson/">Add Lesson</a>
+            </div>
 
-
-        <b>Course Lessons are:<br></b>
-        <div id="draggable_checkbox">
-            <form>
-                Make Draggable <input id ="isDraggable" type="checkbox" value="Draggable">
-            </form>
+            <div  id="draggable_checkbox">
+                <form style="float: right">
+                    Make Draggable <input id ="isDraggable" type="checkbox" value="Draggable">
+                </form>
+            </div>
         </div>
+
         <ul id="sortable">
             {% for L in Lessons  %}
             <li id="{{ L.position }}"  lessonID ="{{ L.id }}" class="ui-state-default">
@@ -30,7 +27,10 @@
                     <a class="obj_name lesson_name" href="/course/{{ Course.id}}/lesson/{{ L.id  }}/">{{ L.name }}</a>
                     <div class="lesson_info">
                         <span class="raw_cut_lesson">Raw Cut</span> |
-                        <span class="rename_button lesson_rename">rename</span>
+                        <span class="rename_button lesson_rename">rename</span> |
+                        <span class="delete_button">
+                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" width="20" height="20" id="delete_svg">
+                        </span>
                     </div>
                 </div>
             </li>
@@ -40,8 +40,11 @@
         </ul>
     </ul>
     {% endblock %}
+
     {% block controls %}
-        <a href="/add-lesson/">Add Lesson</a>
+        <div class="back button right">
+            <a href="/courses/">Back</a>
+        </div>
     {% endblock %}
 
 {% endif %}
