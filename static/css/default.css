@@ -17,6 +17,7 @@
             width: auto;
             height: 100%;
             float: right;
+            opacity: 0.5;
         }
 
         #navcontainer
@@ -291,6 +292,7 @@
             padding-left: 5px;
             padding-right: 10px;
             display: inline-block;
+            opacity: 0.25;
         }
 
 
