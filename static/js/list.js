@@ -371,6 +371,7 @@ var elements_subscriptor = function() {
             },
             error: function (data) {
                 alert(data.responseText);
+                location.reload(true);
             }
         });
     }
