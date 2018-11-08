@@ -37,6 +37,19 @@ class LessonForm(forms.ModelForm):
         ls.save()
         return ls
 
+    def clean(self):
+        if Lesson.objects.filter(from_course=self.data['from_courseName'], name=self.cleaned_data.get('name')).count():
+            raise ValidationError('Name \'{}\' already exists. Please, use another name for lesson.'
+                                  .format(self.cleaned_data.get('name')))
+
+        course = Course.objects.get(id=self.data['from_courseName'])
+        new_lesson_path = course.os_path + translate_non_alphanumerics(self.cleaned_data.get('name')) + '/'
+
+        if os.path.isdir(new_lesson_path):
+            raise ValidationError('OS already contains directory for lesson \'{}\'. '
+                                  'Please, use another name for lesson.'
+                                  .format(self.cleaned_data.get('name')))
+
 
 class StepForm(forms.ModelForm):
     def __init__(self, userId, lessonId, *args, **kwargs):
