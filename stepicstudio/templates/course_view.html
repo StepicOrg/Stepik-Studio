@@ -13,10 +13,8 @@
                 <a class="add_button_ref" href="/add-lesson/">Add Lesson</a>
             </div>
 
-            <div  id="draggable_checkbox">
-                <form style="float: right">
-                    Make Draggable <input id ="isDraggable" type="checkbox" value="Draggable">
-                </form>
+            <div  id="draggable_tip">
+                <b>Pull <img class="delete-url" src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
             </div>
         </div>
 
@@ -29,7 +27,10 @@
                         <span class="raw_cut_lesson">Raw Cut</span> |
                         <span class="rename_button lesson_rename">rename</span> |
                         <span class="delete_button">
-                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" width="20" height="20" id="delete_svg">
+                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" width="22" height="22" id="delete_svg">
+                        </span> |
+                        <span class="drag_handle">
+                            <img class="delete-url" src="/static/icons/draggable.svg" width="30" height="30">
                         </span>
                     </div>
                 </div>

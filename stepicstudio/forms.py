@@ -3,7 +3,7 @@ import os
 from django import forms
 from django.core.exceptions import ValidationError
 
-from stepicstudio.models import Lesson, Course, Step, SubStep
+from stepicstudio.models import Lesson, Course, Step
 from stepicstudio.utils.extra import translate_non_alphanumerics
 
 

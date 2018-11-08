@@ -13,8 +13,8 @@
             display: none;
         }
 
-        #draggable_checkbox {
-            width: 200px;
+        #draggable_tip {
+            width: auto;
             height: 100%;
             float: right;
         }
@@ -110,7 +110,7 @@
             display:inline-block;
             overflow:hidden !important;
             text-overflow: ellipsis;
-            width: 60%;
+            width: 55%;
         }
 
         #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
@@ -169,7 +169,7 @@
             display: inline-block;
             float: right;
             text-align: right;
-            width: 320px;
+            width: 40%;
             color: #565656;
             cursor: pointer;
         }
@@ -245,6 +245,7 @@
 
             cursor: pointer;
             padding-left: 5px;
+            padding-right: 5px;
         }
 
         .show_content {
@@ -269,7 +270,9 @@
         }
 
         .listdiv {
-            padding-bottom: 10px;
+            vertical-align: middle;
+            padding-bottom: 7px;
+            padding-top: 7px;
         }
 
         .add_container {
@@ -277,6 +280,20 @@
             height: 100%;
             float: left;
         }
+
+        .drag_handle {
+            vertical-align: middle;
+            padding-left: 5px;
+            padding-right: 10px;
+            display: inline-block;
+        }
+
+
+        .delete_button {
+            vertical-align: middle;
+        }
+
+
 
         /* Basic Grey */
 

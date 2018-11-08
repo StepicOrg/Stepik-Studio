@@ -12,25 +12,28 @@
                 <a class="add_button_ref" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
             </div>
 
-            <div  id="draggable_checkbox">
-                <form style="float: right">
-                    Make Draggable <input id ="isDraggable" type="checkbox" value="Draggable">
-                </form>
+            <div  id="draggable_tip">
+                <b>Pull <img class="delete-url" src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
             </div>
         </div>
 
         <ul id="sortable">
             {% for S in Steps  %}
             <li id ='{{ S.position }}' stepID="{{ S.pk }}" class="ui-state-default">
-                <span class="lesson_path hidden_info">Path: {{ Lesson.os_path }}</span>
-                <a class="step_name obj_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">{{ S.name }}</a>
-                <div class="lesson_info">
+                <div class="listdiv">
+                    <span class="lesson_path hidden_info">Path: {{ Lesson.os_path }}</span>
+                    <a class="step_name obj_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">{{ S.name }}</a>
+                    <div class="lesson_info">
                         <span class="raw_cut_step">Raw Cut</span> |
                         <span class="rename_button step_rename">rename</span> |
                         <span>info</span> |
                         <span class="delete_button">
-                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/delete/" width="20" height="20" id="delete_svg">
+                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/delete/" width="22" height="22" id="delete_svg">
+                        </span> |
+                        <span class="drag_handle">
+                            <img class="delete-url" src="/static/icons/draggable.svg" width="30" height="30">
                         </span>
+                    </div>
                 </div>
             </li>
             {% endfor %}

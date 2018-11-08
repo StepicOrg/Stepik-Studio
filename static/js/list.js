@@ -102,11 +102,7 @@ var elements_subscriptor = function() {
     sortObj = $("#sortable");
 
     sortObj.sortable({
-        start: function(e, ui) {
-            if (!$("#isDraggable").is(":checked")) {
-                window.location = $(ui.item[0]).find("a").attr("href");
-            }
-        },
+        handle: ".drag_handle",
         stop : function(event, ui) {
             var reorderingSteps = $(ui.item[0]).find("a").hasClass("step_name");
             var reorderingType = reorderingSteps ? "step" : "lesson";
@@ -123,7 +119,6 @@ var elements_subscriptor = function() {
                 }
             });
         }
-
     });
 
     sortObj.disableSelection();
