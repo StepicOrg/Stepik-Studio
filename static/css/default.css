@@ -94,7 +94,7 @@
             display:inline-block;
             overflow:hidden !important;
             text-overflow: ellipsis;
-            width: 60%;
+            width: 55%;
         }
 
         .course_name {
