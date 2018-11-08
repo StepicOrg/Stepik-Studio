@@ -165,11 +165,16 @@
         }
 
         .lesson_info {
+            display: inline-block;
+            color: #565656;
+            cursor: pointer;
+        }
+
+        .lesson_controls {
             font-size: 0.8em;
             display: inline-block;
             float: right;
             text-align: right;
-            width: 40%;
             color: #565656;
             cursor: pointer;
         }
@@ -238,11 +243,11 @@
 
         .lesson_path {
             font-size: 0.475em;
+            height: 37px;
         }
 
         .delete_button {
             width: auto;
-
             cursor: pointer;
             padding-left: 5px;
             padding-right: 5px;

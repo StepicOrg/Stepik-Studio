@@ -162,9 +162,9 @@ var elements_subscriptor = function() {
 
 
     $(".lesson_info").off().on("click", function() {
-        $(this).parent().find(".lesson_path").toggleClass("hidden_info");
-        $(this).parent().find(".lesson_info_link").toggleClass("hidden_info");
-        $(this).parent().find("a").toggleClass("hidden_info");
+        $(this).parent().parent().find(".lesson_path").toggleClass("hidden_info");
+        $(this).parent().parent().find(".lesson_info_link").toggleClass("hidden_info");
+        $(this).parent().parent().find("a").toggleClass("hidden_info");
     });
 
     $(".delete_button").on("click", function(event) {
@@ -184,8 +184,8 @@ var elements_subscriptor = function() {
         } else if (isInstanceName(_ss_name)) {
             _name = _ss_name;
         }
-        $(this).append("<div class='modal'> Action can't be undone. Are you sure?</div>");
-        $(this).find(".modal").dialog({
+        $(this).parent().append("<div class='modal'> Action can't be undone. Are you sure?</div>");
+        $(this).parent().find(".modal").dialog({
             resizable: false,
             modal: true,
             title: _name,
