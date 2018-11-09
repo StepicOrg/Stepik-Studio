@@ -103,6 +103,7 @@ var elements_subscriptor = function() {
 
     sortObj.sortable({
         handle: ".drag_handle",
+        axis: "y",
         stop : function(event, ui) {
             var reorderingSteps = $(ui.item[0]).find("a").hasClass("step_name");
             var reorderingType = reorderingSteps ? "step" : "lesson";

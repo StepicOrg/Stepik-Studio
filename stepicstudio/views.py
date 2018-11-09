@@ -102,8 +102,7 @@ def get_user_courses(request):
 @login_required(login_url='/login/')
 @can_edit_page
 def get_course_page(request, course_id):
-    lesson_list = [l for l in Lesson.objects.filter(from_course=course_id)]
-    lesson_list.sort(key=lambda lesson: lesson.position)
+    lesson_list = Lesson.objects.filter(from_course=course_id).order_by('position', '-start_time')
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id)[0],
             'Lessons': lesson_list,
@@ -181,7 +180,7 @@ def show_lesson(request, course_id, lesson_id):
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id).first(),
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position'),
+            'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position', '-start_time'),
 
             }
     args.update({'Recording': camera_curr_status})
