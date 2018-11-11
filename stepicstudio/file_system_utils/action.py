@@ -14,7 +14,9 @@ from stepicstudio.ssh_connections import delete_tablet_lesson_files
 from stepicstudio.utils.extra import translate_non_alphanumerics
 
 logger = logging.getLogger('stepic_studio.file_system_utils.action')
-MIN_ACCEPTABLE_DIFF = 7  # seconds
+MIN_ACCEPTABLE_DIFF = 7.0  # seconds
+ATTEMPTS_OF_GET_DURATION = 5
+ATTEMPTS_PAUSE = 0.05  # seconds
 
 
 def substep_server_path(**kwargs: dict) -> (str, str):
@@ -149,18 +151,21 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
     return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
-def get_length_in_sec(filename: str) -> int:
-    try:
-        result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        duration_string = [x.decode('utf-8') for x in result.stdout.readlines() if 'Duration' in x.decode('utf-8')][0]
-        time = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
-        result = int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2].split('.')[0])
-    except Exception as e:
-        return 0
-    return result
+def get_length_in_sec(filename: str) -> float:
+    for _ in range(0, ATTEMPTS_OF_GET_DURATION):
+        try:
+            result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            duration_string = [x.decode('utf-8') for x in result.stdout.readlines() if 'Duration' in x.decode('utf-8')][0]
+            duration = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
+            return float(duration[0]) * 3600 + float(duration[1]) * 60 + float(duration[2])
+        except:
+            time.sleep(ATTEMPTS_PAUSE)
+
+    logger.warning('Can\'t get duration of substep (%s) for %s sec. File may be in use.', filename, ATTEMPTS_OF_GET_DURATION * ATTEMPTS_PAUSE)
+    return 0.0
 
 
-def calculate_folder_duration_in_sec(calc_path: str, ext: str = 'TS') -> int:
+def calculate_folder_duration_in_sec(calc_path: str, ext: str = 'TS') -> float:
     sec = 0
     if os.path.isdir(calc_path):
         for obj in [o for o in os.listdir(calc_path) if o.endswith(ext) or os.path.isdir('/'.join([calc_path, o]))]:

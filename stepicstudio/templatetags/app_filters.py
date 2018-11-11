@@ -9,9 +9,17 @@ register = template.Library()
 
 @register.filter(name='sec_to_time')
 def sec_to_time(value):
+    if value < 0.1:
+        return '<0.1'
+
     hour = value // 3600
     min = int(math.fmod(value, 3600)) // 60
-    sec = int(math.fmod(value, 60))
+
+    if min > 0:
+        sec = int(math.fmod(value, 60))
+    else:
+        sec = '%.1f' % math.fmod(value, 60.0)
+
     return ''.join(map(lambda x: str(x[0]) + x[1],
                        (filter(lambda x: x[0] != 0, [(hour, 'H '), (min, 'min '), (sec, 'sec')]))))
 

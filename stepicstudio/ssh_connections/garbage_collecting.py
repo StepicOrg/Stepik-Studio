@@ -16,22 +16,21 @@ def collect_garbage():
     result_size = 0
     ss_count = 0
     from stepicstudio.models import SubStep
-    for substep in SubStep.objects:
+    for substep in SubStep.objects.all():
         if is_outdated(substep):
             try:
                 folder_path = get_full_linux_path(substep)
             except:
-                substep.delete()
                 continue
             status, size = tablet_client.delete_folder(folder_path)
 
             if status.status is ExecutionStatus.SUCCESS:
                 ss_count += 1
                 result_size += size
-                logger.info('Deleted tablet diretory. (path: %s) \n Released memory: %s', folder_path,
+                logger.info('Tablet\'s diretory deleted. (path: %s) \n Released memory: %s', folder_path,
                             bytes2human(size))
-                substep.delete()
 
+    tablet_client.close()
     logger.info('Collected %s of garbage (%s folders).\n GC delay: %s days.',
                 bytes2human(result_size),
                 ss_count,

@@ -30,6 +30,7 @@ def delete_tablet_substep_files(substep) -> InternalOperationResult:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
 
     status, _ = client.delete_folder(folder_path)
+    client.close()
     return status
 
 
@@ -37,6 +38,7 @@ def delete_tablet_step_files(step):
     try:
         client = TabletClient()
         client.delete_folder_recursively(get_full_linux_step_path(step))
+        client.close()
         return True
     except Exception as e:
         logger.warning('Failed to remove step %s from tablet (id: %s): %s', step.name, step.id, e)
@@ -47,6 +49,7 @@ def delete_tablet_lesson_files(lesson):
     try:
         client = TabletClient()
         client.delete_folder_recursively(get_full_linux_lesson_path(lesson))
+        client.close()
         return True
     except Exception as e:
         logger.warning('Failed to remove lesson %s from tablet (id: %s): %s', lesson.name, lesson.id, e)

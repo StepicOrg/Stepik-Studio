@@ -1,5 +1,8 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from django.views.generic import RedirectView
+
+favicon_view = RedirectView.as_view(url='/static/icons/favicon.ico', permanent=True)
 
 courseurlpatterns = patterns(
     '',
@@ -18,6 +21,8 @@ courseurlpatterns = patterns(
 
 urlpatterns = patterns(
     '',
+    url(r'^favicon\.ico$', favicon_view),
+
     url(r'^rename-elem/$', 'stepicstudio.views.rename_elem'),
 
     url(r'^admin/', include(admin.site.urls)),

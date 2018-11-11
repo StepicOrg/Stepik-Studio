@@ -17,6 +17,7 @@ class TabletClient(object):
         self.__logger = logging.getLogger('stepikstudio.ssh_connections.tablet_client')
         self.__ssh = None
         self.__sftp = None
+        self.__transport = None
         self.timeout = connect_timeout
         try:
             self.__connect()
@@ -24,11 +25,7 @@ class TabletClient(object):
             pass
 
     def __del__(self):
-        try:
-            self.__sftp.close()
-            self.__ssh.close()
-        except:
-            pass
+        self.close()
 
     def execute_remote(self, command: str, allowable_code=0, read_output=False, timeout=None) -> str:
         if not self.__is_alive():
@@ -137,6 +134,14 @@ class TabletClient(object):
         info = self.__sftp.stat(path)
         return info.st_size
 
+    def close(self):
+        try:
+            self.__sftp.close()
+            self.__transport.close()
+            self.__ssh.close()
+        except:
+            pass
+
     def __is_exists(self, path: str) -> (bool, int):
         if not self.__is_alive():
             self.__connect()
@@ -171,10 +176,10 @@ class TabletClient(object):
                                    password=settings.UBUNTU_PASSWORD,
                                    timeout=self.timeout)
 
-                transport = paramiko.Transport((settings.PROFESSOR_IP, 22))
-                transport.connect(username=settings.UBUNTU_USERNAME,
-                                  password=settings.UBUNTU_PASSWORD)
-                self.__sftp = paramiko.SFTPClient.from_transport(transport)
+                self.__transport = paramiko.Transport((settings.PROFESSOR_IP, 22))
+                self.__transport.connect(username=settings.UBUNTU_USERNAME,
+                                         password=settings.UBUNTU_PASSWORD)
+                self.__sftp = paramiko.SFTPClient.from_transport(self.__transport)
 
         except Exception as e:
             self.__logger.error('SSH connection failed. Reconnecting failed: %s', e)

@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.conf import settings
 from singleton_decorator import singleton
@@ -6,6 +7,9 @@ from singleton_decorator import singleton
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections.tablet_client import TabletClient
+
+ATTEMPTS_OF_STOP = 15
+ATTEMPTS_PAUSE = 0.1  # seconds
 
 
 @singleton
@@ -54,15 +58,21 @@ class TabletScreenRecorder(object):
 
         command = 'pkill -f ffmpeg'
 
-        try:
-            #  read_output=True is using for synchronized execution
-            self.__tablet_client.execute_remote(command, allowable_code=1, read_output=True)
-        except Exception as e:
-            self.__logger.error('Problems while stop screen recording: %s', e)
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+        for _ in range(0, ATTEMPTS_OF_STOP):
+            try:
+                #  read_output=True is using for synchronized execution
+                self.__tablet_client.execute_remote(command, allowable_code=1, read_output=True)
+            except Exception as e:
+                self.__logger.error('Problems while stop screen recording: %s', e)
+                return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
-        self.__logger.info('Successfully stop screen recording.')
-        return InternalOperationResult(ExecutionStatus.SUCCESS)
+            if not self.is_active():
+                return InternalOperationResult(ExecutionStatus.SUCCESS)
+            else:
+                time.sleep(ATTEMPTS_PAUSE)
+
+        self.__logger.error('Can\'t stop screen recording process for %s seconds.', ATTEMPTS_PAUSE * ATTEMPTS_OF_STOP)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
     def is_active(self) -> bool:
         try:
@@ -71,3 +81,6 @@ class TabletScreenRecorder(object):
         except Exception as e:
             self.__logger.warning('Can\'t get screen recorder status: %s', e)
             return False
+
+    def download_last_recording(self, local_path: str):
+        self.__tablet_client.download_dir(self.last_processed_path, local_path)

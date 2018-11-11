@@ -107,8 +107,8 @@ class SubStep(models.Model):
     from_step = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
     start_time = models.BigIntegerField(default=set_time_milisec)
-    duration = models.BigIntegerField(default=0)
-    screencast_duration = models.BigIntegerField(default=0)
+    duration = models.FloatField(default=0.0)
+    screencast_duration = models.FloatField(default=0.0)
     is_locked = models.BooleanField(default=False)
 
     def __str__(self):
@@ -161,7 +161,7 @@ class SubStep(models.Model):
 
     @property
     def is_videos_ok(self):
-        return self.screencast_duration - self.duration < 7 and self.screencast_duration > 0 and self.duration > 0
+        return self.screencast_duration - self.duration < 7.0 and self.screencast_duration > 0.0 and self.duration > 0.0
 
     @property
     def os_automontage_file(self):

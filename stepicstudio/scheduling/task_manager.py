@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 from apscheduler.events import EVENT_JOB_ERROR
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from django.conf import settings
@@ -9,17 +10,18 @@ from singleton_decorator import singleton
 from tzlocal import get_localzone
 
 logging.getLogger('apscheduler').setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 # wait for resheduling missed tasks:
-misfire_grace_time = 60 * 60 * 24 * 2  # 2 days in seconds
-
-logger = logging.getLogger('randomname')
+MISFIRE_GRACE_TIME = 60 * 60 * 24 * 2  # 2 days in seconds
+THREAD_POOL_SIZE = 3
 
 
 @singleton
 class TaskManager(object):
     def __init__(self):
-        self.scheduler = BackgroundScheduler(timezone=get_localzone())
+        executors = {'default': ThreadPoolExecutor(max_workers=THREAD_POOL_SIZE)}
+        self.scheduler = BackgroundScheduler(executors=executors, timezone=get_localzone())
         if settings.PERSISTENT_SCHEDULED_TASKS is True:
             user = settings.DATABASES['default']['USER']
             passsword = settings.DATABASES['default']['PASSWORD']
@@ -38,7 +40,7 @@ class TaskManager(object):
         self.scheduler.add_job(func=job,
                                trigger=trigger,
                                args=args,
-                               misfire_grace_time=misfire_grace_time)
+                               misfire_grace_time=MISFIRE_GRACE_TIME)
 
         self.__logger.info('New task for scheduled execution: %s. \n '
                            'Current size of tasks queue: %s; \n'
@@ -53,7 +55,7 @@ class TaskManager(object):
                                trigger='date',
                                next_run_time=datetime.now() + timedelta(seconds=delay),
                                args=args,
-                               misfire_grace_time=misfire_grace_time)
+                               misfire_grace_time=MISFIRE_GRACE_TIME)
 
     def run_while_idle_repeatable(self, job: callable, single=True):
         if single:
@@ -65,7 +67,7 @@ class TaskManager(object):
         self.scheduler.add_job(func=job,
                                trigger='cron',
                                hour=settings.BACKGROUND_TASKS_START_HOUR,
-                               misfire_grace_time=misfire_grace_time)
+                               misfire_grace_time=MISFIRE_GRACE_TIME)
 
         self.__logger.info('New task for scheduled repeatable execution: %s. \n '
                            'Execution time: %s:00 of next day; \n Current time: %s; \n'

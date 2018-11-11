@@ -4,7 +4,6 @@
     {%  block content %}
 
         {% if Recording != True %}
-            <!--ADD BACK BUTTON -->
             <div>
                 <span>this page is for Step "{{ Step.name }}":</span>
                 {% if AF_ENABLED == True %}
@@ -37,8 +36,8 @@
                                 <span class="show_montage" hidden="true" data-ss_id="{{ SS.id }}"><img src="/static/icons/Film_strip_Silhouette_24.png"></span>
                                 <a target="_blank" class="start_montage" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
                                 {% endif %}
-                               | V: {% if SS.duration > 0 %} {{ SS.duration | sec_to_time}} {% else %} Err! {% endif %}
-                               | Scr: {% if SS.screencast_duration > 0 %} {{ SS.screencast_duration | sec_to_time}} {% else %} Err! {% endif %}
+                               | V: {% if SS.duration > 0.0 %} {{ SS.duration | sec_to_time}} {% else %} Err! {% endif %}
+                               | Scr: {% if SS.screencast_duration > 0.0 %} {{ SS.screencast_duration | sec_to_time}} {% else %} Err! {% endif %}
                                | {% if not SS.is_videos_ok %} Err! {% endif %}
                                 <div class="delete_button right">
                                     <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>

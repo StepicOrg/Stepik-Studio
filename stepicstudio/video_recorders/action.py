@@ -1,5 +1,3 @@
-import time
-
 from django.contrib.auth.models import User
 
 from stepicstudio import const
@@ -7,12 +5,11 @@ from stepicstudio.const import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
 from stepicstudio.file_system_utils.action import *
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
-from stepicstudio.models import CameraStatus, SubStep, Lesson
+from stepicstudio.models import CameraStatus, SubStep
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
 from stepicstudio.scheduling.task_manager import TaskManager
-from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
@@ -89,12 +86,10 @@ def stop_cam_recording() -> True | False:
     stop_camera_status = ServerCameraRecorder().stop_recording()
 
     if stop_camera_status.status is not ExecutionStatus.SUCCESS or \
-                    stop_screen_status.status is not ExecutionStatus.SUCCESS:
+            stop_screen_status.status is not ExecutionStatus.SUCCESS:
         return False
 
-    tablet_client = TabletClient()
-    tablet_client.download_dir(TabletScreenRecorder().last_processed_path,
-                               ServerCameraRecorder().last_processed_path)
+    TabletScreenRecorder().download_last_recording(ServerCameraRecorder().last_processed_path)
 
     professor_video = os.path.join(ServerCameraRecorder().last_processed_path,
                                    ServerCameraRecorder().last_processed_file)
@@ -130,4 +125,3 @@ def convert_mkv_to_mp4(path: str, filename: str):
         logger.info('Successfully start converting mkv to mp4 (FFMPEG command: %s)', reencode_command)
     else:
         logger.error('Converting mkv to mp4 failed: %s; FFMPEG command: %s', result.message, reencode_command)
-
