@@ -374,20 +374,21 @@ def lesson_montage(request, lesson_id):
 
 
 @login_required(login_url='/login')
-def substep_status(request, substep_id):
-    if not request.is_ajax():
-        raise Http404
-    try:
-        substep = SubStep.objects.get(id=substep_id)
-        is_locked = substep.is_locked
-        is_automontage_exists = substep.automontage_exist
+def substep_statuses(request):
+    ids = (dict(request.POST.lists()))['ids']
+    result = {}
 
-        args = {'islocked': is_locked,
-                'exists': is_automontage_exists}
+    for ss_id in ids:
+        try:
+            substep = SubStep.objects.get(id=int(ss_id))
+            is_locked = substep.is_locked
+            is_automontage_exists = substep.automontage_exist
+            result[ss_id] = {'islocked': is_locked,
+                             'exists': is_automontage_exists}
+        except:
+            pass
 
-        return JsonResponse(args)
-    except:
-        return HttpResponseServerError()
+    return JsonResponse(result)
 
 
 @login_required(login_url='/login')
@@ -434,9 +435,14 @@ def stop_recording(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def remove_substep(request, course_id, lesson_id, step_id, substep_id):
-    substep = SubStep.objects.get(id=substep_id)
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
+
+    try:
+        substep = SubStep.objects.get(id=substep_id)
+    except:
+        return error500_handler(request)
+
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id).first(),
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),

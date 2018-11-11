@@ -420,27 +420,43 @@ var elements_subscriptor = function() {
         });
     });
 
-    $(window).on("load", function(event){
+    $(window).on("load", function(event) {
         var poller_id;
-       $(this).on("unload", function(){
+       $(this).on("unload", function() {
             clearInterval(poller_id);
             event.preventDefault();
+            list.empty();
         });
-        poller_id = setInterval(function(){
-            $(".substep_list").each(function(index, value) {
-                const ss_id = $(this).data("ss_id");
-                const elem = $(this);
-                const show_montage = elem.children(".show_montage");
-                const start_montage = elem.children(".start_montage");
+        const list = $(".substep_list")
+            .map(function () {
+                return $(this).data("ss_id");
+            })
+            .get();
 
-                $.getJSON("/substep-status/" + ss_id,
-                    function(data){
-                        if (data.islocked) {
+        poller_id = setInterval(function() {
+            if (list.length === 0) {
+                return false;
+            }
+            $.ajax({
+                beforeSend: cookie_csrf_updater,
+                type: "POST",
+                url: "/substep-statuses/",
+                dataType: "json",
+                traditional: true,
+                data: {'ids': list},
+                success: function (data) {
+                    $(".substep_list").each(function () {
+                        const ss_id = $(this).data("ss_id");
+                        const elem = $(this);
+                        const show_montage = elem.children(".show_montage");
+                        const start_montage = elem.children(".start_montage");
+
+                        if (data[ss_id].islocked) {
                             elem.css("background", "#141628")
                                 .css("pointer-events", "none")
                                 .css("cursor", "default")
                                 .data("ss_locked", "True");
-                        } else if (data.exists) {
+                        } else if (data[ss_id].exists) {
                             elem.css("background", "#FFFFFF")
                                 .css("pointer-events", "auto")
                                 .data("ss_locked", "False");
@@ -453,8 +469,8 @@ var elements_subscriptor = function() {
                             show_montage.hide();
                             start_montage.show();
                         }
-                    }
-                );
+                    });
+                }
             });
         }, 1000);
     });
