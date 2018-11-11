@@ -1,10 +1,22 @@
 {%  extends "base.html" %}
 {% if Recording == False %}
     {%  block content %}
-    Hello, {{ full_name }}
+    Hello, {{ full_name }}!
+    <br>
+    <br>
+    <b>Your courses:</b>
+    <br>
+    <br>
+    <ul id="sortable">
+        {%  for i in Courses %}
+            <li class="ui-state-default">
+                <a class="reference_wo_underline course_name" href="/course/{{i.id}}/"> {{i.name}} </a>
+            </li>
+        {% endfor %}
+    </ul>
 
-    Go to your courses -> <a href="/courses/">List of {{ full_name }}'s courses </a><br>
-    Or check system status and edit your setting -> <a href="/settings/"> Your StepicStudio dashboard</a>
+    {% endblock %}
 
+    {% block controls %}
     {% endblock %}
 {% endif %}

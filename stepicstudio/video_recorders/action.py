@@ -91,8 +91,9 @@ def stop_cam_recording() -> True | False:
     stop_screen_status = TabletScreenRecorder().stop_recording()
     stop_camera_status = ServerCameraRecorder().stop_recording()
 
-    if stop_camera_status.status is not ExecutionStatus.SUCCESS or \
-            stop_screen_status.status is not ExecutionStatus.SUCCESS:
+    # if stop status is FIXABLE_ERROR - let's try to download file anyway
+    if stop_camera_status.status is ExecutionStatus.FATAL_ERROR or \
+            stop_screen_status.status is ExecutionStatus.FATAL_ERROR:
         return False
 
     TabletScreenRecorder().download_last_recording(ServerCameraRecorder().last_processed_path)

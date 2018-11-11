@@ -53,9 +53,10 @@ class ServerCameraRecorder(PostprocessableRecorder):
                 pid = None
             else:
                 pid = self.__process.pid
-            self.__logger.error('Camera isn\'t active: can\'t stop non existing FFMPEG process '
-                                '(try to stop process with PID %s)', pid)
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
+                self.__process = None
+            self.__logger.warning('Camera isn\'t active: can\'t stop non existing FFMPEG process '
+                                  '(try to stop process with PID %s)', pid)
+            return InternalOperationResult(ExecutionStatus.SUCCESS,
                                            'Camera isn\'t active: can\'t stop non existing FFMPEG process')
 
         result = self.__fs_client.send_quit_signal(self.__process)
@@ -72,5 +73,4 @@ class ServerCameraRecorder(PostprocessableRecorder):
             return result
 
     def is_active(self) -> bool:
-        return self.__process is not None and \
-               self.__fs_client.is_process_exists(self.__process.pid)
+        return self.__process is not None and self.__process.poll() is None

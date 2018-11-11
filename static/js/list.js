@@ -102,11 +102,8 @@ var elements_subscriptor = function() {
     sortObj = $("#sortable");
 
     sortObj.sortable({
-        start: function(e, ui) {
-            if (!$("#isDraggable").is(":checked")) {
-                window.location = $(ui.item[0]).find("a").attr("href");
-            }
-        },
+        handle: ".drag_handle",
+        axis: "y",
         stop : function(event, ui) {
             var reorderingSteps = $(ui.item[0]).find("a").hasClass("step_name");
             var reorderingType = reorderingSteps ? "step" : "lesson";
@@ -123,7 +120,6 @@ var elements_subscriptor = function() {
                 }
             });
         }
-
     });
 
     sortObj.disableSelection();
@@ -167,9 +163,9 @@ var elements_subscriptor = function() {
 
 
     $(".lesson_info").off().on("click", function() {
-        $(this).parent().find(".lesson_path").toggleClass("hidden_info");
-        $(this).parent().find(".lesson_info_link").toggleClass("hidden_info");
-        $(this).parent().find("a").toggleClass("hidden_info");
+        $(this).parent().parent().find(".lesson_path").toggleClass("hidden_info");
+        $(this).parent().parent().find(".lesson_info_link").toggleClass("hidden_info");
+        $(this).parent().parent().find("a").toggleClass("hidden_info");
     });
 
     $(".delete_button").on("click", function(event) {
@@ -189,8 +185,8 @@ var elements_subscriptor = function() {
         } else if (isInstanceName(_ss_name)) {
             _name = _ss_name;
         }
-        $(this).append("<div class='modal'> Action can't be undone. Are you sure?</div>");
-        $(this).find(".modal").dialog({
+        $(this).parent().append("<div class='modal'> Action can't be undone. Are you sure?</div>");
+        $(this).parent().find(".modal").dialog({
             resizable: false,
             modal: true,
             title: _name,
@@ -371,6 +367,7 @@ var elements_subscriptor = function() {
             },
             error: function (data) {
                 alert(data.responseText);
+                location.reload(true);
             }
         });
     }
@@ -425,7 +422,6 @@ var elements_subscriptor = function() {
        $(this).on("unload", function() {
             clearInterval(poller_id);
             event.preventDefault();
-            list.empty();
         });
         const list = $(".substep_list")
             .map(function () {

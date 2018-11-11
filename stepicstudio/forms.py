@@ -1,5 +1,10 @@
+import os
+
 from django import forms
-from stepicstudio.models import Lesson, Course, Step, SubStep
+from django.core.exceptions import ValidationError
+
+from stepicstudio.models import Lesson, Course, Step
+from stepicstudio.utils.extra import translate_non_alphanumerics
 
 
 def get_my_courses(userId):
@@ -32,11 +37,25 @@ class LessonForm(forms.ModelForm):
         ls.save()
         return ls
 
+    def clean(self):
+        if Lesson.objects.filter(from_course=self.data['from_courseName'], name=self.cleaned_data.get('name')).count():
+            raise ValidationError('Name \'{}\' already exists. Please, use another name for lesson.'
+                                  .format(self.cleaned_data.get('name')))
+
+        course = Course.objects.get(id=self.data['from_courseName'])
+        new_lesson_path = course.os_path + translate_non_alphanumerics(self.cleaned_data.get('name')) + '/'
+
+        if os.path.isdir(new_lesson_path):
+            raise ValidationError('OS already contains directory for lesson \'{}\'. '
+                                  'Please, use another name for lesson.'
+                                  .format(self.cleaned_data.get('name')))
+
 
 class StepForm(forms.ModelForm):
     def __init__(self, userId, lessonId, *args, **kwargs):
         super(StepForm, self).__init__(*args, **kwargs)
         self.user = userId
+        self.lessonId = lessonId
         self.fields['from_lessonId'] = forms.ChoiceField(choices={(lessonId, "This lesson")})
 
     class Meta:
@@ -51,3 +70,15 @@ class StepForm(forms.ModelForm):
         ls = self.save()
         ls.save()
         return ls
+
+    def clean(self):
+        if Step.objects.filter(from_lesson=self.lessonId, name=self.cleaned_data.get('name')).count():
+            raise ValidationError('Name \'{}\' already exists. Please, use another name for step.'
+                                  .format(self.cleaned_data.get('name')))
+
+        lesson = Lesson.objects.get(id=self.lessonId)
+        new_step_path = lesson.os_path + translate_non_alphanumerics(self.cleaned_data.get('name')) + '/'
+
+        if os.path.isdir(new_step_path):
+            raise ValidationError('OS already contains directory for step \'{}\'. Please, use another name for step.'
+                                  .format(self.cleaned_data.get('name')))
