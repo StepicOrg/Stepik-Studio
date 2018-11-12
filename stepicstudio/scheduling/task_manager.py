@@ -13,7 +13,7 @@ logging.getLogger('apscheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # wait for resheduling missed tasks:
-MISFIRE_GRACE_TIME = 60 * 60 * 24 * 2  # 2 days in seconds
+MISFIRE_GRACE_SECONDS = 60 * 60 * 24 * 2  # 2 days in seconds
 THREAD_POOL_SIZE = 3
 
 
@@ -40,7 +40,7 @@ class TaskManager(object):
         self.scheduler.add_job(func=job,
                                trigger=trigger,
                                args=args,
-                               misfire_grace_time=MISFIRE_GRACE_TIME)
+                               misfire_grace_time=MISFIRE_GRACE_SECONDS)
 
         self.__logger.info('New task for scheduled execution: %s. \n '
                            'Current size of tasks queue: %s; \n'
@@ -55,7 +55,7 @@ class TaskManager(object):
                                trigger='date',
                                next_run_time=datetime.now() + timedelta(seconds=delay),
                                args=args,
-                               misfire_grace_time=MISFIRE_GRACE_TIME)
+                               misfire_grace_time=MISFIRE_GRACE_SECONDS)
 
     def run_while_idle_repeatable(self, job: callable, single=True):
         if single:
@@ -67,7 +67,7 @@ class TaskManager(object):
         self.scheduler.add_job(func=job,
                                trigger='cron',
                                hour=settings.BACKGROUND_TASKS_START_HOUR,
-                               misfire_grace_time=MISFIRE_GRACE_TIME)
+                               misfire_grace_time=MISFIRE_GRACE_SECONDS)
 
         self.__logger.info('New task for scheduled repeatable execution: %s. \n '
                            'Execution time: %s:00 of next day; \n Current time: %s; \n'

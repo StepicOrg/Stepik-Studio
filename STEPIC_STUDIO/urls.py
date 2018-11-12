@@ -2,8 +2,6 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.views.generic import RedirectView
 
-favicon_view = RedirectView.as_view(url='/static/icons/favicon.ico', permanent=True)
-
 courseurlpatterns = patterns(
     '',
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
@@ -21,7 +19,7 @@ courseurlpatterns = patterns(
 
 urlpatterns = patterns(
     '',
-    url(r'^favicon\.ico$', favicon_view),
+    url(r'^favicon\.ico$', RedirectView.as_view(url='/static/icons/favicon.ico', permanent=True)),
 
     url(r'^rename-elem/$', 'stepicstudio.views.rename_elem'),
 

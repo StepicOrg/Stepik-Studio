@@ -27,7 +27,7 @@ def collect_garbage():
             if status.status is ExecutionStatus.SUCCESS:
                 ss_count += 1
                 result_size += size
-                logger.info('Tablet\'s diretory deleted. (path: %s) \n Released memory: %s', folder_path,
+                logger.info('Tablet\'s directory deleted. (path: %s) \n Released memory: %s', folder_path,
                             bytes2human(size))
 
     tablet_client.close()
