@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def start_recording(**kwargs: dict) -> InternalOperationResult:
     data = kwargs['data']
-    path_to_step = data['Step'].os_path
+    path_to_step = data['currSubStep'].dir_path
 
     create_status = FileSystemClient().create_recursively(path_to_step)
 

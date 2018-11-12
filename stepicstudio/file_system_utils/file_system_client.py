@@ -127,6 +127,8 @@ class FileSystemClient(object):
 
     def create_recursively(self, path: str) -> InternalOperationResult:
         try:
+            if os.path.exists(path):
+                return InternalOperationResult(ExecutionStatus.SUCCESS)
             os.makedirs(path, exist_ok=True, mode=777)
             return InternalOperationResult(ExecutionStatus.SUCCESS)
         except Exception as e:
