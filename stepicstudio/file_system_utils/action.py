@@ -7,7 +7,8 @@ import time
 import psutil
 
 from stepicstudio.const import FFPROBE_RUN_PATH, COURSE_ULR_NAME
-from stepicstudio.models import Step, Lesson
+from stepicstudio.file_system_utils.file_system_client import FileSystemClient
+from stepicstudio.models import Step, Lesson, SubStep
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections import delete_tablet_lesson_files
@@ -19,72 +20,35 @@ ATTEMPTS_TO_GET_DURATION = 5
 ATTEMPTS_PAUSE = 0.05  # seconds
 
 
-def substep_server_path(**kwargs: dict) -> (str, str):
-    folder = kwargs['folder_path']
-    data = kwargs['data']
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
-
-    f_course = folder + '/' + translate_non_alphanumerics(data['Course'].name)
-    if not os.path.isdir(f_course):
-        os.makedirs(f_course)
-
-    f_c_lesson = f_course + '/' + translate_non_alphanumerics(data['Lesson'].name)
-
-    if not os.path.isdir(f_c_lesson):
-        os.makedirs(f_c_lesson)
-
-    f_c_l_step = f_c_lesson + '/' + translate_non_alphanumerics(data['Step'].name)
-    if not os.path.isdir(f_c_l_step):
-        os.makedirs(f_c_l_step)
-
-    f_c_l_s_substep = f_c_l_step + '/' + translate_non_alphanumerics(data['currSubStep'].name)
-    return f_c_l_s_substep, f_c_l_step
-
-
-def add_file_to_test(**kwargs: dict) -> None:
-    folder_p, a = substep_server_path(**kwargs)
-    if not os.path.isdir(folder_p):
-        os.makedirs(folder_p)
-
-
 def delete_substep_on_disc(**kwargs: dict) -> InternalOperationResult:
-    folder = kwargs['folder_path']
     data = kwargs['data']
-    f_course = os.path.join(folder, translate_non_alphanumerics(data['Course'].name))
-    f_c_lesson = os.path.join(f_course, translate_non_alphanumerics(data['Lesson'].name))
-    f_c_l_step = os.path.join(f_c_lesson, translate_non_alphanumerics(data['Step'].name))
-    f_c_l_s_substep = os.path.join(f_c_l_step, translate_non_alphanumerics(data['currSubStep'].name))
 
-    delete_files_on_server(data['currSubStep'].os_automontage_path)
+    if data['currSubStep'].is_locked:
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
-    if not os.path.exists(f_c_l_s_substep):
+    client = FileSystemClient()
+    camera_status = client.remove_file(data['currSubStep'].os_path)
+    screencast_status = client.remove_file(data['currSubStep'].os_screencast_path)
+    raw_cut_status = client.remove_file(data['currSubStep'].os_automontage_file)
+
+    if camera_status.status is ExecutionStatus.SUCCESS and \
+            screencast_status.status is ExecutionStatus.SUCCESS and \
+            raw_cut_status.status is ExecutionStatus.SUCCESS:
         return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-    if not os.path.isdir(f_c_l_s_substep):
-        logger.warning('Server file removing failed: %s is not directory', f_c_l_s_substep)
-        return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR,
-                                       '{} is not directory'.format(f_c_l_s_substep))
     else:
-        try:
-            shutil.rmtree(f_c_l_s_substep)
-        except Exception as e:
-            logger.warning('Server file removing failed: %s', e)
-            return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR,
-                                           'Error while deleting substep. Files may be in use by other application.')
-        if os.path.exists(f_c_l_s_substep):
-            time.sleep(0.75)
-        return InternalOperationResult(ExecutionStatus.SUCCESS)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
 
-def delete_step_on_disc(**kwargs: dict) -> True | False:
-    folder = kwargs['folder_path']
+def delete_server_step_files(**kwargs):
     data = kwargs['data']
-    f_course = folder + '/' + translate_non_alphanumerics(data['Course'].name)
-    f_c_lesson = f_course + '/' + translate_non_alphanumerics(data['Lesson'].name)
-    f_c_l_step = f_c_lesson + '/' + translate_non_alphanumerics(data['Step'].name)
-    delete_files_on_server(data['Step'].os_automontage_path)
-    return delete_files_on_server(f_c_l_step)
+    substeps = SubStep.objects.filter(from_step=data['Step'].id)
+    for ss in substeps:
+        if ss.is_locked:
+            return False
+
+    client = FileSystemClient()
+    client.delete_recursively(data['Step'].os_automontage_path)
+    return client.delete_recursively(data['Step'].os_path).status is ExecutionStatus.SUCCESS
 
 
 def search_as_files_and_update_info(args: dict) -> dict:
@@ -161,7 +125,9 @@ def get_length_in_sec(filename: str) -> float:
         except:
             time.sleep(ATTEMPTS_PAUSE)
 
-    logger.warning('Can\'t get duration of substep (%s) for %s sec. File may be in use.', filename, ATTEMPTS_TO_GET_DURATION * ATTEMPTS_PAUSE)
+    logger.warning('Can\'t get duration of substep (%s) for %s sec. File may be in use.',
+                   filename,
+                   ATTEMPTS_TO_GET_DURATION * ATTEMPTS_PAUSE)
     return 0.0
 
 
@@ -181,33 +147,33 @@ Function user for updating duration in one substep and in whole stepfolders, ret
 
 
 def update_time_records(substep_list, new_step_only=False, new_step_obj=None) -> int:
-    if new_step_only:
-        for substep_path in new_step_obj.os_path_all_variants:
-            if os.path.exists(substep_path):
-                new_step_obj.duration = get_length_in_sec(substep_path)
-                new_step_obj.save()
-        for substep_scr_path in new_step_obj.os_screencast_path_all_variants:
-            if os.path.exists(substep_scr_path):
-                new_step_obj.screencast_duration = get_length_in_sec(substep_scr_path)
-                new_step_obj.save()
     summ = 0
+    if new_step_only:
+        if os.path.exists(new_step_obj.os_path):
+            new_step_obj.duration = get_length_in_sec(new_step_obj.os_path)
+            new_step_obj.save()
+            summ = new_step_obj.duration
+
+        if os.path.exists(new_step_obj.os_screencast_path):
+            new_step_obj.screencast_duration = get_length_in_sec(new_step_obj.os_screencast_path)
+            new_step_obj.save()
+
+        return summ
+
     for substep in substep_list:
         if substep.duration \
                 and substep.screencast_duration \
                 and abs(substep.duration - substep.screencast_duration) < MIN_ACCEPTABLE_DIFF:
             continue
-        for substep_path in substep.os_path_all_variants:
-            if os.path.exists(substep_path):
-                if not new_step_only:
-                    substep.duration = get_length_in_sec(substep_path)
-                summ += substep.duration
-                break
-        for substep_scr_path in substep.os_screencast_path_all_variants:
-            if os.path.exists(substep_scr_path):
-                if not new_step_only:
-                    substep.screencast_duration = get_length_in_sec(substep_scr_path)
-                break
+
+        if os.path.exists(substep.os_path):
+            substep.duration = get_length_in_sec(substep.os_path)
+            summ += substep.duration
+
+        if os.path.exists(substep.os_screencast_path):
+            substep.screencast_duration = get_length_in_sec(substep.os_screencast_path)
         substep.save()
+
     return summ
 
 

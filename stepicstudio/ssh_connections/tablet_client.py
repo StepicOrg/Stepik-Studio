@@ -41,6 +41,18 @@ class TabletClient(object):
         if read_output:
             return stdout.readlines()
 
+    def delete_file(self, path: str) -> InternalOperationResult:
+        if not self.__is_alive():
+            self.__connect()
+        try:
+            if not self.__is_exists(path)[0]:
+                return InternalOperationResult(ExecutionStatus.SUCCESS)
+            self.__sftp.remove(path)
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+        except Exception as e:
+            self.__logger.error('Can\'t delete file %s on tablet: %s', path, e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+
     def delete_folder(self, path: str) -> (InternalOperationResult, int):
         if not self.__is_alive():
             self.__connect()
@@ -96,6 +108,19 @@ class TabletClient(object):
                 self.__sftp.stat(temp_path)
             except IOError:
                 self.__sftp.mkdir(temp_path)
+
+    def download_file(self, remote_dir, filename, local_dir) -> InternalOperationResult:
+        try:
+            if not self.__is_alive():
+                self.__connect()
+
+            os.path.exists(local_dir) or os.makedirs(local_dir)
+            self.__sftp.get(remote_dir + '/' + filename,
+                            os.path.join(local_dir, filename))
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+        except Exception as e:
+            self.__logger.error('Can\'t download remote file %s: %s', remote_dir + '/' + filename, e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
 
     def download_dir(self, remote_dir, local_dir) -> InternalOperationResult:
         try:

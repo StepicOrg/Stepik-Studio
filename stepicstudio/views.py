@@ -444,9 +444,10 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
             'SubSteps': SubStep.objects.filter(from_step=step_id),
             'currSubStep': substep}
 
-    server_remove_status = delete_server_substep_files(user_id=request.user.id,
-                                                       user_profile=UserProfile.objects.get(user=request.user.id),
-                                                       data=args)
+    server_remove_status = delete_substep_on_disc(user_id=request.user.id,
+                                                  user_profile=UserProfile.objects.get(user=request.user.id),
+                                                  data=args)
+
     tablet_remove_status = delete_tablet_substep_files(substep)
 
     if server_remove_status.status is not ExecutionStatus.SUCCESS:
@@ -551,50 +552,39 @@ def view_stat(request, course_id):
 def video_view(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        path = substep.os_path
-        base_path = os.path.splitext(path)[0]
-
-        if os.path.isfile(base_path + MP4_EXTENSION):
-            path_to_mp4 = base_path + MP4_EXTENSION
-            return stream_video(request, path_to_mp4)
-        else:
-            return stream_video(request, path)
+        return stream_video(request, substep.os_path)
     except FileNotFoundError as e:
-        logger.warning('Missing file: %s', str(e))
+        if os.path.isfile(substep.os_path_old):
+            return stream_video(request, substep.os_path_old)
+        logger.warning('Missing camera recording file: %s', e)
         return error_description(request, 'File is missing.')
     except:
         return error500_handler(request)
 
 
-# TODO: hotfix here is bad =(
 @login_required(login_url='/login/')
 def video_screen_view(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
-        base_path = os.path.splitext(path)[0]
-
-        if os.path.isfile(base_path + MP4_EXTENSION):
-            path_to_mp4 = base_path + MP4_EXTENSION
-            return stream_video(request, path_to_mp4)
-        else:
-            return stream_video(request, path)
+        return stream_video(request, substep.os_screencast_path)
     except FileNotFoundError as e:
-        logger.warning('Missed file: %s', str(e))
+        if os.path.isfile(substep.os_screencast_path_old):
+            return stream_video(request, substep.os_screencast_path_old)
+        logger.warning('Missed screencast file: %s', e)
         return error_description(request, 'File is missing.')
-    except Exception:
+    except:
         return error500_handler(request)
 
 
+@login_required(login_url='/login/')
 def show_montage(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        path = substep.os_automontage_file
-        return stream_video(request, path)
+        return stream_video(request, substep.os_automontage_file)
     except FileNotFoundError as e:
-        logger.warning('Missed file: %s', str(e))
+        logger.warning('Missing raw cut file: %s', e)
         return error_description(request, 'File is missing.')
-    except Exception:
+    except:
         return error500_handler(request)
 
 

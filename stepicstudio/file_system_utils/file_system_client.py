@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import subprocess
 
 import psutil
@@ -108,7 +109,7 @@ class FileSystemClient(object):
     def remove_file(self, file: str) -> InternalOperationResult:
         if not os.path.isfile(file):
             logger.warning('Can\'t delete non-existing file %s ', file)
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
 
         try:
             os.remove(file)
@@ -131,3 +132,11 @@ class FileSystemClient(object):
         except Exception as e:
             logger.error('Can\'t create dirs recursively: %s', e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+
+    def delete_recursively(self, path: str) -> InternalOperationResult:
+        try:
+            shutil.rmtree(path, ignore_errors=True)
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
+        except Exception as e:
+            logger.error('Can\'t delete recursively %s: %s', path, e)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)

@@ -83,4 +83,6 @@ class TabletScreenRecorder(object):
             return False
 
     def download_last_recording(self, local_path: str):
-        self.__tablet_client.download_dir(self.last_processed_path, local_path)
+        self.__tablet_client.download_file(self.last_processed_path,
+                                           self.last_processed_file,
+                                           local_path)
