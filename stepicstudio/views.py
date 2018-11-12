@@ -615,32 +615,31 @@ def show_montage(request, substep_id):
 def rename_elem(request):
     if request.POST and request.is_ajax():
         rest_data = dict(request.POST.lists())
-        if 'step' in rest_data['type'] or 'lesson' in rest_data['type']:
-            if 'step' in rest_data['type']:
-                obj_to_rename = Step.objects.get(id=rest_data['id'][0])
-            else:
-                obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
-
-            logger.debug('Renaming: %s', obj_to_rename.os_path)
-            tmp_step = copy.copy(obj_to_rename)
-            tmp_step.name = rest_data['name_new'][0]
-
-            if not camera_curr_status():
-                rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
-                if rename_status.status is ExecutionStatus.SUCCESS:
-                    obj_to_rename.delete()
-                    tmp_step.save()
-                    return HttpResponse('Ok')
-                elif rename_status.status is ExecutionStatus.FIXABLE_ERROR:
-                    return HttpResponseServerError(rename_status.message)
-                elif rename_status.status is ExecutionStatus.FATAL_ERROR:
-                    return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
-            else:
-                return Http404
+        if 'step' in rest_data['type']:
+            obj_to_rename = Step.objects.get(id=rest_data['id'][0])
+        elif 'lesson' in rest_data['type']:
+            obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
         else:
-            return Http404
+            raise Http404
+
+        logger.debug('Renaming: %s', obj_to_rename.os_path)
+        tmp_step = copy.copy(obj_to_rename)
+        tmp_step.name = rest_data['name_new'][0]
+
+        if not camera_curr_status():
+            rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
+            if rename_status.status is ExecutionStatus.SUCCESS:
+                obj_to_rename.delete()
+                tmp_step.save()
+                return HttpResponse('Ok')
+            elif rename_status.status is ExecutionStatus.FIXABLE_ERROR:
+                return HttpResponseServerError(rename_status.message)
+            elif rename_status.status is ExecutionStatus.FATAL_ERROR:
+                return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
+        else:
+            raise Http404
     else:
-        return Http404
+        raise Http404
 
 
 def clear_all_locked_substeps(request):
