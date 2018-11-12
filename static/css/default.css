@@ -92,24 +92,24 @@
 
         .step_name {
             word-wrap: break-word;
-            display:inline-block;
-            overflow:hidden !important;
+            display: inline-block;
+            overflow: hidden !important;
             text-overflow: ellipsis;
             width: 55%;
         }
 
         .course_name {
             word-wrap: break-word;
-            display:inline-block;
-            overflow:hidden !important;
+            display: inline-block;
+            overflow: hidden !important;
             text-overflow: ellipsis;
             width: 60%;
         }
 
         .lesson_name {
             word-wrap: break-word;
-            display:inline-block;
-            overflow:hidden !important;
+            display: inline-block;
+            overflow: hidden !important;
             text-overflow: ellipsis;
             width: 55%;
         }

@@ -4,7 +4,7 @@
 
 {% if Recording == False %}
     {%  block content %}
-        Structure for <a href = {{ Course.url }}>{{ Course.name}}</a><br>
+        Structure for <a href="{{ Course.url }}">{{ Course.name}}</a><br>
         <br>
         {% for L in all_course_lessons %}
             {{ L.name }}<br>

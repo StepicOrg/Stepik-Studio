@@ -3,7 +3,7 @@
 
 {% if Recording == False %}
     {%  block content %}
-        <b>Course: <a class="reference_wo_underline" href = {{ Course.url }}>{{ Course.name}}</a></b>
+        <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
         <br>
         <br>
         <br>
@@ -13,7 +13,7 @@
                 <a class="add_button_ref" href="/add-lesson/">Add Lesson</a>
             </div>
 
-            <div  id="draggable_tip">
+            <div id="draggable_tip">
                 <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
             </div>
         </div>
