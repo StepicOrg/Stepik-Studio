@@ -55,7 +55,7 @@ urlpatterns = patterns(
     url(r'^create-lesson-montage/(?P<lesson_id>[0-9]+)/', 'stepicstudio.views.lesson_montage'),
     url(r'^show-montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.show_montage'),
 
-    url(r'^substep-status/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.substep_status'),
+    url(r'^substep-statuses/', 'stepicstudio.views.substep_statuses'),
 
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
     url(r'^notes/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.notes'),

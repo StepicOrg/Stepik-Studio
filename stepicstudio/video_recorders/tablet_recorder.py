@@ -8,7 +8,7 @@ from stepicstudio.operations_statuses.operation_result import InternalOperationR
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 
-ATTEMPTS_OF_STOP = 15
+ATTEMPTS_OF_STOP = 30
 ATTEMPTS_PAUSE = 0.1  # seconds
 
 
@@ -53,8 +53,8 @@ class TabletScreenRecorder(object):
 
     def stop_recording(self) -> InternalOperationResult:
         if not self.is_active():
-            self.__logger.error('Tablet screencast isn\'t active: can\'t stop non existing FFMPEG process')
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+            self.__logger.warning('Tablet screencast isn\'t active: can\'t stop non existing FFMPEG process')
+            return InternalOperationResult(ExecutionStatus.SUCCESS)
 
         command = 'pkill -f ffmpeg'
 
@@ -72,7 +72,7 @@ class TabletScreenRecorder(object):
                 time.sleep(ATTEMPTS_PAUSE)
 
         self.__logger.error('Can\'t stop screen recording process for %s seconds.', ATTEMPTS_PAUSE * ATTEMPTS_OF_STOP)
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+        return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR)
 
     def is_active(self) -> bool:
         try:

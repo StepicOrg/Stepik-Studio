@@ -4,17 +4,20 @@
     {%  block content %}
 
         {% if Recording != True %}
-            <div>
-                <span>this page is for Step "{{ Step.name }}":</span>
-                {% if AF_ENABLED == True %}
-                <span class="af_button right">Autofocus</span>
-                {% endif %}
+            {% if AF_ENABLED == True %}
+            <div class="af_button right">
+                <b>Autofocus</b>
             </div>
-            <br class="step_view">
-            <h3>
-            from Lesson <a href = {{ Lesson.url }}>{{ Lesson.name}}</a> of <a href = {{ Course.url }}>{{ Course.name}}</a> course
-            </h3>
+            {% endif %}
+
+            <b>Course: <a class="reference_wo_underline" href={{ Course.url }}>{{ Course.name}}</a></b>
             <br>
+            <b>Lesson: <a class="reference_wo_underline" href={{ Lesson.url }}>{{ Lesson.name}}</a></b>
+            <br>
+            <b>Step: <a>{{ Step.name}}</a></b>
+            <br>
+            <br class="step_view">
+
             <div ALIGN="CENTER">
                 <h1><span class="start_recording">Start Recording </span>
                 </h1>
@@ -45,12 +48,7 @@
                         </div>
                 {% endfor %}
 
-
-
-
             <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
-
-
 
             <p>Video Editing Notes:</p>
             {{ Step.text_data | formatting_text}}

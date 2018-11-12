@@ -13,8 +13,11 @@
             display: none;
         }
 
-        #draggable_checkbox {
-            text-align: right;
+        #draggable_tip {
+            width: auto;
+            height: 100%;
+            float: right;
+            opacity: 0.5;
         }
 
         #navcontainer
@@ -88,11 +91,27 @@
         }
 
         .step_name {
+            word-wrap: break-word;
             display:inline-block;
-            white-space: nowrap;
+            overflow:hidden !important;
+            text-overflow: ellipsis;
+            width: 55%;
+        }
+
+        .course_name {
+            word-wrap: break-word;
+            display:inline-block;
             overflow:hidden !important;
             text-overflow: ellipsis;
             width: 60%;
+        }
+
+        .lesson_name {
+            word-wrap: break-word;
+            display:inline-block;
+            overflow:hidden !important;
+            text-overflow: ellipsis;
+            width: 55%;
         }
 
         #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
@@ -147,16 +166,29 @@
         }
 
         .lesson_info {
+            display: inline-block;
+            color: #565656;
+            cursor: pointer;
+        }
+
+        .lesson_controls {
             font-size: 0.8em;
             display: inline-block;
             float: right;
             text-align: right;
-            width: 320px;
             color: #565656;
             cursor: pointer;
-
         }
 
+        .add_button_ref {
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 24pt;
+        }
+
+        .reference_wo_underline{
+            text-decoration: none;
+        }
 
         #id_name {
             width:100%;
@@ -212,13 +244,14 @@
 
         .lesson_path {
             font-size: 0.475em;
+            height: 37px;
         }
 
         .delete_button {
             width: auto;
-
             cursor: pointer;
             padding-left: 5px;
+            padding-right: 5px;
         }
 
         .show_content {
@@ -241,6 +274,33 @@
             float: right;
             width: auto;
         }
+
+        .listdiv {
+            vertical-align: middle;
+            padding-bottom: 7px;
+            padding-top: 7px;
+        }
+
+        .add_container {
+            width: 250px;
+            height: 100%;
+            float: left;
+        }
+
+        .drag_handle {
+            vertical-align: middle;
+            padding-left: 5px;
+            padding-right: 10px;
+            display: inline-block;
+            opacity: 0.25;
+        }
+
+
+        .delete_button {
+            vertical-align: middle;
+        }
+
+
 
         /* Basic Grey */
 

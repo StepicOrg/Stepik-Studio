@@ -49,6 +49,7 @@ class Lesson(models.Model):
     name = models.CharField(max_length=400)
     from_course = models.BigIntegerField(default=0)
     position = models.SmallIntegerField(default=0)
+    start_time = models.BigIntegerField(default=set_time_milisec)
 
     def __str__(self):
         return self.name + ' from course id =' + str(self.from_course)

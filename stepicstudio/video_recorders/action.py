@@ -27,7 +27,13 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
     username = User.objects.get(id=int(user_id)).username
     folder_path = kwargs['user_profile'].serverFilesFolder
     data = kwargs['data']
-    add_file_to_test(folder_path=folder_path, data=data)
+
+    try:
+        add_file_to_test(folder_path=folder_path, data=data)
+    except Exception as e:
+        logger.error('Can\'t create folder for new substep: %s', e)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'OS error: can\'t create new folder.')
+
     substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
 
     filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
@@ -85,8 +91,9 @@ def stop_cam_recording() -> True | False:
     stop_screen_status = TabletScreenRecorder().stop_recording()
     stop_camera_status = ServerCameraRecorder().stop_recording()
 
-    if stop_camera_status.status is not ExecutionStatus.SUCCESS or \
-            stop_screen_status.status is not ExecutionStatus.SUCCESS:
+    # if stop status is FIXABLE_ERROR - let's try to download file anyway
+    if stop_camera_status.status is ExecutionStatus.FATAL_ERROR or \
+            stop_screen_status.status is ExecutionStatus.FATAL_ERROR:
         return False
 
     TabletScreenRecorder().download_last_recording(ServerCameraRecorder().last_processed_path)

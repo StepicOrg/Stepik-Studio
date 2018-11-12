@@ -93,7 +93,7 @@ def logout(request):
 @login_required(login_url='/login/')
 def get_user_courses(request):
     args = {'full_name': request.user.username,
-            'Courses': Course.objects.filter(editors=request.user.id),
+            'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date'),
             }
     args.update({'Recording': camera_curr_status})
     return render_to_response('courses.html', args, context_instance=RequestContext(request))
@@ -102,8 +102,7 @@ def get_user_courses(request):
 @login_required(login_url='/login/')
 @can_edit_page
 def get_course_page(request, course_id):
-    lesson_list = [l for l in Lesson.objects.filter(from_course=course_id)]
-    lesson_list.sort(key=lambda lesson: lesson.position)
+    lesson_list = Lesson.objects.filter(from_course=course_id).order_by('position', '-start_time')
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id)[0],
             'Lessons': lesson_list,
@@ -132,11 +131,12 @@ def auth_view(request):
 def loggedin(request):
     if request.user.is_authenticated():
         say_hello = bool(request.GET.get('message'))
-        return render_to_response('loggedin.html', {'full_name': request.user.username,
-                                                    'Courses': Course.objects,
-                                                    'say_hello': say_hello,
-                                                    }
-                                  , context_instance=RequestContext(request))
+        args = {'full_name': request.user.username,
+                'say_hello': say_hello,
+                'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date'),
+                }
+        args.update(csrf(request))
+        return render_to_response('loggedin.html', args, context_instance=RequestContext(request))
     else:
         return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
@@ -166,7 +166,8 @@ def add_lesson(request):
     else:
         raise Http404
 
-    args = {'full_name': request.user.username}
+    args = {'full_name': request.user.username,
+            'go_back': request.META.get('HTTP_REFERER'), }
     args.update(csrf(request))
     args.update({'Recording': camera_curr_status})
     args['form'] = form
@@ -179,7 +180,7 @@ def show_lesson(request, course_id, lesson_id):
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id).first(),
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position'),
+            'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position', '-start_time'),
 
             }
     args.update({'Recording': camera_curr_status})
@@ -221,6 +222,8 @@ def add_step(request, course_id, lesson_id):
     args = {'full_name': request.user.username,
             'postUrl': '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME
                        + '/' + lesson_id + '/add_step/',
+            'CourseID': course_id,
+            'LessonID': lesson_id,
             }
     args.update({'Recording': camera_curr_status})
     args.update(csrf(request))
@@ -374,20 +377,21 @@ def lesson_montage(request, lesson_id):
 
 
 @login_required(login_url='/login')
-def substep_status(request, substep_id):
-    if not request.is_ajax():
-        raise Http404
-    try:
-        substep = SubStep.objects.get(id=substep_id)
-        is_locked = substep.is_locked
-        is_automontage_exists = substep.automontage_exist
+def substep_statuses(request):
+    ids = (dict(request.POST.lists()))['ids']
+    result = {}
 
-        args = {'islocked': is_locked,
-                'exists': is_automontage_exists}
+    for ss_id in ids:
+        try:
+            substep = SubStep.objects.get(id=int(ss_id))
+            is_locked = substep.is_locked
+            is_automontage_exists = substep.automontage_exist
+            result[ss_id] = {'islocked': is_locked,
+                             'exists': is_automontage_exists}
+        except:
+            pass
 
-        return JsonResponse(args)
-    except:
-        return HttpResponseServerError()
+    return JsonResponse(result)
 
 
 @login_required(login_url='/login')
@@ -434,9 +438,14 @@ def stop_recording(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def remove_substep(request, course_id, lesson_id, step_id, substep_id):
-    substep = SubStep.objects.get(id=substep_id)
     post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
                STEP_URL_NAME + '/' + step_id + '/'
+
+    try:
+        substep = SubStep.objects.get(id=substep_id)
+    except:
+        return error500_handler(request)
+
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id).first(),
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),
