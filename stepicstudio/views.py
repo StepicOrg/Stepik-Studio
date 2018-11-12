@@ -552,12 +552,13 @@ def view_stat(request, course_id):
 def video_view(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        return stream_video(request, substep.os_path)
-    except FileNotFoundError as e:
-        if os.path.isfile(substep.os_path_old):
+        if os.path.isfile(substep.os_path):
+            return stream_video(request, substep.os_path)
+        elif os.path.isfile(substep.os_path_old):
             return stream_video(request, substep.os_path_old)
-        logger.warning('Missing camera recording file: %s', e)
-        return error_description(request, 'File is missing.')
+        else:
+            logger.warning('Missing camera recording file.')
+            return error_description(request, 'File is missing.')
     except:
         return error500_handler(request)
 
@@ -566,12 +567,13 @@ def video_view(request, substep_id):
 def video_screen_view(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        return stream_video(request, substep.os_screencast_path)
-    except FileNotFoundError as e:
-        if os.path.isfile(substep.os_screencast_path_old):
+        if os.path.isfile(substep.os_screencast_path):
+            return stream_video(request, substep.os_screencast_path)
+        elif os.path.isfile(substep.os_screencast_path_old):
             return stream_video(request, substep.os_screencast_path_old)
-        logger.warning('Missed screencast file: %s', e)
-        return error_description(request, 'File is missing.')
+        else:
+            logger.warning('Missing screencast file.')
+            return error_description(request, 'File is missing.')
     except:
         return error500_handler(request)
 

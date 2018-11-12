@@ -36,7 +36,7 @@ class VideoSynchronizer(object):
                                                      self.__min_silence_duration)
             duration_2 = self.__get_silence_duration(camera_path, self.__camera_noise_tolerance,
                                                      self.__min_silence_duration)
-        except Exception as e:
+        except Exception:
             self.__logger.warning('Can\'t get silence duration of %s, %s.', screen_path, camera_path)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 

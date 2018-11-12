@@ -3,7 +3,7 @@ from stepicstudio.const import *
 from stepicstudio.const import SUBSTEP_PROFESSOR
 from stepicstudio.file_system_utils.action import *
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
-from stepicstudio.models import CameraStatus, SubStep
+from stepicstudio.models import CameraStatus
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
