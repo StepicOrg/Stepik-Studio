@@ -15,7 +15,7 @@ from stepicstudio.utils.extra import translate_non_alphanumerics
 
 logger = logging.getLogger('stepic_studio.file_system_utils.action')
 MIN_ACCEPTABLE_DIFF = 7.0  # seconds
-ATTEMPTS_OF_GET_DURATION = 5
+ATTEMPTS_TO_GET_DURATION = 5
 ATTEMPTS_PAUSE = 0.05  # seconds
 
 
@@ -152,7 +152,7 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
 
 
 def get_length_in_sec(filename: str) -> float:
-    for _ in range(0, ATTEMPTS_OF_GET_DURATION):
+    for _ in range(0, ATTEMPTS_TO_GET_DURATION):
         try:
             result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             duration_string = [x.decode('utf-8') for x in result.stdout.readlines() if 'Duration' in x.decode('utf-8')][0]
@@ -161,7 +161,7 @@ def get_length_in_sec(filename: str) -> float:
         except:
             time.sleep(ATTEMPTS_PAUSE)
 
-    logger.warning('Can\'t get duration of substep (%s) for %s sec. File may be in use.', filename, ATTEMPTS_OF_GET_DURATION * ATTEMPTS_PAUSE)
+    logger.warning('Can\'t get duration of substep (%s) for %s sec. File may be in use.', filename, ATTEMPTS_TO_GET_DURATION * ATTEMPTS_PAUSE)
     return 0.0
 
 

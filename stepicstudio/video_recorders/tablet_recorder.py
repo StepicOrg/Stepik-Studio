@@ -8,7 +8,7 @@ from stepicstudio.operations_statuses.operation_result import InternalOperationR
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 
-ATTEMPTS_OF_STOP = 30
+ATTEMPTS_TO_STOP = 30
 ATTEMPTS_PAUSE = 0.1  # seconds
 
 
@@ -58,7 +58,7 @@ class TabletScreenRecorder(object):
 
         command = 'pkill -f ffmpeg'
 
-        for _ in range(0, ATTEMPTS_OF_STOP):
+        for _ in range(0, ATTEMPTS_TO_STOP):
             try:
                 #  read_output=True is using for synchronized execution
                 self.__tablet_client.execute_remote(command, allowable_code=1, read_output=True)
@@ -71,7 +71,7 @@ class TabletScreenRecorder(object):
             else:
                 time.sleep(ATTEMPTS_PAUSE)
 
-        self.__logger.error('Can\'t stop screen recording process for %s seconds.', ATTEMPTS_PAUSE * ATTEMPTS_OF_STOP)
+        self.__logger.error('Can\'t stop screen recording process for %s seconds.', ATTEMPTS_PAUSE * ATTEMPTS_TO_STOP)
         return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR)
 
     def is_active(self) -> bool:
