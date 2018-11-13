@@ -1,6 +1,5 @@
-from stepicstudio import const
 from stepicstudio.const import *
-from stepicstudio.const import SUBSTEP_PROFESSOR
+from stepicstudio.const import SUBSTEP_PROFESSOR, SUBSTEP_SCREEN
 from stepicstudio.file_system_utils.action import *
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.models import CameraStatus
@@ -14,29 +13,19 @@ from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 logger = logging.getLogger(__name__)
 
 
-def start_recording(**kwargs: dict) -> InternalOperationResult:
-    data = kwargs['data']
-    path_to_step = data['currSubStep'].dir_path
-
-    create_status = FileSystemClient().create_recursively(path_to_step)
+def start_recording(substep) -> InternalOperationResult:
+    create_status = FileSystemClient().create_recursively(substep.dir_path)
 
     if create_status.status is not ExecutionStatus.SUCCESS:
         logger.error('Can\'t create folder for new substep: %s', create_status.message)
         return create_status
 
-    filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
-    tablet_folder = data['currSubStep'].os_tablet_dir
+    tablet_exec_info = TabletScreenRecorder().start_recording(substep.os_tablet_dir, substep.name + SUBSTEP_SCREEN)
 
-    try:
-        remote_status = TabletScreenRecorder().start_recording(tablet_folder, filename)
-    except:
-        remote_status = InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+    if tablet_exec_info.status is not ExecutionStatus.SUCCESS:
+        return tablet_exec_info
 
-    if remote_status.status is not ExecutionStatus.SUCCESS:
-        return remote_status
-
-    ffmpeg_status = ServerCameraRecorder().start_recording(path_to_step,
-                                                           data['currSubStep'].name + SUBSTEP_PROFESSOR)
+    ffmpeg_status = ServerCameraRecorder().start_recording(substep.dir_path, substep.name + SUBSTEP_PROFESSOR)
 
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         TabletScreenRecorder().stop_recording()

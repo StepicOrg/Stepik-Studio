@@ -334,23 +334,9 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
         substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
 
     substep.save()
-    post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
-               STEP_URL_NAME + '/' + step_id + '/'
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'postUrl': post_url,
-            'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'SubSteps': SubStep.objects.filter(from_step=step_id),
-            'currSubStep': SubStep.objects.get(id=substep.pk)}
-    args.update(csrf(request))
-    recording_status = start_recording(user_id=request.user.id,
-                                       user_profile=UserProfile.objects.get(user=request.user.id),
-                                       data=args)
-    if recording_status.status is ExecutionStatus.SUCCESS:
-        args.update({'Recording': True})
-        args.update({'StartTime': CameraStatus.objects.get(id='1').start_time / 1000})
-    else:
+
+    recording_status = start_recording(SubStep.objects.get(id=substep.pk))
+    if recording_status.status is not ExecutionStatus.SUCCESS:
         substep.delete()
     return recording_status
 

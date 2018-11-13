@@ -127,7 +127,7 @@ class SubStep(models.Model):
     @property
     def os_path_old(self):
         step = Step.objects.get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_PROFESSOR
+        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.name + SUBSTEP_PROFESSOR)
 
     @property
     def os_screencast_path(self):
@@ -137,7 +137,7 @@ class SubStep(models.Model):
     @property
     def os_screencast_path_old(self):
         step = Step.objects.get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_SCREEN
+        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.name + SUBSTEP_SCREEN)
 
     @property
     def os_tablet_dir(self):
