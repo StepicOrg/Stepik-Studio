@@ -335,7 +335,7 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 
     substep.save()
 
-    recording_status = start_recording(SubStep.objects.get(id=substep.pk))
+    recording_status = start_recording(substep)
     if recording_status.status is not ExecutionStatus.SUCCESS:
         substep.delete()
     return recording_status

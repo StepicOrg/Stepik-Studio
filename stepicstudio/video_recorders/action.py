@@ -1,5 +1,6 @@
-from stepicstudio.const import *
-from stepicstudio.const import SUBSTEP_PROFESSOR, SUBSTEP_SCREEN
+from django.conf import settings
+
+from stepicstudio.const import SUBSTEP_PROFESSOR, SUBSTEP_SCREEN, MP4_EXTENSION
 from stepicstudio.file_system_utils.action import *
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.models import CameraStatus
