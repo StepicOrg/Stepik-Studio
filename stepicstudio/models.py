@@ -116,28 +116,36 @@ class SubStep(models.Model):
         return self.name + ' from step id =' + str(self.from_step)
 
     @property
+    def camera_recording_name(self):
+        return self.name + SUBSTEP_SCREEN
+
+    @property
+    def screencast_name(self):
+        return self.name + SUBSTEP_PROFESSOR
+
+    @property
     def dir_path(self):
         return Step.objects.get(id=self.from_step).os_path
 
     @property
     def os_path(self):
-        return os.path.join(Step.objects.get(id=self.from_step).os_path, self.name + SUBSTEP_PROFESSOR)
+        return os.path.join(Step.objects.get(id=self.from_step).os_path, self.camera_recording_name)
 
     # allows users to view files which recorded with previous version of studio
     @property
     def os_path_old(self):
         step = Step.objects.get(id=self.from_step)
-        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.name + SUBSTEP_PROFESSOR)
+        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.camera_recording_name)
 
     @property
     def os_screencast_path(self):
-        return os.path.join(Step.objects.get(id=self.from_step).os_path, self.name + SUBSTEP_SCREEN)
+        return os.path.join(Step.objects.get(id=self.from_step).os_path, self.screencast_name)
 
     # allows users to view files which recorded with previous version of studio
     @property
     def os_screencast_path_old(self):
         step = Step.objects.get(id=self.from_step)
-        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.name + SUBSTEP_SCREEN)
+        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.screencast_name)
 
     @property
     def os_tablet_dir(self):
@@ -145,7 +153,7 @@ class SubStep(models.Model):
 
     @property
     def os_tablet_path(self):
-        return Step.objects.get(id=self.from_step).tablet_path + self.name + SUBSTEP_SCREEN
+        return Step.objects.get(id=self.from_step).tablet_path + self.screencast_name
 
     @property
     def is_videos_ok(self):

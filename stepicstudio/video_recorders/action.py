@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from stepicstudio.const import SUBSTEP_PROFESSOR, SUBSTEP_SCREEN, MP4_EXTENSION
+from stepicstudio.const import MP4_EXTENSION
 from stepicstudio.file_system_utils.action import *
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.models import CameraStatus
@@ -21,12 +21,12 @@ def start_recording(substep) -> InternalOperationResult:
         logger.error('Can\'t create folder for new substep: %s', create_status.message)
         return create_status
 
-    tablet_exec_info = TabletScreenRecorder().start_recording(substep.os_tablet_dir, substep.name + SUBSTEP_SCREEN)
+    tablet_exec_info = TabletScreenRecorder().start_recording(substep.os_tablet_dir, substep.screencast_name)
 
     if tablet_exec_info.status is not ExecutionStatus.SUCCESS:
         return tablet_exec_info
 
-    ffmpeg_status = ServerCameraRecorder().start_recording(substep.dir_path, substep.name + SUBSTEP_PROFESSOR)
+    ffmpeg_status = ServerCameraRecorder().start_recording(substep.dir_path, substep.camera_recording_name)
 
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         TabletScreenRecorder().stop_recording()
