@@ -431,6 +431,9 @@ def delete_substep(request, course_id, lesson_id, step_id, substep_id):
     except:
         return error500_handler(request)
 
+    if substep.is_locked:
+        return error_description(request, 'Sorry, can\'t delete locked substep.')
+
     server_remove_status = delete_substep_on_disk(substep)
     tablet_remove_status = delete_tablet_substep_files(substep)
 

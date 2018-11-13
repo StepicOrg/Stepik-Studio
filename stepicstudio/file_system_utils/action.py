@@ -19,17 +19,14 @@ ATTEMPTS_PAUSE = 0.05  # seconds
 
 
 def delete_substep_on_disk(substep) -> InternalOperationResult:
-    if substep.is_locked:
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
-
     client = FileSystemClient()
-    camera_status = client.remove_file(substep.os_path)
-    screencast_status = client.remove_file(substep.os_screencast_path)
-    raw_cut_status = client.remove_file(substep.os_automontage_file)
+    cam_removing_info = client.remove_file(substep.os_path)
+    screencast_removing_info = client.remove_file(substep.os_screencast_path)
+    raw_cut_removing_info = client.remove_file(substep.os_automontage_file)
 
-    if camera_status.status is ExecutionStatus.SUCCESS and \
-            screencast_status.status is ExecutionStatus.SUCCESS and \
-            raw_cut_status.status is ExecutionStatus.SUCCESS:
+    if cam_removing_info.status is ExecutionStatus.SUCCESS and \
+            screencast_removing_info.status is ExecutionStatus.SUCCESS and \
+            raw_cut_removing_info.status is ExecutionStatus.SUCCESS:
         return InternalOperationResult(ExecutionStatus.SUCCESS)
     else:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
