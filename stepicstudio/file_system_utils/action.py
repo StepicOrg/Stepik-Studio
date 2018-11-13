@@ -1,17 +1,15 @@
 import logging
 import os
-import shutil
 import subprocess
 import time
 
 import psutil
 
-from stepicstudio.const import FFPROBE_RUN_PATH, COURSE_ULR_NAME
+from stepicstudio.const import FFPROBE_RUN_PATH
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
-from stepicstudio.models import Step, Lesson, SubStep
+from stepicstudio.models import Step
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
-from stepicstudio.ssh_connections import delete_tablet_lesson_files
 from stepicstudio.utils.extra import translate_non_alphanumerics
 
 logger = logging.getLogger('stepic_studio.file_system_utils.action')
@@ -20,16 +18,14 @@ ATTEMPTS_TO_GET_DURATION = 5
 ATTEMPTS_PAUSE = 0.05  # seconds
 
 
-def delete_substep_on_disc(**kwargs: dict) -> InternalOperationResult:
-    data = kwargs['data']
-
-    if data['currSubStep'].is_locked:
+def delete_substep_on_disk(substep) -> InternalOperationResult:
+    if substep.is_locked:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
     client = FileSystemClient()
-    camera_status = client.remove_file(data['currSubStep'].os_path)
-    screencast_status = client.remove_file(data['currSubStep'].os_screencast_path)
-    raw_cut_status = client.remove_file(data['currSubStep'].os_automontage_file)
+    camera_status = client.remove_file(substep.os_path)
+    screencast_status = client.remove_file(substep.os_screencast_path)
+    raw_cut_status = client.remove_file(substep.os_automontage_file)
 
     if camera_status.status is ExecutionStatus.SUCCESS and \
             screencast_status.status is ExecutionStatus.SUCCESS and \
@@ -39,16 +35,16 @@ def delete_substep_on_disc(**kwargs: dict) -> InternalOperationResult:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
 
 
-def delete_server_step_files(**kwargs):
-    data = kwargs['data']
-    substeps = SubStep.objects.filter(from_step=data['Step'].id)
-    for ss in substeps:
-        if ss.is_locked:
-            return False
-
+def delete_step_on_disk(step) -> InternalOperationResult:
     client = FileSystemClient()
-    client.delete_recursively(data['Step'].os_automontage_path)
-    return client.delete_recursively(data['Step'].os_path).status is ExecutionStatus.SUCCESS
+    client.delete_recursively(step.os_automontage_path)
+    return client.delete_recursively(step.os_path)
+
+
+def delete_lesson_on_disk(lesson) -> InternalOperationResult:
+    client = FileSystemClient()
+    client.delete_recursively(lesson.os_automontage_path)
+    return client.delete_recursively(lesson.os_path)
 
 
 def search_as_files_and_update_info(args: dict) -> dict:
@@ -73,16 +69,6 @@ def search_as_files_and_update_info(args: dict) -> dict:
     ziped_list = list(ziped_list)
     args.update({'all_steps': ziped_list})
     return args
-
-
-# TODO: Let's not check if it's fine? Return True anyway?
-def delete_files_on_server(path: str) -> True | False:
-    if os.path.exists(path):
-        shutil.rmtree(path, ignore_errors=True)
-        return True
-    else:
-        logger.debug('%s No folder was found and can\'t be deleted.(This is BAD!)', path)
-        return True
 
 
 def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperationResult:
@@ -196,9 +182,3 @@ def get_storage_capacity(path) -> int:
 def get_server_disk_info(path) -> (int, int):
     return get_free_space(path), get_storage_capacity(path)
 
-
-def delete_files_associated(url_args) -> True | False:
-    lesson_id = int(url_args[url_args.index(COURSE_ULR_NAME) + 3])
-    lesson = Lesson.objects.get(id=lesson_id)
-    folder_on_server = lesson.os_path
-    return delete_files_on_server(folder_on_server) and delete_tablet_lesson_files(lesson)

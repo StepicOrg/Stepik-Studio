@@ -6,7 +6,7 @@ courseurlpatterns = patterns(
     '',
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/(?P<substep_id>[0-9]+)/delete/',
-        'stepicstudio.views.remove_substep'),
+        'stepicstudio.views.delete_substep'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/add_step/', 'stepicstudio.views.add_step'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/delete/', 'stepicstudio.views.delete_lesson'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.show_step'),
@@ -37,12 +37,9 @@ urlpatterns = patterns(
     url(r'^stop-recording/', 'stepicstudio.views.stop_all_recording'),
 
     url(r'^course/(?P<course_id>[0-9]+)/', include(courseurlpatterns)),
-
     url(r'^courses/', 'stepicstudio.views.get_user_courses'),
     url(r'^unlock-all/', 'stepicstudio.views.clear_all_locked_substeps'),
-
     url(r'^add-lesson/', 'stepicstudio.views.add_lesson'),
-
     url(r'^all-notes/(?P<course_id>[0-9]+)/', 'stepicstudio.views.generate_notes_page'),
 
     url(r'^showcontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_view'),
@@ -53,11 +50,10 @@ urlpatterns = patterns(
     url(r'^create-lesson-montage/(?P<lesson_id>[0-9]+)/', 'stepicstudio.views.lesson_montage'),
     url(r'^show-montage/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.show_montage'),
 
-    url(r'^substep-statuses/', 'stepicstudio.views.substep_statuses'),
-
     url(r'^loggedin/$', 'stepicstudio.views.loggedin'),
     url(r'^notes/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.notes'),
 
+    url(r'^substep-statuses/', 'stepicstudio.views.substep_statuses'),
     url(r'^autofocus-camera/', 'stepicstudio.views.autofocus_camera'),
 )
 

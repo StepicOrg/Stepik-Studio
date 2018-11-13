@@ -15,9 +15,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from stepicstudio.camera_controls import AutofocusController
 from stepicstudio.forms import LessonForm, StepForm
-from stepicstudio.models import UserProfile
+from stepicstudio.models import UserProfile, Lesson, SubStep
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
-from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files
+from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files, \
+    delete_tablet_lesson_files
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
@@ -185,16 +186,27 @@ def show_lesson(request, course_id, lesson_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def delete_lesson(request, course_id, lesson_id):
-    lesson_obj = Lesson.objects.get(id=lesson_id)
-    redirect_to_course_page = request.path.split('/')
-    if not delete_files_associated(redirect_to_course_page):
-        return error_description(request, 'Sorry, can\'t delete lesson files. Error log will sent to developers.')
-    for step in Step.objects.filter(from_lesson=lesson_id):
-        for substep in SubStep.objects.filter(from_step=step.pk):
-            substep.delete()
-        step.delete()
-    lesson_obj.delete()
-    return HttpResponseRedirect('/' + '/'.join(redirect_to_course_page[1:3]) + '/')
+    try:
+        lesson_obj = Lesson.objects.get(id=lesson_id)
+        for step in Step.objects.filter(from_lesson=lesson_id):
+            for substep in SubStep.objects.filter(from_step=step.pk):
+                if substep.is_locked:
+                    return error_description(request, 'Sorry, can\'t delete lesson\'s files. '
+                                                      'Lesson contains locked substep.')
+                else:
+                    substep.delete()
+            step.delete()
+    except:
+        logger.warning('Failed to delete lesson\'s files.')
+        return error_description(request, 'Sorry, can\'t delete lesson\'s files. Error log will sent to developers.')
+
+    if delete_lesson_on_disk(lesson_obj).status is ExecutionStatus.SUCCESS and \
+            delete_tablet_lesson_files(lesson_obj).status is ExecutionStatus.SUCCESS:
+        lesson_obj.delete()
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    else:
+        logger.warning('Failed to delete lesson\'s files.')
+        return error_description(request, 'Sorry, can\'t delete lesson\'s files. Error log will sent to developers.')
 
 
 # IMPLEMENT CORRECTLY
@@ -427,27 +439,13 @@ def stop_recording(request, course_id, lesson_id, step_id):
 
 @login_required(login_url='/login/')
 @can_edit_page
-def remove_substep(request, course_id, lesson_id, step_id, substep_id):
-    post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
-               STEP_URL_NAME + '/' + step_id + '/'
-
+def delete_substep(request, course_id, lesson_id, step_id, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
     except:
         return error500_handler(request)
 
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'postUrl': post_url,
-            'SubSteps': SubStep.objects.filter(from_step=step_id),
-            'currSubStep': substep}
-
-    server_remove_status = delete_substep_on_disc(user_id=request.user.id,
-                                                  user_profile=UserProfile.objects.get(user=request.user.id),
-                                                  data=args)
-
+    server_remove_status = delete_substep_on_disk(substep)
     tablet_remove_status = delete_tablet_substep_files(substep)
 
     if server_remove_status.status is not ExecutionStatus.SUCCESS:
@@ -456,33 +454,30 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
     if tablet_remove_status.status is not ExecutionStatus.SUCCESS:
         return error_description(request, tablet_remove_status.message)
 
-    args.update({'Recording': camera_curr_status()})
     substep.delete()
-    return HttpResponseRedirect(post_url)
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
 @login_required(login_url='/login/')
 @can_edit_page
 def delete_step(request, course_id, lesson_id, step_id):
-    step = Step.objects.get(id=step_id)
-    post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/'
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'postUrl': post_url,
-            'SubSteps': SubStep.objects.filter(from_step=step_id)}
-    substeps = SubStep.objects.filter(from_step=step_id)
-    server_step_files_deleted = delete_server_step_files(user_id=request.user.id,
-                                                         user_profile=UserProfile.objects.get(user=request.user.id),
-                                                         data=args)
-    tablet_step_files_deleted = delete_tablet_step_files(step)
+    try:
+        step = Step.objects.get(id=step_id)
+        substeps = SubStep.objects.filter(from_step=step_id)
+    except:
+        logger.warning('Failed to delete step files.')
+        return error_description(request, 'Sorry, can\'t delete step files. Error log will sent to developers.')
 
-    if server_step_files_deleted and tablet_step_files_deleted:
-        for substep in substeps:
-            substep.delete()
+    for ss in substeps:
+        if ss.is_locked:
+            return error_description(request, 'Sorry, can\'t delete step files. Step contains locked substep.')
+        else:
+            ss.delete()
+
+    if delete_step_on_disk(step).status is ExecutionStatus.SUCCESS and \
+            delete_tablet_step_files(step).status is ExecutionStatus.SUCCESS:
         step.delete()
-        return HttpResponseRedirect(post_url)
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
     else:
         logger.warning('Failed to delete step files.')
         return error_description(request, 'Sorry, can\'t delete step files. Error log will sent to developers.')
