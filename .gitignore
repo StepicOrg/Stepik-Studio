@@ -11,3 +11,7 @@
 
 /staticfiles
 /static/jquery1.8.3
+
+.DS_Store
+.coverage
+.coveragerc
