@@ -1,14 +1,12 @@
 {%  extends "base.html" %}
 {% if Recording == False %}
     {%  block content %}
-        <b>Courses:</b><br>
-        <br>
-        <ul id="sortable">
-            {%  for i in Courses %}
-                <li class="ui-state-default">
-                    <a class="reference_wo_underline course_name listdiv" href="/course/{{i.id}}/"> {{i.name}} </a>
-                </li>
+
+        <div class="list-group">
+            {% for i in Courses %}
+                <a href="/course/{{ i.id }}/" class="list-group-item list-group-item-action">{{ i.name }}</a>
             {% endfor %}
-        </ul>
+        </div>
+
     {% endblock %}
 {% endif %}

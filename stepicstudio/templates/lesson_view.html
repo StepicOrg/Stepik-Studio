@@ -2,21 +2,47 @@
 
 {% if Recording == False %}
     {%  block content %}
-        <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
-        <br>
-        <b>Lesson: <a class="reference_wo_underline" href="{{ Lesson.url }}">{{ Lesson.name}}</a></b>
-        <br>
-        <br>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{{ Course.url }}">{{ Course.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ Lesson.name }}
+                </li>
+            </ol>
+        </nav>
+
         <div style="height: 70px">
             <div class="add_container">
                 <a class="add_button_ref" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
             </div>
 
-            <div id="draggable_tip">
+{% comment %}            <div id="draggable_tip">
                 <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
-            </div>
+            </div>{% endcomment %}
         </div>
 
+        <div class="list-group">
+            {% for S in Steps  %}
+                <div class="btn-group" id ='{{ S.position }}' stepID="{{ S.pk }}">
+                    <a class="btn btn-light btn-lg btn-block step_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">
+                        {{ S.name }}
+                    </a>
+                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item raw_cut_step" href>Raw cut</a>
+                        <a class="dropdown-item rename_button step_rename" href>Rename</a>
+                        <a class="dropdown-item delete_button" data-urllink="step/{{ S.id }}/delete/" href>Delete</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+{% comment %}
         <ul id="sortable">
             {% for S in Steps  %}
             <li id ='{{ S.position }}' stepID="{{ S.pk }}" class="ui-state-default">
@@ -38,7 +64,7 @@
             </li>
             {% endfor %}
             <br>
-        </ul>
+        </ul>{% endcomment %}
 
     {% endblock %}
     {% block controls %}

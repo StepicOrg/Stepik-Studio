@@ -3,22 +3,47 @@
 
 {% if Recording == False %}
     {%  block content %}
-        <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
-        <br>
-        <br>
-        <br>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ Course.name }}
+                </li>
+            </ol>
+        </nav>
 
         <div style="height: 70px">
             <div class="add_container">
                 <a class="add_button_ref" href="/add-lesson/">Add Lesson</a>
             </div>
 
-            <div id="draggable_tip">
+{% comment %}            <div id="draggable_tip">
                 <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
-            </div>
+            </div>{% endcomment %}
         </div>
 
-        <ul id="sortable">
+        <div class="list-group">
+            {% for L in Lessons  %}
+                <div id="{{ L.position }}" class="lid-inline" lessonID ="{{ L.id }}">
+
+                    <a class="btn btn-light btn-lg  lesson_name list-group-item" href="/course/{{ Course.id}}/lesson/{{ L.id }}/">
+                        {{ L.name }}
+                    </a>
+
+                    <a class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split list-group-item"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {% comment %}<span class="sr-only">Toggle Dropdown</span>{% endcomment %}
+                    </a>
+
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item raw_cut_lesson" href>Raw cut</a>
+                        <a class="dropdown-item rename_button lesson_rename" href>Rename</a>
+                        <a class="dropdown-item delete_button" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" href>Delete</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+{% comment %}        <ul id="sortable">
             {% for L in Lessons  %}
             <li id="{{ L.position }}"  lessonID ="{{ L.id }}" class="ui-state-default">
                 <div class="listdiv">
@@ -38,8 +63,8 @@
 
             {% endfor %}
             <br>
-        </ul>
-    </ul>
+        </ul>{% endcomment %}
+
     {% endblock %}
 
     {% block controls %}

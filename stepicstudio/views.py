@@ -115,7 +115,7 @@ def auth_view(request):
     password = request.POST.get('password', '')
     user = auth.authenticate(username=username, password=password)
 
-    if user is not None:
+    if user:
         say_hello = UserProfile.objects.get(user=user).is_ready_to_show_hello_screen
         auth.login(request, user)
         if say_hello:

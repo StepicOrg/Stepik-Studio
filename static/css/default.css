@@ -107,11 +107,11 @@
         }
 
         .lesson_name {
-            word-wrap: break-word;
+/*            word-wrap: break-word;
             display: inline-block;
             overflow: hidden !important;
             text-overflow: ellipsis;
-            width: 55%;
+            width: 55%;*/
         }
 
         #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }

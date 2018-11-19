@@ -1,20 +1,11 @@
-{%  extends "base.html" %}
+{% extends "base.html" %}
 {% if Recording == False %}
-    {%  block content %}
-    Hello, {{ full_name }}!
-    <br>
-    <br>
-    <b>Your courses:</b>
-    <br>
-    <br>
-    <ul id="sortable">
-        {%  for i in Courses %}
-            <li class="ui-state-default">
-                <a class="reference_wo_underline course_name" href="/course/{{i.id}}/"> {{i.name}} </a>
-            </li>
-        {% endfor %}
-    </ul>
-
+    {% block content %}
+        <div class="list-group">
+            {% for i in Courses %}
+                <a href="/course/{{ i.id }}/" class="list-group-item list-group-item-action">{{ i.name }}</a>
+            {% endfor %}
+        </div>
     {% endblock %}
 
     {% block controls %}

@@ -102,8 +102,9 @@ var elements_subscriptor = function() {
     sortObj = $("#sortable");
 
     sortObj.sortable({
-        handle: ".drag_handle",
+        // handle: ".drag_handle",
         axis: "y",
+        distance: 15,
         stop : function(event, ui) {
             var reorderingSteps = $(ui.item[0]).find("a").hasClass("step_name");
             var reorderingType = reorderingSteps ? "step" : "lesson";
@@ -128,7 +129,7 @@ var elements_subscriptor = function() {
 
     $(".rename_button").off().on("click", function(e) {
         e.stopPropagation();
-        var name = $(this).parents(".ui-state-default").find(".obj_name").text();
+        var name = $(this).parents(".btn-group").find(".obj_name").text();
         $(this).fadeOut("fast",  function(){
             if ($(this).hasClass("step_rename")) {
                 deleted_element = $(this).parent().parent().html();
@@ -149,7 +150,7 @@ var elements_subscriptor = function() {
             });
         });
 
-    $("#cancel-rename").off().live("click", function(event, new_name) {
+    $("#cancel-rename").off().on("click", "#cancel-rename", function(event, new_name) {
         $(this).fadeOut("fast",  function(){
             deleted_element = upd_deleted_el(new_name, deleted_element);
             console.log("deleted_element:" , deleted_element);
@@ -237,7 +238,7 @@ var elements_subscriptor = function() {
     $(".raw_cut_step").on("click", function(event) {
         event.stopPropagation();
         $(this).text("Processing");
-        var step_id = $(this).parents(".ui-state-default").attr("stepID");
+        var step_id = $(this).parents(".btn-group").attr("stepID");
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
@@ -375,7 +376,7 @@ var elements_subscriptor = function() {
     $(".raw_cut_lesson").on("click", function(event){
         event.stopPropagation();
         $(this).text("Processing");
-        const lesson_id = $(this).parents(".ui-state-default").attr("lessonID");
+        const lesson_id = $(this).parents(".btn-group").attr("lessonID");
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
