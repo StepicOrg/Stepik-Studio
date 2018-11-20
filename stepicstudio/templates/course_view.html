@@ -5,6 +5,9 @@
     {%  block content %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="/courses/">Courses</a>
+                </li>
                 <li class="breadcrumb-item active" aria-current="page">
                     {{ Course.name }}
                 </li>
@@ -21,20 +24,20 @@
             </div>{% endcomment %}
         </div>
 
-        <div class="list-group">
-            {% for L in Lessons  %}
-                <div id="{{ L.position }}" class="lid-inline" lessonID ="{{ L.id }}">
 
-                    <a class="btn btn-light btn-lg  lesson_name list-group-item" href="/course/{{ Course.id}}/lesson/{{ L.id }}/">
+        <div class="btn-group-vertical w-100">
+            {% for L in Lessons  %}
+                <div class="btn-group" id="{{ L.position }}" lessonID ="{{ L.id }}">
+                    <a class="btn btn-light btn-lg step_name text-left"
+                       href="/course/{{ Course.id }}/lesson/{{ L.id }}/">
                         {{ L.name }}
                     </a>
 
-                    <a class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split list-group-item"
+                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-8"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        {% comment %}<span class="sr-only">Toggle Dropdown</span>{% endcomment %}
-                    </a>
+                    </button>
 
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item raw_cut_lesson" href>Raw cut</a>
                         <a class="dropdown-item rename_button lesson_rename" href>Rename</a>
                         <a class="dropdown-item delete_button" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" href>Delete</a>
@@ -42,6 +45,7 @@
                 </div>
             {% endfor %}
         </div>
+
 
 {% comment %}        <ul id="sortable">
             {% for L in Lessons  %}
@@ -68,9 +72,11 @@
     {% endblock %}
 
     {% block controls %}
-        <div class="back button right">
-            <a href="/courses/">Back</a>
-        </div>
+        <a href="/courses/">
+            <button type="button" class="float-left h-100 btn btn-light btn-primary-outline">
+                       <span class="glyphicon glyphicon-chevron-left"></span>
+            </button>
+        </a>
     {% endblock %}
 
 {% endif %}

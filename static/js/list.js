@@ -577,10 +577,10 @@ const func_listener = function(){
         elem.text(rectime(parseInt(seconds - elem.data("starttime"))));
     }, 1000); // 60 * 1000 milsec
 
-   function noBack(){window.history.forward();}
-   noBack();
-   window.onload=noBack;
-   window.onpageshow=function(evt){if(evt.persisted)noBack();}
+   // function noBack(){window.history.forward();}
+   // noBack();
+   // window.onload=noBack;
+   // window.onpageshow=function(evt){if(evt.persisted)noBack();}
    window.onunload=function(){void(0);}
 };
 
