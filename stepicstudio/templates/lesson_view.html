@@ -30,12 +30,12 @@
         <div class="btn-group-vertical w-100">
             {% for S in Steps  %}
                 <div class="btn-group" id ='{{ S.position }}' stepID="{{ S.pk }}">
-                    <a class="btn btn-light btn-lg step_name text-left" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">
+                    <a class="btn btn-light btn-lg text-left border step_name btn-list"
+                       href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">
                         {{ S.name }}
                     </a>
-                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-8"
+                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <span class="sr-only">Toggle Dropdown</span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item raw_cut_step" href>Raw cut</a>
@@ -72,7 +72,7 @@
     {% endblock %}
     {% block controls %}
         <a href="{{ Course.url }}">
-            <button type="button" class="float-left h-100 btn btn-light btn-primary-outline">
+            <button type="button" class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
                 <span class="glyphicon glyphicon-chevron-left"></span>
             </button>
         </a>

@@ -14,26 +14,32 @@
             </ol>
         </nav>
 
-        <div style="height: 70px">
+{% comment %}        <div style="height: 70px">
             <div class="add_container">
                 <a class="add_button_ref" href="/add-lesson/">Add Lesson</a>
             </div>
 
-{% comment %}            <div id="draggable_tip">
+            <div id="draggable_tip">
                 <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
-            </div>{% endcomment %}
-        </div>
+            </div>
+        </div>{% endcomment %}
 
+        <div class="add-item">
+            <a class="btn btn-light btn-lg border btn-list btn-add "
+               href="/add-lesson/">
+                <span class="glyphicon glyphicon-plus"></span>
+            </a>
+        </div>
 
         <div class="btn-group-vertical w-100">
             {% for L in Lessons  %}
                 <div class="btn-group" id="{{ L.position }}" lessonID ="{{ L.id }}">
-                    <a class="btn btn-light btn-lg step_name text-left"
+                    <a class="btn btn-light btn-lg step_name text-left border btn-list"
                        href="/course/{{ Course.id }}/lesson/{{ L.id }}/">
                         {{ L.name }}
                     </a>
 
-                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-8"
+                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     </button>
 
@@ -73,7 +79,7 @@
 
     {% block controls %}
         <a href="/courses/">
-            <button type="button" class="float-left h-100 btn btn-light btn-primary-outline">
+            <button type="button" class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
                        <span class="glyphicon glyphicon-chevron-left"></span>
             </button>
         </a>

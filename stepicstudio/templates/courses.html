@@ -1,6 +1,6 @@
-{%  extends "base.html" %}
+{% extends "base.html" %}
 {% if Recording == False %}
-    {%  block content %}
+    {% block content %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active" aria-current="page">
@@ -8,9 +8,12 @@
                 </li>
             </ol>
         </nav>
-        <div class="list-group">
+
+        <div class="btn-group-vertical w-100">
             {% for i in Courses %}
-                <a href="/course/{{ i.id }}/" class="list-group-item list-group-item-action">{{ i.name }}</a>
+                <a href="/course/{{ i.id }}/" class="btn btn-light btn-lg text-left border btn-list">
+                    {{ i.name }}
+                </a>
             {% endfor %}
         </div>
 

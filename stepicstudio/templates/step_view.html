@@ -3,19 +3,47 @@
 {%  load static %}
     {%  block content %}
 
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="/courses/">Courses</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{{ Course.url }}">{{ Course.name }}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{{ Lesson.url }}">{{ Lesson.name}}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ Step.name }}
+                </li>
+            </ol>
+        </nav>
+
         {% if Recording != True %}
-            {% if AF_ENABLED == True %}
+
+            <div class="w-100 text-center">
+                <h1><span class="start_recording">Start Recording </span>
+                </h1>
+                <h5><span class="tip-text">Click here or press the spacebar to start</span>
+                </h5>
+            </div>
+
+            <div class="list-group w-100">
+                {% for SS in SubSteps %}
+                    <div class="list-group-item btn-list substep-list">
+                        <a class="substep-list">{{ SS.name|to_custom_name:tmpl_name }}</a>
+                    </div>
+
+                {% endfor %}
+            </div>
+
+   {% comment %}         {% if AF_ENABLED == True %}
             <div class="af_button right">
                 <b>Autofocus</b>
             </div>
             {% endif %}
 
-            <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
-            <br>
-            <b>Lesson: <a class="reference_wo_underline" href="{{ Lesson.url }}">{{ Lesson.name}}</a></b>
-            <br>
-            <b>Step: <a>{{ Step.name}}</a></b>
-            <br>
             <br class="step_view">
 
             <div ALIGN="CENTER">
@@ -48,8 +76,6 @@
                         </div>
                 {% endfor %}
 
-            <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
-
             <p>Video Editing Notes:</p>
             {{ Step.text_data | formatting_text}}
             <input id = "edit-text" type="submit" value="Edit">
@@ -60,7 +86,7 @@
                 </textarea>
                 <input type="submit" value="Publish">
                 </form>
-            </div>
+            </div>{% endcomment %}
         {% else %}
             <div ALIGN = center>
             <h3> Recording started</h3>
@@ -71,3 +97,10 @@
             </div>
         {% endif %}
     {% endblock %}
+{% block controls %}
+    <a href="{{ Lesson.url }}">
+        <button type="button" class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </button>
+    </a>
+{% endblock %}

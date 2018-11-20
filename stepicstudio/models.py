@@ -117,11 +117,11 @@ class SubStep(models.Model):
 
     @property
     def camera_recording_name(self):
-        return self.name + SUBSTEP_SCREEN
+        return self.name + SUBSTEP_PROFESSOR
 
     @property
     def screencast_name(self):
-        return self.name + SUBSTEP_PROFESSOR
+        return self.name + SUBSTEP_SCREEN
 
     @property
     def dir_path(self):
