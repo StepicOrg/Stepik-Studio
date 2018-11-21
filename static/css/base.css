@@ -42,7 +42,7 @@ code {
 }
 
 .btn-list {
-  background-color: #FAFAFA;
+  background-color: #fcfcfc;
 }
 
 .btn-add {
@@ -64,4 +64,8 @@ code {
 
 .navbar-brand {
   padding: 0 0 0;
+}
+
+#add-form {
+  width: 500px;
 }

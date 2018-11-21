@@ -2,8 +2,9 @@
 {%  load static %}
 {% block head %}
     {{ block.super }}
-    <script src="{% static "js/create_item.js" %}"></script>
+    <script src="{% static "js/course_view.js" %}"></script>
 {% endblock %}
+
 {% if Recording == False %}
     {%  block content %}
         <nav aria-label="breadcrumb">
@@ -17,35 +18,21 @@
             </ol>
         </nav>
 
-{% comment %}        <div style="height: 70px">
-            <div class="add_container">
-                <a class="add_button_ref" href="/add-lesson/">Add Lesson</a>
-            </div>
-
-            <div id="draggable_tip">
-                <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
-            </div>
-        </div>{% endcomment %}
-
-        <div class="add-item btn-group dropright">
+        <div class="add-item btn-group dropright" data-urllink="/course/{{ Course.id }}/add-lesson/">
             <button type="button" class="btn btn-light btn-lg border rounded btn-list btn-add dropdown-toggle-split"
                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/add-lesson/">
                 <span class="glyphicon glyphicon-plus"></span>
             </button>
 
-            <div class="dropdown-menu" id="add-form">
+            <div class="dropdown-menu p-4" id="add-form">
             </div>
         </div>
 
-
-
-        <div class="btn-group-vertical w-100">
+        <div class="btn-group-vertical w-100 sortable">
             {% for L in Lessons  %}
                 <div class="btn-group" id="{{ L.position }}" lessonID ="{{ L.id }}">
-                    <a class="btn btn-light btn-lg step_name text-left border btn-list"
-                       href="/course/{{ Course.id }}/lesson/{{ L.id }}/">
-                        {{ L.name }}
-                    </a>
+                    <a class="btn btn-light btn-lg text-left border btn-list lesson_name obj_name"
+                       href="/course/{{ Course.id }}/lesson/{{ L.id }}/">{{ L.name }}</a>
 
                     <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -53,12 +40,58 @@
 
                     <div class="dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item raw_cut_lesson" href>Raw cut</a>
-                        <a class="dropdown-item rename_button lesson_rename" href>Rename</a>
-                        <a class="dropdown-item delete_button" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" href>Delete</a>
+                        <a class="dropdown-item" id="#rename-button" href="#renameModalCenter">Rename</a>
+                        <a class="dropdown-item" id="#delete-button" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" href="#deleteModalCenter">Delete</a>
                     </div>
                 </div>
             {% endfor %}
         </div>
+
+        <!-- Delete modal -->
+        <div class="modal fade" id="deleteModalCenter" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalDeleteTitle">
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Action can't be undone. Are you sure?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="modalDeleteButton" class="btn btn-secondary">Delete</button>
+                        <button type="button" class="btn btn-primary btn-info" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rename modal -->
+        <div class="modal fade" id="renameModalCenter" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalRenameTitle">
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Action can't be undone. Are you sure?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="modalRenameButton" class="btn btn-primary btn-info">Rename</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
 
 {% comment %}        <ul id="sortable">
@@ -87,8 +120,9 @@
 
     {% block controls %}
         <a href="/courses/">
-            <button type="button" class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
-                       <span class="glyphicon glyphicon-chevron-left"></span>
+            <button type="button"
+                    class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
+                <span class="glyphicon glyphicon-chevron-left"></span>
             </button>
         </a>
     {% endblock %}

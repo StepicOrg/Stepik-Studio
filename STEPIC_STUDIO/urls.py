@@ -4,6 +4,7 @@ from django.views.generic import RedirectView
 
 courseurlpatterns = patterns(
     '',
+    url(r'^add-lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/delete/', 'stepicstudio.views.delete_step'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/(?P<substep_id>[0-9]+)/delete/',
         'stepicstudio.views.delete_substep'),
@@ -39,7 +40,6 @@ urlpatterns = patterns(
     url(r'^course/(?P<course_id>[0-9]+)/', include(courseurlpatterns)),
     url(r'^courses/', 'stepicstudio.views.get_user_courses'),
     url(r'^unlock-all/', 'stepicstudio.views.clear_all_locked_substeps'),
-    url(r'^add-lesson/', 'stepicstudio.views.add_lesson'),
     url(r'^all-notes/(?P<course_id>[0-9]+)/', 'stepicstudio.views.generate_notes_page'),
 
     url(r'^showcontent/(?P<substep_id>[0-9]+)/', 'stepicstudio.views.video_view'),

@@ -21,15 +21,14 @@ class LessonForm(forms.ModelForm):
         self.from_course = kwargs.pop('from_course', 1)
         super(LessonForm, self).__init__(*args, **kwargs)
 
-        self.fields['from_courseName'] = forms.ChoiceField(
-            choices=get_my_courses(self.user), initial=Course.objects.filter(id=self.from_course)[0].id)
-
     class Meta:
         model = Lesson
         labels = {'name': 'Enter lesson name', }
-        widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Please use meaningful names', 'autofocus': 'autofocus'}),
-        }
+        widgets = {'name': forms.TextInput(attrs={'placeholder': 'Lesson name',
+                                                  'autofocus': 'autofocus',
+                                                  'required': 'required',
+                                                  'class': 'form-control'})}
+
         exclude = ('from_course', 'position', 'start_time')
 
     def lesson_save(self):
@@ -38,11 +37,14 @@ class LessonForm(forms.ModelForm):
         return ls
 
     def clean(self):
-        if Lesson.objects.filter(from_course=self.data['from_courseName'], name=self.cleaned_data.get('name')).count():
+        if not self.cleaned_data.get('name'):
+            return
+
+        if Lesson.objects.filter(from_course=self.from_course, name=self.cleaned_data.get('name')).count():
             raise ValidationError('Name \'{}\' already exists. Please, use another name for lesson.'
                                   .format(self.cleaned_data.get('name')))
 
-        course = Course.objects.get(id=self.data['from_courseName'])
+        course = Course.objects.get(id=self.from_course)
         new_lesson_path = course.os_path + translate_non_alphanumerics(self.cleaned_data.get('name')) + '/'
 
         if os.path.isdir(new_lesson_path):
@@ -72,6 +74,9 @@ class StepForm(forms.ModelForm):
         return ls
 
     def clean(self):
+        if not self.cleaned_data.get('name'):
+            return
+
         if Step.objects.filter(from_lesson=self.lessonId, name=self.cleaned_data.get('name')).count():
             raise ValidationError('Name \'{}\' already exists. Please, use another name for step.'
                                   .format(self.cleaned_data.get('name')))

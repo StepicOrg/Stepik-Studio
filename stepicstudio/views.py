@@ -139,37 +139,27 @@ def loggedin(request):
         return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
 
-# TODO: Implement correctly !!! REDECORATE WITH CAN_EDIT_PAGE
 @login_required(login_url='/login/')
-def add_lesson(request):
-    print(request.method)
+@can_edit_page
+def add_lesson(request, course_id):
     if request.method == 'GET':
         if request.META.get('HTTP_REFERER'):
-            try:
-                url_arr = (request.META.get('HTTP_REFERER')).split('/')
-                _id = url_arr[url_arr.index('course') + 1]
-                form = LessonForm(userId=request.user.id, from_course=_id)
-            except:
-                return error500_handler(request)
+            form = LessonForm(userId=request.user.id, from_course=course_id)
         else:
             raise Http404
     elif request.method == 'POST':
-        form = LessonForm(request.POST, userId=request.user.id)
+        form = LessonForm(request.POST, userId=request.user.id, from_course=course_id)
         if form.is_valid():
-            from_course = form.data['from_courseName']
             saved_lesson = form.lesson_save()
             last_saved = Lesson.objects.get(id=saved_lesson.pk)
-            last_saved.from_course = from_course
+            last_saved.from_course = course_id
             last_saved.save()
             return HttpResponse('Ok')
     else:
         raise Http404
 
-    args = {'full_name': request.user.username,
-            'go_back': request.META.get('HTTP_REFERER')}
+    args = {'form': form}
     args.update(csrf(request))
-    args.update({'Recording': camera_curr_status})
-    args['form'] = form
     return render_to_response('create_lesson.html', args, context_instance=RequestContext(request))
 
 

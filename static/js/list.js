@@ -99,10 +99,9 @@ function show_video_popup(ref, elem, width=1080, height=720) {
 }
 
 var elements_subscriptor = function() {
-    sortObj = $("#sortable");
+    let sortObj = $(".sortable");
 
     sortObj.sortable({
-        // handle: ".drag_handle",
         axis: "y",
         distance: 15,
         stop : function(event, ui) {
@@ -116,9 +115,6 @@ var elements_subscriptor = function() {
 
                 data: {"type": reorderingType, "order": $(this).sortable("toArray"), "ids": $(this).sortable("toArray",
                     {attribute: reorderingSteps ? "stepID" : "lessonID"})},
-                success: function(data){
-                        //alert(data);
-                }
             });
         }
     });
@@ -372,20 +368,6 @@ var elements_subscriptor = function() {
             }
         });
     }
-
-    $(".raw_cut_lesson").on("click", function(event){
-        event.stopPropagation();
-        $(this).text("Processing");
-        const lesson_id = $(this).parents(".btn-group").attr("lessonID");
-        $.ajax({
-            beforeSend: cookie_csrf_updater,
-            type: "POST",
-            url: "/create-lesson-montage/" + lesson_id + "/",
-            error: function(data){
-                alert(data.responseText);
-            }
-        });
-    });
 
     $(".start_montage").on("click", function(event){
         event.stopPropagation();

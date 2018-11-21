@@ -114,13 +114,13 @@
             width: 55%;*/
         }
 
-        #sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
-        #sortable li { margin: 0 3px 3px 3px;
-            font-size: 1.4em;
-            height: auto;
-            background: #FAFAFA;
-            border-width: 0px;
-        }
+        /*#sortable { list-style-type: none; margin: 0; padding: 0; width: 100%; }*/
+        /*#sortable li { margin: 0 3px 3px 3px;*/
+            /*font-size: 1.4em;*/
+            /*height: auto;*/
+            /*background: #FAFAFA;*/
+            /*border-width: 0px;*/
+        /*}*/
 
         #page {
             width: 1250px;
@@ -247,12 +247,12 @@
             height: 37px;
         }
 
-        .delete_button {
-            width: auto;
-            cursor: pointer;
-            padding-left: 5px;
-            padding-right: 5px;
-        }
+        /*.delete_button {*/
+            /*width: auto;*/
+            /*cursor: pointer;*/
+            /*padding-left: 5px;*/
+            /*padding-right: 5px;*/
+        /*}*/
 
         .show_content {
             cursor: pointer;
@@ -296,9 +296,9 @@
         }
 
 
-        .delete_button {
-            vertical-align: middle;
-        }
+        /*.delete_button {*/
+            /*vertical-align: middle;*/
+        /*}*/
 
 
 
