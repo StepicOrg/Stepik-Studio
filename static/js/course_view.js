@@ -47,19 +47,6 @@ $(function () {
     });
 });
 
-//Shows modal dialog on delete button click
-$(function () {
-    $('a[href="#deleteModalCenter"]').on("click", function () {
-        const title = "Delete " + $(this).parent().parent().find(".lesson_name").text() + "?";
-        $("#modalDeleteTitle").text(title);
-        $("#deleteModalCenter").modal("show");
-        const urlink = $(this).data("urllink");
-        $("#modalDeleteButton").on("click", function () {
-            window.location.replace(urlink);
-        });
-    })
-});
-
 //Creates raw cut for whole lesson
 $(function () {
     $(".raw_cut_lesson").on("click", function (event) {
@@ -77,15 +64,36 @@ $(function () {
     });
 });
 
+//Shows modal dialog on delete button click
+$(function () {
+    $('a[href="#deleteModalCenter"]').on("click", function () {
+        const title = "Delete " + $(this).parent().parent().find(".lesson_name").text() + "?";
+        $("#modalDeleteTitle").text(title);
+        $("#deleteModalCenter").modal("show");
+        const urlink = $(this).data("urllink");
+        $("#modalDeleteButton").on("click", function () {
+            window.location.replace(urlink);
+        });
+    })
+});
+
 //Shows modal dialog on rename button click
 $(function () {
     $('a[href="#renameModalCenter"]').on("click", function () {
         const title = $(this).parent().parent().find(".lesson_name").text();
-        $("#modalRenameTitle").text(title);
+        $("#modalRenameTitle").text('Rename ' + '\'' + title + '\'');
         $("#renameModalCenter").modal("show");
+
+        $("#renameModalCenter").find('.modal-body input').val(title);
         // const urlink = $(this).data("urllink");
         // $("#modalDeleteButton").on("click", function () {
         //     window.location.replace(urlink);
         // });
     })
+});
+
+$(function () {
+    $('#renameModalCenter').on('shown.bs.modal', function () {
+        $(this).find('[autofocus]').focus();
+    });
 });
