@@ -84,6 +84,13 @@ $(function () {
     });
 });
 
+//Clear error message on close
+$(function () {
+    $('#renameModalCenter').on('hidden.bs.modal', function (e) {
+        $("#rename-error").empty();
+    });
+});
+
 //Shows and handles modal dialog
 $(function () {
     $('a[href="#renameModalCenter"]').on("click", function () {
