@@ -142,6 +142,7 @@ def loggedin(request):
 # TODO: Implement correctly !!! REDECORATE WITH CAN_EDIT_PAGE
 @login_required(login_url='/login/')
 def add_lesson(request):
+    print(request.method)
     if request.method == 'GET':
         if request.META.get('HTTP_REFERER'):
             try:
@@ -160,7 +161,7 @@ def add_lesson(request):
             last_saved = Lesson.objects.get(id=saved_lesson.pk)
             last_saved.from_course = from_course
             last_saved.save()
-            return HttpResponseRedirect('/course/' + from_course + '/')
+            return HttpResponse('Ok')
     else:
         raise Http404
 

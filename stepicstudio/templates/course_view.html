@@ -1,6 +1,9 @@
 {%  extends "base.html" %}
 {%  load static %}
-
+{% block head %}
+    {{ block.super }}
+    <script src="{% static "js/create_item.js" %}"></script>
+{% endblock %}
 {% if Recording == False %}
     {%  block content %}
         <nav aria-label="breadcrumb">
@@ -24,12 +27,17 @@
             </div>
         </div>{% endcomment %}
 
-        <div class="add-item">
-            <a class="btn btn-light btn-lg border btn-list btn-add "
-               href="/add-lesson/">
+        <div class="add-item btn-group dropright">
+            <button type="button" class="btn btn-light btn-lg border rounded btn-list btn-add dropdown-toggle-split"
+               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/add-lesson/">
                 <span class="glyphicon glyphicon-plus"></span>
-            </a>
+            </button>
+
+            <div class="dropdown-menu" id="add-form">
+            </div>
         </div>
+
+
 
         <div class="btn-group-vertical w-100">
             {% for L in Lessons  %}

@@ -1,15 +1,6 @@
-{%  extends "base.html" %}
-{% if Recording == False %}
-    {%  block content %}
+<form id="target" method="post"> {% csrf_token %}
 
-    <form action="/add-lesson/" method = "post" > {% csrf_token %}
-        <ul>
-            {{ form.as_ul }}
-        </ul>
-        <input type="submit" name="submit" value="Add Lesson">
-    </form>
-    <div class="back button right">
-        <a href="{{go_back}}">Back</a>
-    </div>
-    {% endblock %}
-{% endif %}
+        {{ form.as_ul }}
+
+{% comment %}    <input type="submit" class="add-submit" name="submit" value="Add Lesson">{% endcomment %}
+</form>

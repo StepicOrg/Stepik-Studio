@@ -1,5 +1,6 @@
 {% load static %}
 <html>
+{% block head %}
 <head lang="en">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -21,7 +22,7 @@
     <script src={% static "extra/handlebars-v3.0.3.js" %}></script>
     <script src={% static "extra/hb_templates/templates.js" %}></script>
 </head>
-
+{% endblock %}
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
