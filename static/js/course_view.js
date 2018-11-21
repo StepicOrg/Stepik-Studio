@@ -77,23 +77,62 @@ $(function () {
     })
 });
 
-//Shows modal dialog on rename button click
-$(function () {
-    $('a[href="#renameModalCenter"]').on("click", function () {
-        const title = $(this).parent().parent().find(".lesson_name").text();
-        $("#modalRenameTitle").text('Rename ' + '\'' + title + '\'');
-        $("#renameModalCenter").modal("show");
-
-        $("#renameModalCenter").find('.modal-body input').val(title);
-        // const urlink = $(this).data("urllink");
-        // $("#modalDeleteButton").on("click", function () {
-        //     window.location.replace(urlink);
-        // });
-    })
-});
-
+//Focus on input field
 $(function () {
     $('#renameModalCenter').on('shown.bs.modal', function () {
         $(this).find('[autofocus]').focus();
+    });
+});
+
+//Shows and handles modal dialog
+$(function () {
+    $('a[href="#renameModalCenter"]').on("click", function () {
+        const lessonId = $(this).parents(".btn-group").attr("lessonID");
+        const errorDesriptor = $("#rename-error");
+        const title = $(this)
+            .parent()
+            .parent()
+            .find(".lesson_name")
+            .text();
+
+        $("#lesson-new-name").focus(function () {
+            errorDesriptor.empty();
+        });
+
+        $("#modalRenameTitle").text('Rename ' + '\'' + title + '\'');
+
+        $("#renameModalCenter")
+            .modal("show")
+            .find('.modal-body input')
+            .val(title);
+
+        $("#modalRenameButton").on("click", function (e) {
+            const sameNamesCount = $(".lesson_name").filter(function() {
+                return ($(this).text() === $("#lesson-new-name").val());
+            }).length;
+
+            if (sameNamesCount !== 0) {
+                errorDesriptor.text("Course already contains lesson with name " +
+                    "\'" + $(this).text() + "\'");
+                    return;
+            }
+
+            $.ajax({
+                beforeSend: cookie_csrf_updater,
+                type: "POST",
+                url: "/rename-elem/",
+                data: {
+                    "id": lessonId,
+                    "type": "lesson",
+                    "name_new": $("#lesson-new-name").val()
+                },
+                success: function (data) {
+                    window.location.reload();
+                },
+                error: function (request, status, errorThrown) {
+                    errorDesriptor.text(request.responseText);
+                }
+            });
+        });
     });
 });

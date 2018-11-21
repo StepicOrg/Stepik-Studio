@@ -52,15 +52,16 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalDeleteTitle">
-                        </h5>
+                        <h5 class="modal-title" id="modalDeleteTitle"></h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
+
                     <div class="modal-body">
                         Action can't be undone. Are you sure?
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" id="modalDeleteButton" class="btn btn-secondary">Delete</button>
                         <button type="button" class="btn btn-primary btn-info" data-dismiss="modal">Cancel</button>
@@ -74,18 +75,20 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="modalRenameTitle">
-                        </h5>
+                        <h5 class="modal-title" id="modalRenameTitle"></h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
+
                     <div class="modal-body">
+                        <span class="text-danger" id="rename-error"></span>
                         <div class="form-group">
                             <label for="lesson-new-name" class="col-form-label">New name:</label>
                             <input type="text" class="form-control" id="lesson-new-name" required autofocus>
                         </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" id="modalRenameButton" class="btn btn-primary btn-info">Rename</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -93,31 +96,6 @@
                 </div>
             </div>
         </div>
-
-
-
-
-{% comment %}        <ul id="sortable">
-            {% for L in Lessons  %}
-            <li id="{{ L.position }}"  lessonID ="{{ L.id }}" class="ui-state-default">
-                <div class="listdiv">
-                    <a class="obj_name lesson_name" href="/course/{{ Course.id}}/lesson/{{ L.id  }}/">{{ L.name }}</a>
-                    <div class="lesson_controls">
-                        <span class="raw_cut_lesson">Raw Cut</span> |
-                        <span class="rename_button lesson_rename">rename</span> |
-                        <span class="delete_button">
-                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" width="22" height="22" id="delete_svg">
-                        </span> |
-                        <span class="drag_handle">
-                            <img src="/static/icons/draggable.svg" width="30" height="30">
-                        </span>
-                    </div>
-                </div>
-            </li>
-
-            {% endfor %}
-            <br>
-        </ul>{% endcomment %}
 
     {% endblock %}
 
