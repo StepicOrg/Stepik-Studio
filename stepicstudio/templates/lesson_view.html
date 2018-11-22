@@ -23,10 +23,13 @@
 
         <div class="add-item btn-group dropright"
              data-urllink="/course/{{ Course.id }}/lesson/{{ Lesson.id }}/add_step/">
-            <button type="button" class="btn btn-light btn-lg border rounded btn-list dropdown-toggle-split"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/add-lesson/">
-                <span class="glyphicon glyphicon-plus"></span>
-            </button>
+
+            <span data-toggle="dropdown">
+                <button type="button" class="btn btn-light btn-lg border rounded btn-list dropdown-toggle-split"
+                        data-toggle="tooltip" aria-haspopup="true" aria-expanded="false" data-placement="left" title="Create new step">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </span>
 
             <div class="dropdown-menu p-4" id="add-form">
             </div>

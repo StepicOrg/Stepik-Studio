@@ -6,7 +6,10 @@ $(function () {
             type: "GET",
             url: $(this).data("urllink"),
             success: function (data, status) {
-                $("#add-form").append(data);
+                $("#add-form")
+                    .append(data)
+                    .find('[autofocus]')
+                    .focus();
             }
         });
     });
@@ -77,7 +80,7 @@ $(function () {
     })
 });
 
-//Focus on input field
+//Focus on input field when rename modal opened
 $(function () {
     $('#renameModalCenter').on('shown.bs.modal', function () {
         $(this).find('[autofocus]').focus();
@@ -96,7 +99,6 @@ $(function () {
     $('a[href="#renameModalCenter"]').on("click", function () {
         const elem_id = $(this).parents(".btn-group").attr("elem_id");
         const type = $(this).parents(".btn-group").find("a").attr("type");
-        console.info(type);
         const errorDesriptor = $("#rename-error");
         const title = $(this)
             .parent()
@@ -168,4 +170,9 @@ $(function () {
             });
         }
     }).disableSelection();
+});
+
+//Enable tooltips
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
 });
