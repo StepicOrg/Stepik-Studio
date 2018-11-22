@@ -1,12 +1,12 @@
-{%  extends "base.html" %}
-{%  load static %}
+{% extends "base.html" %}
+{% load static %}
 {% block head %}
     {{ block.super }}
-    <script src="{% static "js/course_view.js" %}"></script>
+    <script src="{% static "js/list_view.js" %}"></script>
 {% endblock %}
 
 {% if Recording == False %}
-    {%  block content %}
+    {% block content %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" aria-current="page">
@@ -19,8 +19,8 @@
         </nav>
 
         <div class="add-item btn-group dropright" data-urllink="/course/{{ Course.id }}/add-lesson/">
-            <button type="button" class="btn btn-light btn-lg border rounded btn-list btn-add dropdown-toggle-split"
-               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/add-lesson/">
+            <button type="button" class="btn btn-light btn-lg border rounded btn-list dropdown-toggle-split"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/add-lesson/">
                 <span class="glyphicon glyphicon-plus"></span>
             </button>
 
@@ -29,73 +29,29 @@
         </div>
 
         <div class="btn-group-vertical w-100 sortable">
-            {% for L in Lessons  %}
-                <div class="btn-group" id="{{ L.position }}" lessonID ="{{ L.id }}">
-                    <a class="btn btn-light btn-lg text-left border btn-list lesson_name obj_name"
+            {% for L in Lessons %}
+                <div class="btn-group" id="{{ L.position }}" elem_id="{{ L.id }}">
+                    <a class="btn btn-light btn-lg text-left border btn-list elem_name" type="lesson"
                        href="/course/{{ Course.id }}/lesson/{{ L.id }}/">{{ L.name }}</a>
 
-                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
+                    <button type="button"
+                            class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     </button>
 
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item raw_cut_lesson" href>Raw cut</a>
+                        <a class="dropdown-item raw_cut" data-urllink="/create-lesson-montage/{{ L.id }}/" href>
+                            Raw cut</a>
                         <a class="dropdown-item" id="#rename-button" href="#renameModalCenter">Rename</a>
-                        <a class="dropdown-item" id="#delete-button" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" href="#deleteModalCenter">Delete</a>
+                        <a class="dropdown-item" id="#delete-button"
+                           data-urllink="/course/{{ Course.id }}/lesson/{{ L.id }}/delete/" href="#deleteModalCenter">Delete</a>
                     </div>
                 </div>
             {% endfor %}
         </div>
 
-        <!-- Delete modal -->
-        <div class="modal fade" id="deleteModalCenter" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalDeleteTitle"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-
-                    <div class="modal-body">
-                        Action can't be undone. Are you sure?
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" id="modalDeleteButton" class="btn btn-secondary">Delete</button>
-                        <button type="button" class="btn btn-primary btn-info" data-dismiss="modal">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rename modal -->
-        <div class="modal fade" id="renameModalCenter" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalRenameTitle"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-
-                    <div class="modal-body">
-                        <span class="text-danger" id="rename-error"></span>
-                        <div class="form-group">
-                            <label for="lesson-new-name" class="col-form-label">New name:</label>
-                            <input type="text" class="form-control" id="lesson-new-name" required autofocus>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" id="modalRenameButton" class="btn btn-primary btn-info">Rename</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include 'modal_delete.html' %}
+        {% include 'modal_rename.html' %}
 
     {% endblock %}
 
@@ -107,5 +63,4 @@
             </button>
         </a>
     {% endblock %}
-
 {% endif %}

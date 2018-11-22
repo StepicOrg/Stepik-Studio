@@ -54,18 +54,18 @@ class LessonForm(forms.ModelForm):
 
 
 class StepForm(forms.ModelForm):
-    def __init__(self, userId, lessonId, *args, **kwargs):
+    def __init__(self, lesson_id, *args, **kwargs):
         super(StepForm, self).__init__(*args, **kwargs)
-        self.user = userId
-        self.lessonId = lessonId
-        self.fields['from_lessonId'] = forms.ChoiceField(choices={(lessonId, "This lesson")})
+        self.lesson_id = lesson_id
 
     class Meta:
         model = Step
         labels = {'name': 'Enter step name', }
-        widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Please use meaningful names', 'autofocus': 'autofocus'}),
-        }
+        widgets = {'name': forms.TextInput(attrs={'placeholder': 'Step name',
+                                                  'autofocus': 'autofocus',
+                                                  'required': 'required',
+                                                  'class': 'form-control'})}
+
         exclude = ('from_lesson', 'position', 'start_time', 'duration', 'is_fresh', 'text_data')
 
     def step_save(self):
@@ -77,11 +77,11 @@ class StepForm(forms.ModelForm):
         if not self.cleaned_data.get('name'):
             return
 
-        if Step.objects.filter(from_lesson=self.lessonId, name=self.cleaned_data.get('name')).count():
+        if Step.objects.filter(from_lesson=self.lesson_id, name=self.cleaned_data.get('name')).count():
             raise ValidationError('Name \'{}\' already exists. Please, use another name for step.'
                                   .format(self.cleaned_data.get('name')))
 
-        lesson = Lesson.objects.get(id=self.lessonId)
+        lesson = Lesson.objects.get(id=self.lesson_id)
         new_step_path = lesson.os_path + translate_non_alphanumerics(self.cleaned_data.get('name')) + '/'
 
         if os.path.isdir(new_step_path):

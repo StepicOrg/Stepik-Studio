@@ -40,23 +40,23 @@ $(function () {
     });
 });
 
-//Doesn't close on menu click
+//Doesn't close dropdowns on click
 $(function () {
     $(document).on("click", ".dropdown-menu", function (e) {
         e.stopPropagation();
     });
 });
 
-//Creates raw cut for whole lesson
+//Creates raw cut
 $(function () {
-    $(".raw_cut_lesson").on("click", function (event) {
+    $(".raw_cut").on("click", function (event) {
         event.stopPropagation();
         $(this).text("Processing");
-        const lesson_id = $(this).parents(".btn-group").attr("lessonID");
+        const url = $(this).data("urllink");
         $.ajax({
             beforeSend: cookie_csrf_updater,
             type: "POST",
-            url: "/create-lesson-montage/" + lesson_id + "/",
+            url: url,
             error: function (data) {
                 alert(data.responseText);
             }
@@ -67,7 +67,7 @@ $(function () {
 //Shows modal dialog on delete button click
 $(function () {
     $('a[href="#deleteModalCenter"]').on("click", function () {
-        const title = "Delete " + $(this).parent().parent().find(".lesson_name").text() + "?";
+        const title = "Delete " + $(this).parent().parent().find(".elem_name").text() + "?";
         $("#modalDeleteTitle").text(title);
         $("#deleteModalCenter").modal("show");
         const urlink = $(this).data("urllink");
@@ -91,18 +91,20 @@ $(function () {
     });
 });
 
-//Shows and handles modal dialog
+//Shows and handles rename modal dialog
 $(function () {
     $('a[href="#renameModalCenter"]').on("click", function () {
-        const lessonId = $(this).parents(".btn-group").attr("lessonID");
+        const elem_id = $(this).parents(".btn-group").attr("elem_id");
+        const type = $(this).parents(".btn-group").find("a").attr("type");
+        console.info(type);
         const errorDesriptor = $("#rename-error");
         const title = $(this)
             .parent()
             .parent()
-            .find(".lesson_name")
+            .find(".elem_name")
             .text();
 
-        $("#lesson-new-name").focus(function () {
+        $("#new-name").focus(function () {
             errorDesriptor.empty();
         });
 
@@ -114,13 +116,13 @@ $(function () {
             .val(title);
 
         $("#modalRenameButton").on("click", function (e) {
-            const sameNamesCount = $(".lesson_name").filter(function() {
-                return ($(this).text() === $("#lesson-new-name").val());
+            const sameNamesCount = $(".elem_name").filter(function() {
+                return ($(this).text() === $("#new-name").val());
             }).length;
 
             if (sameNamesCount !== 0) {
-                errorDesriptor.text("Course already contains lesson with name " +
-                    "\'" + $(this).text() + "\'");
+                errorDesriptor.text("Element with name " +
+                    "\'" + $("#new-name").val() + "\' already exists");
                     return;
             }
 
@@ -129,9 +131,9 @@ $(function () {
                 type: "POST",
                 url: "/rename-elem/",
                 data: {
-                    "id": lessonId,
-                    "type": "lesson",
-                    "name_new": $("#lesson-new-name").val()
+                    "id": elem_id,
+                    "type": type,
+                    "name_new": $("#new-name").val()
                 },
                 success: function (data) {
                     window.location.reload();
@@ -142,4 +144,28 @@ $(function () {
             });
         });
     });
+});
+
+//To make list elements draggable
+$(function () {
+    $(".sortable").sortable({
+        axis: "y",
+        distance: 15,
+        stop: function (event, ui) {
+            const type =$(ui.item[0]).find("a").attr("type");
+            $.ajax({
+                beforeSend: cookie_csrf_updater,
+
+                type: "POST",
+                url: "/reorder-lists/",
+
+                data: {
+                    "type": type,
+                    "order": $(this).sortable("toArray"),
+                    "ids": $(this).sortable("toArray",
+                        {attribute: "elem_id"})
+                },
+            });
+        }
+    }).disableSelection();
 });

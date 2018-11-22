@@ -99,7 +99,7 @@ function show_video_popup(ref, elem, width=1080, height=720) {
 }
 
 var elements_subscriptor = function() {
-    let sortObj = $(".sortable");
+    /*let sortObj = $(".sortable");
 
     sortObj.sortable({
         axis: "y",
@@ -119,7 +119,7 @@ var elements_subscriptor = function() {
         }
     });
 
-    sortObj.disableSelection();
+    sortObj.disableSelection();*/
 
     var deleted_element;
 

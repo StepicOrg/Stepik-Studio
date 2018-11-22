@@ -1,8 +1,12 @@
-{%  extends "base.html" %}
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+    {{ block.super }}
+    <script src="{% static "js/list_view.js" %}"></script>
+{% endblock %}
 
 {% if Recording == False %}
-    {%  block content %}
-
+    {% block content %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" aria-current="page">
@@ -17,62 +21,48 @@
             </ol>
         </nav>
 
-        <div style="height: 70px">
-            <div class="add_container">
-                <a class="add_button_ref" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
-            </div>
+        <div class="add-item btn-group dropright"
+             data-urllink="/course/{{ Course.id }}/lesson/{{ Lesson.id }}/add_step/">
+            <button type="button" class="btn btn-light btn-lg border rounded btn-list dropdown-toggle-split"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="/add-lesson/">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
 
-{% comment %}            <div id="draggable_tip">
-                <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
-            </div>{% endcomment %}
+            <div class="dropdown-menu p-4" id="add-form">
+            </div>
         </div>
 
-        <div class="btn-group-vertical w-100">
-            {% for S in Steps  %}
-                <div class="btn-group" id ='{{ S.position }}' stepID="{{ S.pk }}">
-                    <a class="btn btn-light btn-lg text-left border step_name btn-list"
-                       href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">
-                        {{ S.name }}
-                    </a>
-                    <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
+        <div class="btn-group-vertical w-100 sortable">
+            {% for S in Steps %}
+                <div class="btn-group" id='{{ S.position }}' elem_id="{{ S.pk }}">
+                    <a class="btn btn-light btn-lg text-left border btn-list elem_name" type="step"
+                       href="/course/{{ Course.id }}/lesson/{{ Lesson.id }}/step/{{ S.id }}/">{{ S.name }}</a>
+
+                    <button type="button"
+                            class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     </button>
+
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item raw_cut_step" href>Raw cut</a>
-                        <a class="dropdown-item rename_button step_rename" href>Rename</a>
-                        <a class="dropdown-item delete_button" data-urllink="step/{{ S.id }}/delete/" href>Delete</a>
+                        <a class="dropdown-item raw_cut" data-urllink="/create-step-montage/{{ S.id }}/" href>
+                            Raw cut</a>
+                        <a class="dropdown-item" id="#rename-button" href="#renameModalCenter">Rename</a>
+                        <a class="dropdown-item" id="#delete-button"
+                           data-urllink="step/{{ S.id }}/delete/" href="#deleteModalCenter">Delete</a>
                     </div>
                 </div>
             {% endfor %}
         </div>
-{% comment %}
-        <ul id="sortable">
-            {% for S in Steps  %}
-            <li id ='{{ S.position }}' stepID="{{ S.pk }}" class="ui-state-default">
-                <div class="listdiv">
-                    <span class="lesson_path hidden_info">Path: {{ Lesson.os_path }}</span>
-                    <a class="step_name obj_name" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/">{{ S.name }}</a>
-                    <div class="lesson_controls">
-                        <span class="raw_cut_step">Raw Cut</span> |
-                        <span class="rename_button step_rename">rename</span> |
-                        <span class="lesson_info">info</span> |
-                        <span class="delete_button">
-                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="step/{{ S.id }}/delete/" width="22" height="22" id="delete_svg">
-                        </span> |
-                        <span class="drag_handle">
-                            <img src="/static/icons/draggable.svg" width="30" height="30">
-                        </span>
-                    </div>
-                </div>
-            </li>
-            {% endfor %}
-            <br>
-        </ul>{% endcomment %}
+
+        {% include 'modal_delete.html' %}
+        {% include 'modal_rename.html' %}
 
     {% endblock %}
+
     {% block controls %}
         <a href="{{ Course.url }}">
-            <button type="button" class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
+            <button type="button"
+                    class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
                 <span class="glyphicon glyphicon-chevron-left"></span>
             </button>
         </a>

@@ -200,31 +200,22 @@ def delete_lesson(request, course_id, lesson_id):
         return error_description(request, 'Sorry, can\'t delete lesson\'s files. Error log will sent to developers.')
 
 
-# IMPLEMENT CORRECTLY
 @login_required(login_url='/login/')
 @can_edit_page
 def add_step(request, course_id, lesson_id):
     if request.POST:
-        form = StepForm(request.user.id, lesson_id, request.POST)
+        form = StepForm(lesson_id, request.POST)
         if form.is_valid():
-            from_lesson = form.data['from_lessonId']
             saved_step = form.step_save()
             last_saved = Step.objects.get(id=saved_step.pk)
-            last_saved.from_lesson = from_lesson
+            last_saved.from_lesson = lesson_id
             last_saved.save()
-            return HttpResponseRedirect('/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME +
-                                        '/' + from_lesson + '/')
+            return HttpResponse('Ok')
     else:
-        form = StepForm(request.user.id, lesson_id)
+        form = StepForm(lesson_id)
 
-    args = {'full_name': request.user.username,
-            'postUrl': '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME
-                       + '/' + lesson_id + '/add_step/',
-            'CourseID': course_id,
-            'LessonID': lesson_id}
-    args.update({'Recording': camera_curr_status})
+    args = {'form': form}
     args.update(csrf(request))
-    args['form'] = form
     return render_to_response('create_step.html', args, context_instance=RequestContext(request))
 
 
