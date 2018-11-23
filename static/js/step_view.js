@@ -89,7 +89,7 @@ $(function () {
             clearInterval(poller_id);
         });
 
-        const list = $(".substep-list")
+        const listIds = $(".substep-list")
             .map(function () {
                 return $(this).data("ss-id");
             })
@@ -102,7 +102,7 @@ $(function () {
         });
 
         poller_id = setInterval(function () {
-            if (list.length === 0) {
+            if (listIds.length === 0) {
                 return false;
             }
             $.ajax({
@@ -111,28 +111,29 @@ $(function () {
                 url: "/substep-statuses/",
                 dataType: "json",
                 traditional: true,
-                data: {'ids': list},
+                data: {'ids': listIds},
                 success: function (data) {
                     $(".substep-list").each(function () {
                         const ss_id = $(this).data("ss-id");
+
+                        //skip items which already deleted
+                        if (!data[ss_id]) {
+                            return true;
+                        }
                         const elem = $(this);
 
                         if (data[ss_id].islocked) {
                             lockSubstep(ss_id);
                         } else if (data[ss_id].exists) {
                             unlockSubstep(ss_id);
-
                             elem.find(".create-raw-cut")
                                 .addClass("d-none");
-
                             elem.find(".show-raw-cut")
                                 .removeClass("d-none");
                         } else {
                             unlockSubstep(ss_id);
-
                             elem.find(".create-raw-cut")
                                 .removeClass("d-none");
-
                             elem.find(".show-raw-cut")
                                 .addClass("d-none");
                         }
@@ -143,28 +144,90 @@ $(function () {
     });
 });
 
-// $(function () {
-//     $(document).keyup(function (event) {
-//
-//         const elem = $(".modal[aria-hidden='False']");
-//         console.info(elem.html());
-//
-//         if (elem) { //to disable handler when dialog is open
-//             return false;
-//         } else {
-//             console.info('adsf');
-//         }
-//
-//         if (event.target.type === "text" || event.target.type === "textarea") {
-//             return false;
-//         }
-//
-//         event.stopImmediatePropagation();
-//         if (event.which === 32) {
-//             if (!isRecording)
-//                 $(".start_recording").trigger("click");
-//             else
-//                 $(".stop_recording").trigger("click");
-//         }
-//     });
-// });
+//Save notes
+$(function () {
+    $(".save-notes").click(function () {
+        const element = $(this);
+        const urllink = element.data("urllink");
+        const data = $("#form-notes").val();
+
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "POST",
+            url: urllink,
+            data: {'notes': data},
+            success: function (data) {
+                element.removeClass("btn-info")
+                    .addClass("btn-success")
+                    .text("Success");
+
+                setTimeout(function () {
+                    element.removeClass("btn-success")
+                        .addClass("btn-info")
+                        .text("Save");
+                }, 1000);
+            },
+            error: function (data) {
+                element.removeClass("btn-info")
+                    .addClass("btn-danger")
+                    .text("Error");
+
+                setTimeout(function () {
+                    element.removeClass("btn-danger")
+                        .addClass("btn-info")
+                        .text("Save");
+                }, 1000);
+            }
+        });
+    });
+});
+
+//Handle autofocus button click
+$(function () {
+    $(".af_button").on("click", function (event) {
+        const defaultColor = $(this).css("color");
+        $(this).text("Processing...")
+            .click(function () {
+                return false;
+            })
+            .prop("disabled", true)
+            .fadeTo("fast", .5)
+            .css("color", "initial");
+
+        const elem = $(this);
+
+        var unlock = function (element) {
+            element.text("Autofocus")
+                .prop('disabled', false)
+                .fadeTo("fast", 1);
+        };
+
+        $.ajax({
+            beforeSend: cookie_csrf_updater,
+            type: "GET",
+            url: "/autofocus-camera/",
+            timeout: 4000,
+
+            success: function () {
+                setTimeout(function () {
+                    unlock(elem);
+                    elem.css("color", "green");
+                    af_confirmation.play();
+                }, 1500);
+            },
+            error: function () {
+                unlock(elem);
+                elem.css("color", "red");
+            },
+        }).done(function () {
+            setTimeout(function () {
+                elem.css("color", defaultColor);
+            }, 3000);
+        }).fail(function () {
+            elem.css("color", "red")
+            setTimeout(function () {
+                elem.css("color", defaultColor);
+            }, 3000);
+        });
+    });
+});

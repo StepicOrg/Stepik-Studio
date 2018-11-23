@@ -51,7 +51,8 @@ code {
 }
 
 .add-item {
-    margin-bottom: .5rem;
+  padding-top: 10px;
+  margin-bottom: .5rem;
 }
 
 .substep-list {
@@ -67,4 +68,13 @@ code {
 
 #add-form {
   width: 500px;
+}
+
+.start-recording, .stop-recording {
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  font-size: 2.25rem;
+  height: 15%;
+  width: 75%;
 }

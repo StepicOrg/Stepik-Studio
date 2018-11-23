@@ -266,16 +266,18 @@ def show_step(request, course_id, lesson_id, step_id):
     return render_to_response('step_view.html', args, context_instance=RequestContext(request))
 
 
-# TODO: request.META is BAD! replace for AJAX requests!
 @login_required(login_url='/login')
 def notes(request, step_id):
-    if request.POST:
-        step_obj = Step.objects.get(id=step_id)
-        step_obj.text_data = dict(request.POST.lists())['note'][0]
-        step_obj.save()
-    args = {}
-    args.update(csrf(request))
-    return HttpResponseRedirect(request.META['HTTP_REFERER'], args)
+    if request.POST and request.is_ajax():
+        try:
+            step_obj = Step.objects.get(id=step_id)
+            step_obj.text_data = dict(request.POST.lists())['notes'][0]
+            step_obj.save()
+        except:
+            return HttpResponseServerError()
+    else:
+        raise Http404
+    return HttpResponse('Ok')
 
 
 # TODO: user_id probably dont needed
