@@ -49,25 +49,30 @@
 
                     <span class="btn-group float-right">
                         <button type="button" class="btn btn-outline-info show-content"
-                                data-urllink="/showcontent/{{ SS.id }}/">
+                                data-urllink="/showcontent/{{ SS.id }}/"  data-toggle="tooltip" aria-haspopup="true"
+                                aria-expanded="false" data-placement="bottom" title="Show camera recording">
                             <img src="/static/icons/video-camera.svg" width="30" height="30">
                         </button>
                         <button type="button" class="btn btn-outline-info show-content"
-                                data-urllink="/showscreencontent/{{ SS.id }}/">
+                                data-urllink="/showscreencontent/{{ SS.id }}/" data-toggle="tooltip" aria-haspopup="true"
+                                aria-expanded="false" data-placement="bottom" title="Show screencast">
                             <img src="/static/icons/display.svg" width="30" height="30">
                         </button>
                         <button type="button"
                                 class="btn btn-outline-info show-content show-raw-cut {% if not SS.automontage_exist %} d-none {% endif %}"
-                                data-urllink="/show-montage/{{ SS.id }}/" disabled>
+                                data-urllink="/show-montage/{{ SS.id }}/" data-toggle="tooltip" aria-haspopup="true"
+                                aria-expanded="false" data-placement="bottom" title="Show raw cut" disabled>
                             <img src="/static/icons/Film_strip_Silhouette_24.png" width="30" height="30">
                         </button>
                         <button type="button"
                                 class="btn btn-outline-info create-raw-cut {% if SS.automontage_exist %} d-none {% endif %}"
-                                data-urllink="/create_montage/{{ SS.id }}">
+                                data-urllink="/create_montage/{{ SS.id }}" data-toggle="tooltip" aria-haspopup="true"
+                                aria-expanded="false" data-placement="bottom" title="Create raw cut">
                             Raw cut
                         </button>
                         <button type="button" class="btn btn-outline-info delete-button"
-                                data-urllink="{{ SS.id }}/delete/" disabled>
+                                data-urllink="{{ SS.id }}/delete/" data-toggle="tooltip" aria-haspopup="true"
+                                aria-expanded="false" data-placement="bottom" title="Delete substep" disabled>
                             <img src="/static/icons/bin.svg" width="30" height="30">
                         </button>
                     </span>

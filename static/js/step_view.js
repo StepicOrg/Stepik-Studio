@@ -67,7 +67,14 @@ $(function () {
     $(".delete-button").on("click", function () {
         const title = "Delete " + $(this).parent().parent().find(".ss-name").text() + "?";
         $("#modalDeleteTitle").text(title);
-        $("#deleteModalCenter").modal("show");
+        $("#deleteModalCenter").modal("show")
+            .focus()
+            .keypress(function (e) {
+                if (e.which === 13) {
+                    $("#modalDeleteButton").trigger("click");
+                }
+            });
+
         const urlink = $(this).data("urllink");
         $("#modalDeleteButton").on("click", function () {
             window.location.replace(urlink);
@@ -218,4 +225,7 @@ $(function () {
             }, 3000);
         });
     });
+
+    //Enable tooltips
+    $("[data-toggle=\"tooltip\"]").tooltip()
 });

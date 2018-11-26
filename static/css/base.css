@@ -84,3 +84,7 @@ code {
 .recording-button {
     min-height: 170px;
 }
+
+.modal-lg {
+    max-width: 75%;
+}

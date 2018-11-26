@@ -58,7 +58,14 @@ $(function () {
     $("a[href=\"#deleteModalCenter\"]").on("click", function () {
         const title = "Delete " + $(this).parent().parent().find(".elem_name").text() + "?";
         $("#modalDeleteTitle").text(title);
-        $("#deleteModalCenter").modal("show");
+        $("#deleteModalCenter").modal("show")
+            .focus()
+            .keypress(function (e) {
+                if (e.which === 13) {
+                    $("#modalDeleteButton").trigger("click");
+                }
+            });
+
         const urlink = $(this).data("urllink");
         $("#modalDeleteButton").on("click", function () {
             window.location.replace(urlink);
@@ -85,6 +92,10 @@ $(function () {
 
         $("#new-name").focus(function () {
             errorDesriptor.empty();
+        }).keypress(function (e) {
+            if (e.which === 13) {
+                $("#modalRenameButton").trigger("click");
+            }
         });
 
         $("#modalRenameTitle").text("Rename " + "'" + title + "'");
