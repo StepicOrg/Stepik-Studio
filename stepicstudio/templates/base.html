@@ -49,22 +49,22 @@
     <div class="row justify-content-start">
         <div class="text-muted p-2">
             <span>Server disk free/total space: {{ request.session.server_space_info }}
-            {% if request.session.server_space_status == 'warning' %}
-                <img src="/static/icons/yellow_warning.png" width="20" height="20">
-            {% endif %}
-            {% if request.session.server_space_status == 'error' %}
-                <img src="/static/icons/red_warning.svg" width="20" height="20">
-            {% endif %}
+                {% if request.session.server_space_status == 'warning' %}
+                    <img src="/static/icons/yellow_warning.png" width="20" height="20">
+                {% endif %}
+                {% if request.session.server_space_status == 'error' %}
+                    <img src="/static/icons/red_warning.svg" width="20" height="20">
+                {% endif %}
             </span>
         </div>
         <div class="text-muted p-2">
             <span>Tablet disk free/total space: {{ request.session.tablet_space_info }}
-            {% if request.session.tablet_space_status == 'warning' %}
-                <img src="/static/icons/yellow_warning.png" width="20" height="20">
-            {% endif %}
-            {% if request.session.tablet_space_status == 'error' %}
-                <img src="/static/icons/red_warning.svg" width="20" height="20">
-            {% endif %}
+                {% if request.session.tablet_space_status == 'warning' %}
+                    <img src="/static/icons/yellow_warning.png" width="20" height="20">
+                {% endif %}
+                {% if request.session.tablet_space_status == 'error' %}
+                    <img src="/static/icons/red_warning.svg" width="20" height="20">
+                {% endif %}
             </span>
         </div>
     </div>

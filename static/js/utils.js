@@ -14,17 +14,18 @@ function cookie_csrf_updater(xhr) {
     xhr.setRequestHeader("X-CSRFToken", cookVal)
 }
 
-function fader(el) {
-    el.fadeTo("fast", .5).removeAttr("href");
-}
-
 function rectime(sec) {
-	var hr = Math.floor(sec / 3600);
-	var min = Math.floor((sec - (hr * 3600))/60);
-	sec -= ((hr * 3600) + (min * 60));
-	sec += ""; min += "";
-	while (min.length < 2) {min = "0" + min;}
-	while (sec.length < 2) {sec = "0" + sec;}
-	hr = (hr)?":"+hr:"";
-	return hr + min + ":" + sec;
+    var hr = Math.floor(sec / 3600);
+    var min = Math.floor((sec - (hr * 3600)) / 60);
+    sec -= ((hr * 3600) + (min * 60));
+    sec += "";
+    min += "";
+    while (min.length < 2) {
+        min = "0" + min;
+    }
+    while (sec.length < 2) {
+        sec = "0" + sec;
+    }
+    hr = (hr) ? ":" + hr : "";
+    return hr + min + ":" + sec;
 }

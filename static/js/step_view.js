@@ -22,8 +22,9 @@ function unlockSubstep(id) {
         .addClass("d-none");
 }
 
-//Shows video content
+
 $(function () {
+    //Shows video content
     $(".show-content").click(function () {
         const title = $(this).parent().parent().find(".ss-name").text();
         const url = $(this).data("urllink");
@@ -34,20 +35,15 @@ $(function () {
         $("#videoModalCenter").modal("show");
         $("video").get(0).play();
     });
-});
 
-//Makes video content empty on modal hide
-$(function () {
-    $("#videoModalCenter").on('hidden.bs.modal', function () {
+    //Makes video content empty on modal hide
+    $("#videoModalCenter").on("hidden.bs.modal", function () {
         $("video").get(0).pause();
         $(".video-content").empty();
     });
-});
 
-//Creates raw cut
-$(function () {
+    //Creates raw cut
     $(".create-raw-cut").on("click", function (event) {
-        const elem = $(this);
         const redir_url = $(this).data("urllink");
         const ss_id = $(this).parent().parent().data("ss-id");
 
@@ -66,10 +62,8 @@ $(function () {
             }
         });
     });
-});
 
-//Shows modal dialog on delete button click
-$(function () {
+    //Shows modal dialog on delete button click
     $(".delete-button").on("click", function () {
         const title = "Delete " + $(this).parent().parent().find(".ss-name").text() + "?";
         $("#modalDeleteTitle").text(title);
@@ -78,11 +72,9 @@ $(function () {
         $("#modalDeleteButton").on("click", function () {
             window.location.replace(urlink);
         });
-    })
-});
+    });
 
-//Statuses polling
-$(function () {
+    //Statuses polling
     $(window).on("load", function (event) {
         var poller_id;
         $(this).on("unload", function () {
@@ -111,7 +103,7 @@ $(function () {
                 url: "/substep-statuses/",
                 dataType: "json",
                 traditional: true,
-                data: {'ids': listIds},
+                data: {"ids": listIds},
                 success: function (data) {
                     $(".substep-list").each(function () {
                         const ss_id = $(this).data("ss-id");
@@ -142,10 +134,8 @@ $(function () {
             });
         }, 1000);
     });
-});
 
-//Save notes
-$(function () {
+    //Save notes
     $(".save-notes").click(function () {
         const element = $(this);
         const urllink = element.data("urllink");
@@ -155,7 +145,7 @@ $(function () {
             beforeSend: cookie_csrf_updater,
             type: "POST",
             url: urllink,
-            data: {'notes': data},
+            data: {"notes": data},
             success: function (data) {
                 element.removeClass("btn-info")
                     .addClass("btn-success")
@@ -180,10 +170,8 @@ $(function () {
             }
         });
     });
-});
 
-//Handle autofocus button click
-$(function () {
+    //Handle autofocus button click
     $(".af_button").on("click", function (event) {
         const defaultColor = $(this).css("color");
         $(this).text("Processing...")
@@ -191,14 +179,14 @@ $(function () {
                 return false;
             })
             .prop("disabled", true)
-            .fadeTo("fast", .5)
+            .fadeTo("fast", 0.5)
             .css("color", "initial");
 
         const elem = $(this);
 
         var unlock = function (element) {
             element.text("Autofocus")
-                .prop('disabled', false)
+                .prop("disabled", false)
                 .fadeTo("fast", 1);
         };
 
@@ -224,7 +212,7 @@ $(function () {
                 elem.css("color", defaultColor);
             }, 3000);
         }).fail(function () {
-            elem.css("color", "red")
+            elem.css("color", "red");
             setTimeout(function () {
                 elem.css("color", defaultColor);
             }, 3000);
