@@ -33,7 +33,7 @@
         <div class="btn-group-vertical w-100 sortable">
             {% for L in Lessons %}
                 <div class="btn-group" id="{{ L.position }}" elem_id="{{ L.id }}">
-                    <a class="btn btn-light btn-lg text-left border btn-list elem_name" type="lesson"
+                    <a class="btn btn-light btn-lg text-left border btn-list elem-name" type="lesson"
                        href="/course/{{ Course.id }}/lesson/{{ L.id }}/">{{ L.name }}</a>
 
                     <button type="button"
@@ -42,7 +42,7 @@
                     </button>
 
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item raw_cut" data-urllink="/create-lesson-montage/{{ L.id }}/" href>
+                        <a class="dropdown-item raw-cut" data-urllink="/create-lesson-montage/{{ L.id }}/" href>
                             Raw cut</a>
                         <a class="dropdown-item" id="#rename-button" href="#renameModalCenter">Rename</a>
                         <a class="dropdown-item" id="#delete-button"

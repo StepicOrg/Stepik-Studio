@@ -1,7 +1,7 @@
 $(function () {
     $(".add-item").on("show.bs.dropdown", function (e) { //Adds form on dropdown show
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "GET",
             url: $(this).data("urllink"),
             success: function (data, status) {
@@ -20,7 +20,7 @@ $(function () {
         e.preventDefault();
         e.stopImmediatePropagation();
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "POST",
             url: $(".add-item").data("urllink"),
             data: $("#target").serialize(),
@@ -40,12 +40,12 @@ $(function () {
     });
 
     //Creates raw cut
-    $(".raw_cut").on("click", function (event) {
+    $(".raw-cut").on("click", function (event) {
         event.stopPropagation();
         $(this).text("Processing");
         const url = $(this).data("urllink");
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "POST",
             url: url,
             error: function (data) {
@@ -56,7 +56,7 @@ $(function () {
 
     //Shows modal dialog on delete button click
     $("a[href=\"#deleteModalCenter\"]").on("click", function () {
-        const title = "Delete " + $(this).parent().parent().find(".elem_name").text() + "?";
+        const title = "Delete " + $(this).parent().parent().find(".elem-name").text() + "?";
         $("#modalDeleteTitle").text(title);
         $("#deleteModalCenter").modal("show")
             .focus()
@@ -81,13 +81,13 @@ $(function () {
 
     //Shows and handles rename modal dialog
     $("a[href=\"#renameModalCenter\"]").on("click", function () {
-        const elem_id = $(this).parents(".btn-group").attr("elem_id");
+        const elementTd = $(this).parents(".btn-group").attr("elem_id");
         const type = $(this).parents(".btn-group").find("a").attr("type");
         const errorDesriptor = $("#rename-error");
         const title = $(this)
             .parent()
             .parent()
-            .find(".elem_name")
+            .find(".elem-name")
             .text();
 
         $("#new-name").focus(function () {
@@ -106,7 +106,7 @@ $(function () {
             .val(title);
 
         $("#modalRenameButton").on("click", function (e) {
-            const sameNamesCount = $(".elem_name").filter(function () {
+            const sameNamesCount = $(".elem-name").filter(function () {
                 return ($(this).text() === $("#new-name").val());
             }).length;
 
@@ -117,11 +117,11 @@ $(function () {
             }
 
             $.ajax({
-                beforeSend: cookie_csrf_updater,
+                beforeSend: getCookie,
                 type: "POST",
                 url: "/rename-elem/",
                 data: {
-                    "id": elem_id,
+                    "id": elementTd,
                     "type": type,
                     "name_new": $("#new-name").val()
                 },
@@ -142,7 +142,7 @@ $(function () {
         stop: function (event, ui) {
             const type = $(ui.item[0]).find("a").attr("type");
             $.ajax({
-                beforeSend: cookie_csrf_updater,
+                beforeSend: getCookie,
 
                 type: "POST",
                 url: "/reorder-lists/",

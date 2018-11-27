@@ -1,6 +1,5 @@
-const start_sound = new Audio("/static/sounds/start_sound.wav");
-const stop_sound = new Audio("/static/sounds/stop_sound.wav");
-const af_confirmation = new Audio("/static/sounds/af_confirmation.mp3");
+const startSound = new Audio("/static/sounds/start_sound.wav");
+const stopSound = new Audio("/static/sounds/stop_sound.wav");
 
 function recordStarted() {
     $(".start-recording").removeClass("start-recording")
@@ -8,8 +7,8 @@ function recordStarted() {
         .find(".head-text")
         .text("Recording");
 
-    var curr_sec_from_epoch = new Date().getTime() / 1000;
-    $(".stop-recording").append("<div id = \"timer\" data-starttime=" + curr_sec_from_epoch + ">00:00</div>");
+    var currSecFromEpoch = new Date().getTime() / 1000;
+    $(".stop-recording").append("<div id = \"timer\" data-starttime=" + currSecFromEpoch + ">00:00</div>");
     $(".tip-text").text("Click here or press the spacebar to stop");
 }
 
@@ -72,14 +71,14 @@ $(function () {
         });
 
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "POST",
             url: window.location.pathname,
             data: {
                 "action": "start"
             },
             success: function () {
-                start_sound.play();
+                startSound.play();
                 recordStarted();
             },
             error: function (data) {
@@ -103,14 +102,14 @@ $(function () {
 
         $(window).off();
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "POST",
             url: window.location.pathname,
             data: {
                 "action": "stop"
             },
             success: function () {
-                stop_sound.play();
+                stopSound.play();
                 location.reload(true);
                 recordStopped();
             },

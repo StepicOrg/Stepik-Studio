@@ -1,9 +1,12 @@
+const afConfirmation = new Audio("/static/sounds/af_confirmation.mp3");
+
 //Locks substep
 function lockSubstep(id) {
     const element = $(".substep-list[data-ss-id=" + id + "]");
     element.find("button")
         .each(function () {
             $(this).attr("disabled", "disabled");
+            $(this).tooltip("hide");
         });
 
     element.find(".progress")
@@ -44,18 +47,18 @@ $(function () {
 
     //Creates raw cut
     $(".create-raw-cut").on("click", function (event) {
-        const redir_url = $(this).data("urllink");
-        const ss_id = $(this).parent().parent().data("ss-id");
+        const redirectUrl = $(this).data("urllink");
+        const substepId = $(this).parent().parent().data("ss-id");
 
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "POST",
-            url: redir_url,
+            url: redirectUrl,
             data: {
                 "action": "start_montage"
             },
             success: function (data) {
-                lockSubstep(ss_id);
+                lockSubstep(substepId);
             },
             error: function (data) {
                 alert(data.responseText);
@@ -83,9 +86,9 @@ $(function () {
 
     //Statuses polling
     $(window).on("load", function (event) {
-        var poller_id;
+        var pollerId;
         $(this).on("unload", function () {
-            clearInterval(poller_id);
+            clearInterval(pollerId);
         });
 
         const listIds = $(".substep-list")
@@ -100,12 +103,12 @@ $(function () {
             }
         });
 
-        poller_id = setInterval(function () {
+        pollerId = setInterval(function () {
             if (listIds.length === 0) {
                 return false;
             }
             $.ajax({
-                beforeSend: cookie_csrf_updater,
+                beforeSend: getCookie,
                 type: "POST",
                 url: "/substep-statuses/",
                 dataType: "json",
@@ -113,24 +116,24 @@ $(function () {
                 data: {"ids": listIds},
                 success: function (data) {
                     $(".substep-list").each(function () {
-                        const ss_id = $(this).data("ss-id");
+                        const substepId = $(this).data("ss-id");
 
                         //skip items which already deleted
-                        if (!data[ss_id]) {
+                        if (!data[substepId]) {
                             return true;
                         }
                         const elem = $(this);
 
-                        if (data[ss_id].islocked) {
-                            lockSubstep(ss_id);
-                        } else if (data[ss_id].exists) {
-                            unlockSubstep(ss_id);
+                        if (data[substepId].islocked) {
+                            lockSubstep(substepId);
+                        } else if (data[substepId].exists) {
+                            unlockSubstep(substepId);
                             elem.find(".create-raw-cut")
                                 .addClass("d-none");
                             elem.find(".show-raw-cut")
                                 .removeClass("d-none");
                         } else {
-                            unlockSubstep(ss_id);
+                            unlockSubstep(substepId);
                             elem.find(".create-raw-cut")
                                 .removeClass("d-none");
                             elem.find(".show-raw-cut")
@@ -149,7 +152,7 @@ $(function () {
         const data = $("#form-notes").val();
 
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "POST",
             url: urllink,
             data: {"notes": data},
@@ -179,7 +182,7 @@ $(function () {
     });
 
     //Handle autofocus button click
-    $(".af_button").on("click", function (event) {
+    $(".af-button").on("click", function (event) {
         const defaultColor = $(this).css("color");
         $(this).text("Processing...")
             .click(function () {
@@ -198,7 +201,7 @@ $(function () {
         };
 
         $.ajax({
-            beforeSend: cookie_csrf_updater,
+            beforeSend: getCookie,
             type: "GET",
             url: "/autofocus-camera/",
             timeout: 4000,
@@ -207,7 +210,7 @@ $(function () {
                 setTimeout(function () {
                     unlock(elem);
                     elem.css("color", "green");
-                    af_confirmation.play();
+                    afConfirmation.play();
                 }, 1500);
             },
             error: function () {

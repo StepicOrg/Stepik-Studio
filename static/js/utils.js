@@ -1,4 +1,4 @@
-function cookie_csrf_updater(xhr) {
+function getCookie(xhr) {
     var cookie = null;
     var cookVal = null;
     var cookies = document.cookie.split(";");
