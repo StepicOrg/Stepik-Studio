@@ -412,7 +412,7 @@ def stop_recording(request, course_id, lesson_id, step_id):
 @can_edit_page
 def delete_substep(request, course_id, lesson_id, step_id, substep_id):
     try:
-        substep = SubStep.objects.get(pk=int(substep_id))
+        substep = SubStep.objects.get(id=substep_id)
     except:
         logger.exception('Can\'t delete substep')
         return HttpResponseServerError('Sorry, can\'t delete substep. An error log will be sent to the developers.')
