@@ -412,24 +412,27 @@ def stop_recording(request, course_id, lesson_id, step_id):
 @can_edit_page
 def delete_substep(request, course_id, lesson_id, step_id, substep_id):
     try:
-        substep = SubStep.objects.get(id=substep_id)
+        substep = SubStep.objects.get(pk=int(substep_id))
     except:
-        return error500_handler(request)
+        logger.exception('Can\'t delete substep')
+        return HttpResponseServerError('Sorry, can\'t delete substep. An error log will be sent to the developers.')
 
     if substep.is_locked:
-        return error_description(request, 'Sorry, can\'t delete locked substep.')
+        return HttpResponseServerError('Sorry, can\'t delete locked substep. Please, wait for unlock.')
 
     server_remove_status = delete_substep_on_disk(substep)
     tablet_remove_status = delete_tablet_substep_files(substep)
 
     if server_remove_status.status is not ExecutionStatus.SUCCESS:
-        return error_description(request, server_remove_status.message)
+        logger.error('Can\'t delete substep, server error: %s', server_remove_status.message)
+        return HttpResponseServerError('Sorry, can\'t delete substep. An error log will be sent to the developers.')
 
     if tablet_remove_status.status is not ExecutionStatus.SUCCESS:
-        return error_description(request, tablet_remove_status.message)
+        logger.error('Can\'t delete substep, tablet error: %s', tablet_remove_status.message)
+        return HttpResponseServerError('Sorry, can\'t delete substep. An error log will be sent to the developers.')
 
     substep.delete()
-    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    return HttpResponse('Ok')
 
 
 @login_required(login_url='/login/')

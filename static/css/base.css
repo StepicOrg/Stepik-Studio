@@ -94,3 +94,8 @@ code {
 .modal-lg {
     max-width: 75%;
 }
+
+.btn.btn-outline-info:disabled {
+    opacity: 80%;
+    background-color: #eeeeee;
+}

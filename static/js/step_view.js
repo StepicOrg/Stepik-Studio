@@ -1,5 +1,12 @@
 const afConfirmation = new Audio("/static/sounds/af_confirmation.mp3");
 
+function deleteSubstepView(id) {
+    const element = $(".substep-list[data-ss-id=" + id + "]");
+    if (element) {
+        element.remove();
+    }
+}
+
 //Locks substep
 function lockSubstep(id) {
     const element = $(".substep-list[data-ss-id=" + id + "]");
@@ -76,8 +83,10 @@ $(document).ready(function () {
             alert("Please, stop recording before");
             return false;
         }
+
         const title = "Delete " + $(this).parent().parent().find(".ss-name").text() + "?";
         $("#modalDeleteTitle").text(title);
+        $("#delete-error").empty();
         $("#deleteModalCenter").modal("show")
             .focus()
             .keypress(function (e) {
@@ -87,8 +96,21 @@ $(document).ready(function () {
             });
 
         const urlink = $(this).data("urllink");
-        $("#modalDeleteButton").on("click", function () {
-            window.location.replace(urlink);
+        const substepId = $(this).parent().parent().data("ss-id");
+
+        $("#modalDeleteButton").unbind().on("click", function () {
+            $.ajax({
+                beforeSend: getCookie,
+                type: "GET",
+                url: urlink,
+                success: function (data) {
+                    deleteSubstepView(substepId);
+                    $("#deleteModalCenter").modal("hide");
+                },
+                error: function (data) {
+                    $("#delete-error").text(data.responseText);
+                }
+            });
         });
     });
 

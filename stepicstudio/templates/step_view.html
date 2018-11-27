@@ -67,7 +67,7 @@
                         <button type="button"
                                 class="btn btn-outline-info show-content show-raw-cut {% if not SS.automontage_exist %} d-none {% endif %}"
                                 data-urllink="/show-montage/{{ SS.id }}/" data-toggle="tooltip" aria-haspopup="true"
-                                aria-expanded="false" data-placement="bottom" title="Show raw cut" disabled>
+                                aria-expanded="false" data-placement="bottom" title="Show raw cut" {% if SS.is_locked %} disabled {% endif %}>
                             <img src="/static/icons/film-strip-play.svg" width="30" height="30">
                         </button>
                         <button type="button"
@@ -78,7 +78,7 @@
                         </button>
                         <button type="button" class="btn btn-outline-info delete-button"
                                 data-urllink="{{ SS.id }}/delete/" data-toggle="tooltip" aria-haspopup="true"
-                                aria-expanded="false" data-placement="bottom" title="Delete substep" disabled>
+                                aria-expanded="false" data-placement="bottom" title="Delete substep" {% if SS.is_locked %} disabled {% endif %}>
                             <img src="/static/icons/bin.svg" width="30" height="30">
                         </button>
                     </span>
