@@ -36,17 +36,23 @@
 
         <div class="list-group w-100 pb-4">
             {% for SS in SubSteps %}
-                <div class="list-group-item substep-list w-100" data-ss-id="{{ SS.id }}"
+                <div class="list-group-item substep-list w-100 d-table" data-ss-id="{{ SS.id }}"
                      data-ss-locked="{{ SS.is_locked }}">
-                    <span class="col-lg-2 ss-name">{{ SS.name|to_custom_name:tmpl_name }}</span>
-                    <span class="col-md-auto">
+                    <span class="ss-name d-table-cell align-middle w-25 pl-2">{{ SS.name|to_custom_name:tmpl_name }}</span>
+                    <span class="d-table-cell align-middle text-black-50">
                     | V: {% if SS.duration > 0.0 %} {{ SS.duration | sec_to_time }} {% else %} Err! {% endif %}
                         | Scr: {% if SS.screencast_duration > 0.0 %}
                         {{ SS.screencast_duration | sec_to_time }} {% else %}
                         Err! {% endif %}
                         | {% if not SS.is_videos_ok %} Err! {% endif %}
                     </span>
-
+                    <span class="d-table-cell align-middle w-100 pl-4 pr-4">
+                        <span class="progress w-100 {% if not SS.is_locked %} d-none {% endif %}" style="z-index: 2">
+                            <span class="progress-bar progress-bar-striped bg-info progress-bar-animated"
+                                  role="progressbar" aria-valuenow="100" aria-valuemin="0"
+                                  aria-valuemax="100" style="width: 100%"></span>
+                        </span>
+                    </span>
                     <span class="btn-group float-right">
                         <button type="button" class="btn btn-outline-info show-content"
                                 data-urllink="/showcontent/{{ SS.id }}/"  data-toggle="tooltip" aria-haspopup="true"
@@ -62,13 +68,13 @@
                                 class="btn btn-outline-info show-content show-raw-cut {% if not SS.automontage_exist %} d-none {% endif %}"
                                 data-urllink="/show-montage/{{ SS.id }}/" data-toggle="tooltip" aria-haspopup="true"
                                 aria-expanded="false" data-placement="bottom" title="Show raw cut" disabled>
-                            <img src="/static/icons/Film_strip_Silhouette_24.png" width="30" height="30">
+                            <img src="/static/icons/film-strip-play.svg" width="30" height="30">
                         </button>
                         <button type="button"
                                 class="btn btn-outline-info create-raw-cut {% if SS.automontage_exist %} d-none {% endif %}"
                                 data-urllink="/create_montage/{{ SS.id }}" data-toggle="tooltip" aria-haspopup="true"
                                 aria-expanded="false" data-placement="bottom" title="Create raw cut">
-                            Raw cut
+                            <img src="/static/icons/raw-cut.svg" width="30" height="30">
                         </button>
                         <button type="button" class="btn btn-outline-info delete-button"
                                 data-urllink="{{ SS.id }}/delete/" data-toggle="tooltip" aria-haspopup="true"
@@ -76,10 +82,6 @@
                             <img src="/static/icons/bin.svg" width="30" height="30">
                         </button>
                     </span>
-                    <div class="progress w-100 {% if not SS.is_locked %} d-none {% endif %}" style="z-index: 2">
-                        <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar"
-                             aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                    </div>
                 </div>
             {% endfor %}
         </div>

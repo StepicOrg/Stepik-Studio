@@ -3,7 +3,8 @@ const afConfirmation = new Audio("/static/sounds/af_confirmation.mp3");
 //Locks substep
 function lockSubstep(id) {
     const element = $(".substep-list[data-ss-id=" + id + "]");
-    element.find("button")
+    element.data("ss-locked", "True")
+        .find("button")
         .each(function () {
             if ($(this).hasClass("show-content")) {
                 return true;
@@ -19,7 +20,8 @@ function lockSubstep(id) {
 //Unlocks substep
 function unlockSubstep(id) {
     const element = $(".substep-list[data-ss-id=" + id + "]");
-    element.find("button")
+    element.data("ss-locked", "False")
+        .find("button")
         .each(function () {
             $(this).removeAttr("disabled");
         });
