@@ -28,7 +28,7 @@
     {% if Recording != True %}
 
         <div class="w-100 text-center p-5">
-            <button class="start-recording btn btn-info recording-button">
+            <button type="button" class="start-recording btn btn-light recording-button">
                 <h1 class="head-text">Start Recording</h1>
                 <h5 class="tip-text">Click here or press the spacebar to start</h5>
             </button>
@@ -116,7 +116,7 @@
 
 {% block controls %}
     <a href="{{ Lesson.url }}">
-        <button type="button" class="float-left h-100 btn btn-light btn-primary-outline btn-back sticky-top rounded-0">
+        <button type="button" class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
             <span class="glyphicon glyphicon-chevron-left"></span>
         </button>
     </a>

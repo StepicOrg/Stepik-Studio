@@ -5,6 +5,9 @@ function lockSubstep(id) {
     const element = $(".substep-list[data-ss-id=" + id + "]");
     element.find("button")
         .each(function () {
+            if ($(this).hasClass("show-content")) {
+                return true;
+            }
             $(this).attr("disabled", "disabled");
             $(this).tooltip("hide");
         });
@@ -25,8 +28,7 @@ function unlockSubstep(id) {
         .addClass("d-none");
 }
 
-
-$(function () {
+$(document).ready(function () {
     //Shows video content
     $(".show-content").click(function () {
         const title = $(this).parent().parent().find(".ss-name").text();
@@ -68,6 +70,9 @@ $(function () {
 
     //Shows modal dialog on delete button click
     $(".delete-button").on("click", function () {
+        if ($(document).hasClass("stop-recording")) {
+
+        }
         const title = "Delete " + $(this).parent().parent().find(".ss-name").text() + "?";
         $("#modalDeleteTitle").text(title);
         $("#deleteModalCenter").modal("show")

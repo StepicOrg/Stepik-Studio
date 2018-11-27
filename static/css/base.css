@@ -78,11 +78,17 @@ code {
     white-space: nowrap;
     font-size: 2.25rem;
     height: 15%;
-    width: 75%;
+    width: 100%;
 }
 
 .recording-button {
     min-height: 170px;
+    background-color: transparent;
+    border-color: #17a2b8;
+}
+
+.recording-button.disabled {
+    background-color: transparent;
 }
 
 .modal-lg {

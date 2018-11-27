@@ -2,13 +2,13 @@ const startSound = new Audio("/static/sounds/start_sound.wav");
 const stopSound = new Audio("/static/sounds/stop_sound.wav");
 
 function recordStarted() {
-    $(".start-recording").removeClass("start-recording")
+    $(".start-recording").removeClass("start-recording disabled")
         .addClass("stop-recording")
         .find(".head-text")
         .text("Recording");
 
     var currSecFromEpoch = new Date().getTime() / 1000;
-    $(".stop-recording").append("<div id = \"timer\" data-starttime=" + currSecFromEpoch + ">00:00</div>");
+    $(".stop-recording").append("<h1 id = \"timer\" data-starttime=" + currSecFromEpoch + ">00:00</h1>");
     $(".tip-text").text("Click here or press the spacebar to stop");
 }
 
@@ -27,7 +27,7 @@ function recordStopped() {
     $(".tip-text").text("Click here or press the spacebar to start");
 }
 
-$(function () {
+$(document).ready(function () {
     //Start & stop on spacebar click
     $(document).keyup(function (event) {
         if (event.target.type === "text" || event.target.type === "textarea") {
@@ -56,13 +56,9 @@ $(function () {
     });
 
     $(".start-recording").on("click", function () {
-        $(this).find(".head-text")
-            .text("Starting...")
-            .click(function () {
-                return false;
-            });
+        $(".head-text").text("Starting...");
 
-        $(this).off();
+        $(this).addClass("disabled").off();
 
         $(window).on("beforeunload", function () {
             return "Are you sure want to leave page? Recording will stop on leave.";
@@ -91,14 +87,11 @@ $(function () {
 
     $(document).on("click", ".stop-recording", function () {
 
-        $(this).click(function () {
-            return false;
-        });
+        $(this).off().addClass("disabled");
 
         $(".head-text").text("Preparing...");
         $(".tip-text").empty();
-        $(this).find("#timer").empty();
-        $(this).off();
+        $("#timer").empty();
 
         $(window).off();
         $.ajax({
@@ -120,12 +113,11 @@ $(function () {
         });
     });
 
-    $(document).ready(function () {
-        setInterval(function () {
-            var seconds = new Date().getTime() / 1000;
-            var elem = $("#timer");
-            elem.text(rectime(parseInt(seconds - elem.data("starttime"))));
-        }, 1000);
-    });
+
+    setInterval(function () {
+        var seconds = new Date().getTime() / 1000;
+        var elem = $("#timer");
+        elem.text(rectime(parseInt(seconds - elem.data("starttime"))));
+    }, 1000);
 });
 

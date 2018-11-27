@@ -1,4 +1,4 @@
-$(function () {
+$(document).ready(function () {
     $(".add-item").on("show.bs.dropdown", function (e) { //Adds form on dropdown show
         $.ajax({
             beforeSend: getCookie,
