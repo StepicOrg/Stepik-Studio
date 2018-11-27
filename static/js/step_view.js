@@ -69,9 +69,10 @@ $(document).ready(function () {
     });
 
     //Shows modal dialog on delete button click
-    $(".delete-button").on("click", function () {
-        if ($(document).hasClass("stop-recording")) {
-
+    $(".delete-button").on("click", function (e) {
+        if ($(".recording-button").hasClass("stop-recording")) {
+            alert("Please, stop recording before");
+            return false;
         }
         const title = "Delete " + $(this).parent().parent().find(".ss-name").text() + "?";
         $("#modalDeleteTitle").text(title);

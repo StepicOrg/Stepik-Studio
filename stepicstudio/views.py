@@ -260,8 +260,9 @@ def show_step(request, course_id, lesson_id, step_id):
             'Step': Step.objects.get(id=step_id),
             'postUrl': request.path,
             'SubSteps': all_substeps,
-            'tmpl_name': UserProfile.objects.get(user=request.user.id).substep_template}
-    args.update({'Recording': camera_curr_status})
+            'tmpl_name': UserProfile.objects.get(user=request.user.id).substep_template,
+            'Recording': camera_curr_status}
+
     args.update(csrf(request))
     return render_to_response('step_view.html', args, context_instance=RequestContext(request))
 
