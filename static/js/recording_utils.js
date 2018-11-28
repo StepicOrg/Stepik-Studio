@@ -61,7 +61,7 @@ $(document).ready(function () {
         $(".start-recording").off();
     });
 
-     $(document).on("click", ".start-recording", function (e) {
+    $(document).on("click", ".start-recording", function (e) {
         $(".head-text").text("Starting...");
         $(".start-recording").attr("disabled", "disabled");
 
