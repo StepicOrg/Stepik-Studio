@@ -113,7 +113,6 @@ $(document).ready(function () {
         });
     });
 
-
     setInterval(function () {
         var seconds = new Date().getTime() / 1000;
         var elem = $("#timer");
