@@ -39,7 +39,7 @@ function unlockSubstep(id) {
 
 $(document).ready(function () {
     //Shows video content
-    $(".show-content").click(function () {
+    $(document).on("click", ".show-content", function () {
         const title = $(this).parent().parent().find(".ss-name").text();
         const url = $(this).data("urllink");
         $("#modalVideoTitle").text(title);
@@ -57,7 +57,7 @@ $(document).ready(function () {
     });
 
     //Creates raw cut
-    $(".create-raw-cut").on("click", function (event) {
+    $(document).on("click", ".create-raw-cut", function () {
         const redirectUrl = $(this).data("urllink");
         const substepId = $(this).parent().parent().data("ss-id");
 
@@ -78,12 +78,7 @@ $(document).ready(function () {
     });
 
     //Shows modal dialog on delete button click
-    $(".delete-button").on("click", function (e) {
-        if ($(".recording-button").hasClass("stop-recording")) {
-            alert("Please, stop recording before");
-            return false;
-        }
-
+    $(document).on("click", ".delete-button", function () {
         const title = "Delete " + $(this).parent().parent().find(".ss-name").text() + "?";
         $("#modalDeleteTitle").text(title);
         $("#delete-error").empty();
@@ -121,12 +116,6 @@ $(document).ready(function () {
             clearInterval(pollerId);
         });
 
-        const listIds = $(".substep-list")
-            .map(function () {
-                return $(this).data("ss-id");
-            })
-            .get();
-
         $(".substep-list").each(function () {
             if ($(this).data("ss-locked") === "False") {
                 unlockSubstep($(this).data("ss-id"));
@@ -134,6 +123,12 @@ $(document).ready(function () {
         });
 
         pollerId = setInterval(function () {
+            const listIds = $(".substep-list")
+                .map(function () {
+                    return $(this).data("ss-id");
+                })
+                .get();
+
             if (listIds.length === 0) {
                 return false;
             }

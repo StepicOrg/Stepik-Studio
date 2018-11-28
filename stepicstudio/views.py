@@ -1,16 +1,17 @@
-import itertools
 import copy
+import itertools
 import re
 
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
-    JsonResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.db.models import Max
+from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
+    JsonResponse
+from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
 
 from stepicstudio.camera_controls import AutofocusController
@@ -19,10 +20,9 @@ from stepicstudio.models import UserProfile, Lesson, SubStep
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
 from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files, \
     delete_tablet_lesson_files
-from stepicstudio.video_recorders.action import *
-from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
-from stepicstudio.utils.utils import *
 from stepicstudio.statistic import add_stat_info
+from stepicstudio.utils.utils import *
+from stepicstudio.video_recorders.action import *
 from stepicstudio.video_streaming import stream_video
 
 logger = logging.getLogger('stepicstudio.views')
@@ -240,15 +240,10 @@ def show_step(request, course_id, lesson_id, step_id):
                 return HttpResponse('Ok')
             elif start_status.status is ExecutionStatus.FIXABLE_ERROR:
                 return HttpResponseServerError(start_status.message)
-            elif start_status.status is ExecutionStatus.FATAL_ERROR:
-                return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
-        elif user_action == 'stop':
-            stop_status = stop_cam_recording()
-            if stop_status:
-                return HttpResponse('Ok')
             else:
                 return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
-
+        else:
+            raise Http404
     all_substeps = SubStep.objects.filter(from_step=step_id).order_by('-start_time')
     summ_time = update_time_records(all_substeps)
     step_obj.is_fresh = True
@@ -258,13 +253,29 @@ def show_step(request, course_id, lesson_id, step_id):
             'Course': Course.objects.get(id=course_id),
             'Lesson': Lesson.objects.get(id=lesson_id),
             'Step': Step.objects.get(id=step_id),
-            'postUrl': request.path,
             'SubSteps': all_substeps,
             'tmpl_name': UserProfile.objects.get(user=request.user.id).substep_template,
             'Recording': camera_curr_status}
 
     args.update(csrf(request))
     return render_to_response('step_view.html', args, context_instance=RequestContext(request))
+
+
+@login_required(login_url='/login')
+@can_edit_page
+def stop_recording(request, course_id, lesson_id, step_id):
+    if not request.is_ajax():
+        raise Http404
+
+    if stop_cam_recording():
+        last_substep = SubStep.objects.filter(from_step=step_id).latest('start_time')
+        update_time_records(None, new_step_only=True, new_step_obj=last_substep)
+        args = {'Substep': last_substep,
+                'tmpl_name': UserProfile.objects.get(user=request.user.id).substep_template}
+        html = render_to_string('substep_block.html', args)
+        return HttpResponse(html)
+    else:
+        return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
 
 
 @login_required(login_url='/login')
@@ -369,43 +380,10 @@ def substep_statuses(request):
     return JsonResponse(result)
 
 
-@login_required(login_url='/login')
-def recording_page(request, course_id, lesson_id, step_id):
-    post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
-               STEP_URL_NAME + '/' + step_id + '/'
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'postUrl': post_url,
-            'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'SubSteps': SubStep.objects.filter(from_step=step_id)}
-    args.update({'Recording': camera_curr_status})
-    return render_to_response('step_view.html', args, context_instance=RequestContext(request))
-
-
 @csrf_exempt
 def stop_all_recording(request):
     stop_cam_recording()
     return HttpResponse('Ok')
-
-
-@login_required(login_url='/login')
-def stop_recording(request, course_id, lesson_id, step_id):
-    post_url = '/' + COURSE_ULR_NAME + '/' + str(course_id) + '/' + LESSON_URL_NAME + '/' + str(lesson_id) + '/' + \
-               STEP_URL_NAME + '/' + str(step_id) + '/'
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'postUrl': post_url, 'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'SubSteps': SubStep.objects.filter(from_step=step_id)}
-    args.update(csrf(request))
-    stop_cam_status = stop_cam_recording()
-    args.update({'Recording': camera_curr_status})
-    last_substep_time = SubStep.objects.filter(from_step=step_id) \
-        .aggregate(Max('start_time'))['start_time__max']
-    recorded_substep = SubStep.objects.filter(start_time=last_substep_time).first()
-    add_stat_info(recorded_substep.id)
-    return stop_cam_status
 
 
 @login_required(login_url='/login/')

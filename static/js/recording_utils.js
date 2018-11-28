@@ -2,8 +2,10 @@ const startSound = new Audio("/static/sounds/start_sound.wav");
 const stopSound = new Audio("/static/sounds/stop_sound.wav");
 
 function recordStarted() {
-    $(".start-recording").removeClass("start-recording disabled")
+    $(".start-recording")
+        .removeClass("start-recording")
         .addClass("stop-recording")
+        .removeAttr("disabled")
         .find(".head-text")
         .text("Recording");
 
@@ -13,13 +15,17 @@ function recordStarted() {
 }
 
 function recordStartFailed() {
-    $(".start-recording").find(".head-text").text("Start Recording");
+    $(".start-recording")
+        .removeAttr("disabled")
+        .find(".head-text")
+        .text("Start Recording");
 }
 
 function recordStopped() {
     $(".stop-recording")
         .removeClass("stop-recording")
         .addClass("start-recording")
+        .removeAttr("disabled")
         .find(".head-text")
         .text("Start Recording");
 
@@ -55,10 +61,9 @@ $(document).ready(function () {
         $(".start-recording").off();
     });
 
-    $(".start-recording").on("click", function () {
+     $(document).on("click", ".start-recording", function (e) {
         $(".head-text").text("Starting...");
-
-        $(this).addClass("disabled").off();
+        $(".start-recording").attr("disabled", "disabled");
 
         $(window).on("beforeunload", function () {
             return "Are you sure want to leave page? Recording will stop on leave.";
@@ -86,25 +91,20 @@ $(document).ready(function () {
     });
 
     $(document).on("click", ".stop-recording", function () {
-
-        $(this).off().addClass("disabled");
-
+        $(".stop-recording").attr("disabled", "disabled");
         $(".head-text").text("Preparing...");
         $(".tip-text").empty();
-        $("#timer").empty();
+        $("#timer").remove();
 
         $(window).off();
         $.ajax({
             beforeSend: getCookie,
-            type: "POST",
-            url: window.location.pathname,
-            data: {
-                "action": "stop"
-            },
-            success: function () {
+            type: "GET",
+            url: window.location.pathname + "stop/",
+            success: function (data) {
                 stopSound.play();
-                location.reload(true);
                 recordStopped();
+                $(".list-group").prepend(data);
             },
             error: function (data) {
                 alert(data.responseText);

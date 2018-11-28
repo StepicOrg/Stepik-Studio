@@ -87,7 +87,7 @@ code {
     border-color: #17a2b8;
 }
 
-.recording-button.disabled {
+.recording-button[disabled] {
     background-color: transparent;
 }
 
