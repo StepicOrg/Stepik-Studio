@@ -67,7 +67,7 @@ $(document).ready(function () {
             });
 
         const urlink = $(this).data("urllink");
-        $("#modalDeleteButton").on("click", function () {
+        $("#modalDeleteButton").off().on("click", function () {
             window.location.replace(urlink);
         });
     });
@@ -76,6 +76,7 @@ $(document).ready(function () {
         $(this).find("[autofocus]")
             .focus();
     }).on("hidden.bs.modal", function (e) { //Clear error message on close
+        console.info("hide");
         $("#rename-error").empty();
     });
 
@@ -90,7 +91,7 @@ $(document).ready(function () {
             .find(".elem-name")
             .text();
 
-        $("#new-name").focus(function () {
+        $("#new-name").off().focus(function () {
             errorDesriptor.empty();
         }).keypress(function (e) {
             if (e.which === 13) {
@@ -105,7 +106,7 @@ $(document).ready(function () {
             .find(".modal-body input")
             .val(title);
 
-        $("#modalRenameButton").on("click", function (e) {
+        $("#modalRenameButton").off().on("click", function (e) {
             const sameNamesCount = $(".elem-name").filter(function () {
                 return ($(this).text() === $("#new-name").val());
             }).length;

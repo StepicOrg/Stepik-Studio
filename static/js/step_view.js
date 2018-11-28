@@ -82,7 +82,9 @@ $(document).ready(function () {
         const title = "Delete " + $(this).parent().parent().find(".ss-name").text() + "?";
         $("#modalDeleteTitle").text(title);
         $("#delete-error").empty();
-        $("#deleteModalCenter").modal("show")
+
+        $("#deleteModalCenter").off()
+            .modal("show")
             .focus()
             .keypress(function (e) {
                 if (e.which === 13) {
@@ -93,7 +95,7 @@ $(document).ready(function () {
         const urlink = $(this).data("urllink");
         const substepId = $(this).parent().parent().data("ss-id");
 
-        $("#modalDeleteButton").unbind().on("click", function () {
+        $("#modalDeleteButton").off("click").on("click", function () {
             $.ajax({
                 beforeSend: getCookie,
                 type: "GET",

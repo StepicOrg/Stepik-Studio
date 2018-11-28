@@ -105,6 +105,7 @@ $(document).ready(function () {
                 stopSound.play();
                 recordStopped();
                 $(".list-group").prepend(data);
+                $("[data-toggle=\"tooltip\"]").tooltip();
             },
             error: function (data) {
                 alert(data.responseText);
