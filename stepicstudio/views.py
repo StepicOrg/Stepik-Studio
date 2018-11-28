@@ -6,7 +6,6 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
-from django.db.models import Max
 from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
     JsonResponse
 from django.shortcuts import render_to_response
@@ -20,7 +19,6 @@ from stepicstudio.models import UserProfile, Lesson, SubStep
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
 from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files, \
     delete_tablet_lesson_files
-from stepicstudio.statistic import add_stat_info
 from stepicstudio.utils.utils import *
 from stepicstudio.video_recorders.action import *
 from stepicstudio.video_streaming import stream_video
