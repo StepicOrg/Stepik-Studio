@@ -76,7 +76,6 @@ $(document).ready(function () {
         $(this).find("[autofocus]")
             .focus();
     }).on("hidden.bs.modal", function (e) { //Clear error message on close
-        console.info("hide");
         $("#rename-error").empty();
     });
 
