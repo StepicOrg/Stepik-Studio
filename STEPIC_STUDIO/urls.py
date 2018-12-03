@@ -11,6 +11,7 @@ courseurlpatterns = patterns(
     url(r'^lesson/(?P<lesson_id>[0-9]+)/add_step/', 'stepicstudio.views.add_step'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/delete/', 'stepicstudio.views.delete_lesson'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/stop', 'stepicstudio.views.stop_recording'),
+    url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/export-pproj', 'stepicstudio.views.export_to_pproj'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/step/(?P<step_id>[0-9]+)/', 'stepicstudio.views.show_step'),
     url(r'^lesson/(?P<lesson_id>[0-9]+)/', 'stepicstudio.views.show_lesson'),
 

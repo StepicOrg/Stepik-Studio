@@ -603,6 +603,13 @@ def autofocus_camera(request):
         return HttpResponseServerError(result.message)
 
 
+@login_required(login_url='/login/')
+@can_edit_page
+def export_to_pproj(request, course_id, lesson_id, step_id):
+
+    return HttpResponse('Ok')
+
+
 def error500_handler(request):
     logger.exception('Unknown internal server error')
     if 'HTTP_REFERER' in request.META:
