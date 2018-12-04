@@ -6,6 +6,8 @@ from stepicstudio.operations_statuses.operation_result import InternalOperationR
 
 SCREENCASTS_LABEL = 'screen'
 CAMERA_RECORDINGS_LABEL = 'prof'
+BASE_PATH_LABEL = 'base_path'
+PPRO_TEMPLATES_PATH_LABEL = 'templates_path'
 
 
 class PremiereExporter(object):
@@ -23,7 +25,8 @@ class PremiereExporter(object):
 
         pass
 
-    def _paths_to_json(self, screen_files, prof_files):
-        return json.dumps({CAMERA_RECORDINGS_LABEL: prof_files,
+    def params_to_json(self, base_path, templates_path, screen_files, prof_files):
+        return json.dumps({BASE_PATH_LABEL: base_path,
+                           PPRO_TEMPLATES_PATH_LABEL: templates_path,
+                           CAMERA_RECORDINGS_LABEL: prof_files,
                            SCREENCASTS_LABEL: screen_files})
-
