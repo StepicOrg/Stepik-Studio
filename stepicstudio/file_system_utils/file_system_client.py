@@ -28,16 +28,18 @@ class FileSystemClient(object):
             logger.exception('Cannot exec command: ')
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message), None
 
-    def execute_command_sync(self, command) -> InternalOperationResult:
+    @staticmethod
+    def execute_command_sync(command, allowable_code=0) -> InternalOperationResult:
         """Blocking execution."""
         try:
             # raise exception when returncode != 0
             subprocess.check_call(command, shell=True)
             return InternalOperationResult(ExecutionStatus.SUCCESS)
-        except Exception as e:
-            message = 'Cannot exec command: {0}'.format(str(e))
+        except subprocess.CalledProcessError as e:
+            if e.returncode == allowable_code:
+                return InternalOperationResult(ExecutionStatus.SUCCESS)
             logger.error('Cannot exec command: %s', str(e))
-            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, message)
+            return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'Cannot exec command: {0}'.format(str(e)))
 
     def exec_and_get_output(self, command, stderr=None) -> (InternalOperationResult, str):
         try:

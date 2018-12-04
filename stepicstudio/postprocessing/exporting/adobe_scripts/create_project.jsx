@@ -1,11 +1,4 @@
-﻿#target premierepro
-
-//Based on samples of using ExtendScript and docs:
-//https://github.com/Adobe-CEP/Samples/blob/master/PProPanel/jsx/PPRO/Premiere.jsx
-//https://media.readthedocs.org/pdf/premiere-scripting-guide/latest/premiere-scripting-guide.pdf
-
-
-/*Creates sequence
+﻿/*Creates sequence
 params:
 name - name of sequence as string
 preset - path to .sqpreset file as string*/
@@ -31,7 +24,6 @@ function appendItemToSequence(item, targetVTrackNumber) {
                 // If there are already clips in this track,
                 // append this one to the end. Otherwise,
                 // insert at start time.
-
                 if (targetVTrack.clips.numItems > 0){
                     var lastClip = targetVTrack.clips[(targetVTrack.clips.numItems - 1)];
                     if (lastClip){
@@ -57,23 +49,30 @@ path - base path to directory with media items
 files - array of file names of media items
 trackNumber - track number of sequence*/
 function appendToSequence(path, files, trackNumber) {
-    fullPaths = files.map(function(fileName) {
-        return path + fileName;
-    });
+    var fullPaths = files.slice();
+    for(var i = 0; i < files.length; i++) {
+          fullPaths[i] = path + files[i];
+    }
     app.project.importFiles(fullPaths);
     for(var i = 0; i < app.project.rootItem.children.numItems; i++) {
-        if(files.indexOf (app.project.rootItem.children[i].name) > -1) {
-            appendItemToSequence(app.project.rootItem.children[i], trackNumber);
+        for(var j = 0; j < files.length; j++) {
+            if (app.project.rootItem.children[i].name == files[j]) { //indexOf() isn't supported by ExtendScript
+                try {
+                    appendItemToSequence(app.project.rootItem.children[i], trackNumber);
+                } catch (e) {
+                    app.project.closeDocument(0, 0); // 0 - without save before closing to avoid creating project with missing files; 0 - to close without modal dialog
+                    app.quit();
+                }
+                break;
+            }   
         }
     }
 }
 
-var basePath = "D:\\STEPIKSTUDIO\\TESTER\\test_course\\Lesson_1123123\\Step123123123\\";
-var professorVideos = ["Step2from367_Professor.mp4",  "Step3from367_Professor.mp4"];
-var screenVideos = ["Step2from367_Screen.mp4", "Step3from367_Screen.mp4"];
-var preset = "C:\\Development\\Stepik-Studio\\stepicstudio\\postprocessing\\exporting\\adobe_templates\\ppro.sqpreset";
-
-createSequence("testSequence", preset);
+app.project.saveAs(basePath + outputName + '.prproj');
+createSequence("testSequence", presetPath);
 appendToSequence(basePath, professorVideos, 1);
 appendToSequence(basePath, screenVideos, 0);
-
+app.project.save();
+app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
+app.quit();

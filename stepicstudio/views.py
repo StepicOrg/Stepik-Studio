@@ -17,6 +17,7 @@ from stepicstudio.camera_controls import AutofocusController
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.models import UserProfile, Lesson, SubStep
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
+from stepicstudio.postprocessing.exporting import export_step_to_prproj
 from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files, \
     delete_tablet_lesson_files
 from stepicstudio.utils.utils import *
@@ -606,8 +607,13 @@ def autofocus_camera(request):
 @login_required(login_url='/login/')
 @can_edit_page
 def export_to_pproj(request, course_id, lesson_id, step_id):
+    step_obj = Step.objects.get(id=step_id)
+    result = export_step_to_prproj(step_obj)
 
-    return HttpResponse('Ok')
+    if result.status is ExecutionStatus.SUCCESS:
+        return HttpResponse('Ok')
+    else:
+        return HttpResponseServerError(result.message)
 
 
 def error500_handler(request):
