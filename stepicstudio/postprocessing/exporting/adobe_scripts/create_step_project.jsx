@@ -1,4 +1,8 @@
-﻿/*Creates sequence
+﻿//Based on samples of using ExtendScript and docs(unofficial):
+//https://github.com/Adobe-CEP/Samples/blob/master/PProPanel/jsx/PPRO/Premiere.jsx
+//https://media.readthedocs.org/pdf/premiere-scripting-guide/latest/premiere-scripting-guide.pdf
+
+/*Creates sequence
 params:
 name - name of sequence as string
 preset - path to .sqpreset file as string*/
@@ -56,7 +60,7 @@ function appendToSequence(path, files, trackNumber) {
     app.project.importFiles(fullPaths);
     for(var i = 0; i < app.project.rootItem.children.numItems; i++) {
         for(var j = 0; j < files.length; j++) {
-            if (app.project.rootItem.children[i].name == files[j]) { //indexOf() isn't supported by ExtendScript
+            if (app.project.rootItem.children[i].name === files[j]) { //indexOf() isn't supported by ExtendScript
                 try {
                     appendItemToSequence(app.project.rootItem.children[i], trackNumber);
                 } catch (e) {
@@ -69,10 +73,9 @@ function appendToSequence(path, files, trackNumber) {
     }
 }
 
-app.project.saveAs(basePath + outputName + '.prproj');
-createSequence("testSequence", presetPath);
+createSequence(outputName, presetPath);
 appendToSequence(basePath, professorVideos, 1);
 appendToSequence(basePath, screenVideos, 0);
-app.project.save();
+app.project.saveAs(basePath + outputName + '.prproj'); //save as another project(without template modification)
 app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
 app.quit();

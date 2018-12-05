@@ -10,7 +10,7 @@ from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
 PRPROJ_TEMPLATE = 'template.prproj'
 PRPROJ_PRESET = 'ppro.sqpreset'
-PRPROJ_SCRIPT = 'create_project.jsx'
+PRPROJ_SCRIPT = 'create_step_project.jsx'
 
 logger = logging.getLogger(__name__)
 
