@@ -26,19 +26,19 @@ class Course(models.Model):
     def os_path(self):
         user_id = self.editors
         user_folder = UserProfile.objects.get(user_id=user_id).serverFilesFolder
-        return user_folder + '/' + translate_non_alphanumerics(self.name) + '/'
+        return os.path.join(user_folder, translate_non_alphanumerics(self.name) + os.sep)
 
     @property
     def os_automontage_path(self):
         user_id = self.editors
         user_folder = UserProfile.objects.get(user_id=user_id).serverFilesFolder
-        return user_folder + '/' + RAW_CUT_FOLDER_NAME + '/' + translate_non_alphanumerics(self.name) + '/'
+        return os.path.join(user_folder, RAW_CUT_FOLDER_NAME, translate_non_alphanumerics(self.name) + os.sep)
 
     @property
     def tablet_path(self):
         user_id = self.editors
-        user_folder = UserProfile.objects.get(user_id=user_id).user
-        return str(user_folder) + '/' + translate_non_alphanumerics(self.name) + '/'
+        username = User.objects.get(id=user_id).username
+        return settings.LINUX_DIR + username + '/' + translate_non_alphanumerics(self.name) + '/'
 
     @property
     def url(self):
@@ -62,12 +62,12 @@ class Lesson(models.Model):
     @property
     def os_path(self):
         course = Course.objects.get(id=self.from_course)
-        return course.os_path + translate_non_alphanumerics(self.name) + '/'
+        return course.os_path + translate_non_alphanumerics(self.name) + os.sep
 
     @property
     def os_automontage_path(self):
         course = Course.objects.get(id=self.from_course)
-        return course.os_automontage_path + translate_non_alphanumerics(self.name) + '/'
+        return course.os_automontage_path + translate_non_alphanumerics(self.name) + os.sep
 
     @property
     def tablet_path(self):
@@ -90,12 +90,12 @@ class Step(models.Model):
     @property
     def os_path(self):
         lesson = Lesson.objects.get(id=self.from_lesson)
-        return lesson.os_path + translate_non_alphanumerics(self.name) + '/'
+        return lesson.os_path + translate_non_alphanumerics(self.name) + os.sep
 
     @property
     def os_automontage_path(self):
         lesson = Lesson.objects.get(id=self.from_lesson)
-        return lesson.os_automontage_path + translate_non_alphanumerics(self.name) + '/'
+        return lesson.os_automontage_path + translate_non_alphanumerics(self.name) + os.sep
 
     @property
     def tablet_path(self):
@@ -116,53 +116,52 @@ class SubStep(models.Model):
         return self.name + ' from step id =' + str(self.from_step)
 
     @property
+    def camera_recording_name(self):
+        return self.name + SUBSTEP_SCREEN
+
+    @property
+    def screencast_name(self):
+        return self.name + SUBSTEP_PROFESSOR
+
+    @property
     def dir_path(self):
-        step = Step.objects.get(id=self.from_step)
-        path = step.os_path + translate_non_alphanumerics(self.name)
-        return path.replace('/', os.sep)
+        return Step.objects.get(id=self.from_step).os_path
 
     @property
     def os_path(self):
-        step = Step.objects.get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_PROFESSOR
+        return os.path.join(Step.objects.get(id=self.from_step).os_path, self.camera_recording_name)
 
+    # allows users to view files which recorded with previous version of studio
     @property
-    def os_automontage_path(self):
+    def os_path_old(self):
         step = Step.objects.get(id=self.from_step)
-        path = step.os_automontage_path + translate_non_alphanumerics(self.name)
-        return path.replace('/', os.sep)
-
-    @property
-    def os_path_v1(self):
-        step = Step.objects.get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + '/' + SUBSTEP_PROFESSOR_v1
-
-    @property
-    def os_tablet_path(self):
-        step = Step.objects.get(id=self.from_step)
-        return step.tablet_path + translate_non_alphanumerics(self.name)
-
-    @property
-    def os_path_all_variants(self):
-        return [self.os_path, self.os_path_v1]
+        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.camera_recording_name)
 
     @property
     def os_screencast_path(self):
+        return os.path.join(Step.objects.get(id=self.from_step).os_path, self.screencast_name)
+
+    # allows users to view files which recorded with previous version of studio
+    @property
+    def os_screencast_path_old(self):
         step = Step.objects.get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + '/' + self.name + SUBSTEP_SCREEN
+        return os.path.join(step.os_path + translate_non_alphanumerics(self.name), self.screencast_name)
 
     @property
-    def os_screencast_path_v1(self):
-        step = Step.objects.get(id=self.from_step)
-        return step.os_path + translate_non_alphanumerics(self.name) + '/' + SUBSTEP_SCREEN_v1
+    def os_tablet_dir(self):
+        return Step.objects.get(id=self.from_step).tablet_path
 
     @property
-    def os_screencast_path_all_variants(self):
-        return [self.os_screencast_path, self.os_screencast_path_v1]
+    def os_tablet_path(self):
+        return Step.objects.get(id=self.from_step).tablet_path + self.screencast_name
 
     @property
     def is_videos_ok(self):
-        return self.screencast_duration - self.duration < 7.0 and self.screencast_duration > 0.0 and self.duration > 0.0
+        return self.screencast_duration - self.duration < 7 and self.screencast_duration > 0 and self.duration > 0
+
+    @property
+    def os_automontage_path(self):
+        return Step.objects.get(id=self.from_step).os_automontage_path
 
     @property
     def os_automontage_file(self):

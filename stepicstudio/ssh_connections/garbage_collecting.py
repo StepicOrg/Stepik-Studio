@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from django.conf import settings
 
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
-from stepicstudio.ssh_connections import get_full_linux_path
 from stepicstudio.ssh_connections.tablet_client import TabletClient
 from stepicstudio.utils.utils import bytes2human
 
@@ -18,16 +17,12 @@ def collect_garbage():
     from stepicstudio.models import SubStep
     for substep in SubStep.objects.all():
         if is_outdated(substep):
-            try:
-                folder_path = get_full_linux_path(substep)
-            except:
-                continue
-            status, size = tablet_client.delete_folder(folder_path)
+            status, size = tablet_client.delete_folder(substep.os_tablet_path)
 
             if status.status is ExecutionStatus.SUCCESS:
                 ss_count += 1
                 result_size += size
-                logger.info('Tablet\'s diretory deleted. (path: %s) \n Released memory: %s', folder_path,
+                logger.info('Tablet\'s directory deleted. (path: %s) \n Released memory: %s', substep.os_tablet_path,
                             bytes2human(size))
 
     tablet_client.close()

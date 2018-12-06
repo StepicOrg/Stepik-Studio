@@ -13,15 +13,15 @@ def sec_to_time(value):
         return '<0.1'
 
     hour = value // 3600
-    min = int(math.fmod(value, 3600)) // 60
+    mins = int(math.fmod(value, 3600)) // 60
 
-    if min > 0:
+    if mins > 0:
         sec = int(math.fmod(value, 60))
     else:
         sec = '%.1f' % math.fmod(value, 60.0)
 
     return ''.join(map(lambda x: str(x[0]) + x[1],
-                       (filter(lambda x: x[0] != 0, [(hour, 'H '), (min, 'min '), (sec, 'sec')]))))
+                       (filter(lambda x: x[0] != 0, [(hour, 'H '), (mins, 'min '), (sec, 'sec')]))))
 
 
 @register.filter(name="formatting_text")

@@ -1,11 +1,9 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 
-from stepicstudio import const
-from stepicstudio.const import *
-from stepicstudio.const import SUBSTEP_PROFESSOR
+from stepicstudio.const import MP4_EXTENSION
 from stepicstudio.file_system_utils.action import *
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
-from stepicstudio.models import CameraStatus, SubStep
+from stepicstudio.models import CameraStatus
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing import synchronize_videos
@@ -13,42 +11,22 @@ from stepicstudio.scheduling.task_manager import TaskManager
 from stepicstudio.video_recorders.camera_recorder import ServerCameraRecorder
 from stepicstudio.video_recorders.tablet_recorder import TabletScreenRecorder
 
-logger = logging.getLogger('stepic_studio.file_system_utils.action')
+logger = logging.getLogger(__name__)
 
 
-def to_linux_translate(win_path: str, username: str) -> str:
-    linux_path = settings.LINUX_DIR + username + '/' + '/'.join(win_path.split('/')[1:])
-    logger.debug('to_linux_translate() This is linux path %s', linux_path)
-    return linux_path
+def start_recording(substep) -> InternalOperationResult:
+    create_status = FileSystemClient().create_recursively(substep.dir_path)
 
+    if create_status.status is not ExecutionStatus.SUCCESS:
+        logger.error('Can\'t create folder for new substep: %s', create_status.message)
+        return create_status
 
-def start_recording(**kwargs: dict) -> InternalOperationResult:
-    user_id = kwargs['user_id']
-    username = User.objects.get(id=int(user_id)).username
-    folder_path = kwargs['user_profile'].serverFilesFolder
-    data = kwargs['data']
+    tablet_exec_info = TabletScreenRecorder().start_recording(substep.os_tablet_dir, substep.screencast_name)
 
-    try:
-        add_file_to_test(folder_path=folder_path, data=data)
-    except Exception as e:
-        logger.error('Can\'t create folder for new substep: %s', e)
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, 'OS error: can\'t create new folder.')
+    if tablet_exec_info.status is not ExecutionStatus.SUCCESS:
+        return tablet_exec_info
 
-    substep_folder, a = substep_server_path(folder_path=folder_path, data=data)
-
-    filename = data['currSubStep'].name + const.SUBSTEP_SCREEN
-    folder = to_linux_translate(substep_folder, username)
-
-    try:
-        remote_status = TabletScreenRecorder().start_recording(folder, filename)
-    except:
-        remote_status = InternalOperationResult(ExecutionStatus.FATAL_ERROR)
-
-    if remote_status.status is not ExecutionStatus.SUCCESS:
-        return remote_status
-
-    ffmpeg_status = ServerCameraRecorder().start_recording(substep_folder.replace('/', '\\'),
-                                                           data['currSubStep'].name + SUBSTEP_PROFESSOR)
+    ffmpeg_status = ServerCameraRecorder().start_recording(substep.dir_path, substep.camera_recording_name)
 
     if ffmpeg_status.status is not ExecutionStatus.SUCCESS:
         TabletScreenRecorder().stop_recording()
@@ -61,26 +39,6 @@ def start_recording(**kwargs: dict) -> InternalOperationResult:
         db_camera.save()
 
     return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-
-def delete_server_substep_files(**kwargs):
-    folder_path = kwargs['user_profile'].serverFilesFolder
-    data = kwargs['data']
-    if data['currSubStep'].is_locked:
-        return InternalOperationResult(ExecutionStatus.FIXABLE_ERROR,
-                                       'File is locked. Please wait for unlocking.')
-
-    return delete_substep_on_disc(folder_path=folder_path, data=data)
-
-
-def delete_server_step_files(**kwargs):
-    folder_path = kwargs['user_profile'].serverFilesFolder
-    data = kwargs['data']
-    substeps = SubStep.objects.filter(from_step=data['Step'].id)
-    for ss in substeps:
-        if ss.is_locked:
-            return False
-    return delete_step_on_disc(folder_path=folder_path, data=data)
 
 
 def stop_cam_recording() -> True | False:

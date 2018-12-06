@@ -15,9 +15,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from stepicstudio.camera_controls import AutofocusController
 from stepicstudio.forms import LessonForm, StepForm
-from stepicstudio.models import UserProfile
+from stepicstudio.models import UserProfile, Lesson, SubStep
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
-from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files
+from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files, \
+    delete_tablet_lesson_files
 from stepicstudio.video_recorders.action import *
 from stepicstudio.file_system_utils.action import search_as_files_and_update_info, rename_element_on_disk
 from stepicstudio.utils.utils import *
@@ -93,8 +94,7 @@ def logout(request):
 @login_required(login_url='/login/')
 def get_user_courses(request):
     args = {'full_name': request.user.username,
-            'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date'),
-            }
+            'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date')}
     args.update({'Recording': camera_curr_status})
     return render_to_response('courses.html', args, context_instance=RequestContext(request))
 
@@ -105,8 +105,7 @@ def get_course_page(request, course_id):
     lesson_list = Lesson.objects.filter(from_course=course_id).order_by('position', '-start_time')
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id)[0],
-            'Lessons': lesson_list,
-            }
+            'Lessons': lesson_list}
     args.update({'Recording': camera_curr_status})
     return render_to_response('course_view.html', args, context_instance=RequestContext(request))
 
@@ -133,8 +132,7 @@ def loggedin(request):
         say_hello = bool(request.GET.get('message'))
         args = {'full_name': request.user.username,
                 'say_hello': say_hello,
-                'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date'),
-                }
+                'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date')}
         args.update(csrf(request))
         return render_to_response('loggedin.html', args, context_instance=RequestContext(request))
     else:
@@ -167,7 +165,7 @@ def add_lesson(request):
         raise Http404
 
     args = {'full_name': request.user.username,
-            'go_back': request.META.get('HTTP_REFERER'), }
+            'go_back': request.META.get('HTTP_REFERER')}
     args.update(csrf(request))
     args.update({'Recording': camera_curr_status})
     args['form'] = form
@@ -180,9 +178,7 @@ def show_lesson(request, course_id, lesson_id):
     args = {'full_name': request.user.username,
             'Course': Course.objects.filter(id=course_id).first(),
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position', '-start_time'),
-
-            }
+            'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position', '-start_time')}
     args.update({'Recording': camera_curr_status})
     return render_to_response('lesson_view.html', args, context_instance=RequestContext(request))
 
@@ -190,16 +186,27 @@ def show_lesson(request, course_id, lesson_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def delete_lesson(request, course_id, lesson_id):
-    lesson_obj = Lesson.objects.get(id=lesson_id)
-    redirect_to_course_page = request.path.split('/')
-    if not delete_files_associated(redirect_to_course_page):
-        return error_description(request, 'Sorry, can\'t delete lesson files. Error log will sent to developers.')
-    for step in Step.objects.filter(from_lesson=lesson_id):
-        for substep in SubStep.objects.filter(from_step=step.pk):
-            substep.delete()
-        step.delete()
-    lesson_obj.delete()
-    return HttpResponseRedirect('/' + '/'.join(redirect_to_course_page[1:3]) + '/')
+    try:
+        lesson_obj = Lesson.objects.get(id=lesson_id)
+        for step in Step.objects.filter(from_lesson=lesson_id):
+            for substep in SubStep.objects.filter(from_step=step.pk):
+                if substep.is_locked:
+                    return error_description(request, 'Sorry, can\'t delete lesson\'s files. '
+                                                      'Lesson contains locked substep.')
+                else:
+                    substep.delete()
+            step.delete()
+    except:
+        logger.warning('Failed to delete lesson\'s files.')
+        return error_description(request, 'Sorry, can\'t delete lesson\'s files. Error log will sent to developers.')
+
+    if delete_lesson_on_disk(lesson_obj).status is ExecutionStatus.SUCCESS and \
+            delete_tablet_lesson_files(lesson_obj).status is ExecutionStatus.SUCCESS:
+        lesson_obj.delete()
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+    else:
+        logger.warning('Failed to delete lesson\'s files.')
+        return error_description(request, 'Sorry, can\'t delete lesson\'s files. Error log will sent to developers.')
 
 
 # IMPLEMENT CORRECTLY
@@ -223,8 +230,7 @@ def add_step(request, course_id, lesson_id):
             'postUrl': '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME
                        + '/' + lesson_id + '/add_step/',
             'CourseID': course_id,
-            'LessonID': lesson_id,
-            }
+            'LessonID': lesson_id}
     args.update({'Recording': camera_curr_status})
     args.update(csrf(request))
     args['form'] = form
@@ -272,8 +278,7 @@ def show_step(request, course_id, lesson_id, step_id):
             'Step': Step.objects.get(id=step_id),
             'postUrl': request.path,
             'SubSteps': all_substeps,
-            'tmpl_name': UserProfile.objects.get(user=request.user.id).substep_template,
-            }
+            'tmpl_name': UserProfile.objects.get(user=request.user.id).substep_template}
     args.update({'Recording': camera_curr_status})
     args.update(csrf(request))
     return render_to_response('step_view.html', args, context_instance=RequestContext(request))
@@ -329,24 +334,9 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
         substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
 
     substep.save()
-    post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
-               STEP_URL_NAME + '/' + step_id + '/'
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'postUrl': post_url,
-            'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'SubSteps': SubStep.objects.filter(from_step=step_id),
-            'currSubStep': SubStep.objects.get(id=substep.pk),
-            }
-    args.update(csrf(request))
-    recording_status = start_recording(user_id=request.user.id,
-                                       user_profile=UserProfile.objects.get(user=request.user.id),
-                                       data=args)
-    if recording_status.status is ExecutionStatus.SUCCESS:
-        args.update({'Recording': True})
-        args.update({'StartTime': CameraStatus.objects.get(id='1').start_time / 1000})
-    else:
+
+    recording_status = start_recording(substep)
+    if recording_status.status is not ExecutionStatus.SUCCESS:
         substep.delete()
     return recording_status
 
@@ -403,9 +393,7 @@ def recording_page(request, course_id, lesson_id, step_id):
             'postUrl': post_url,
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),
             'Step': Step.objects.filter(id=step_id).first(),
-            'SubSteps': SubStep.objects.filter(from_step=step_id),
-
-            }
+            'SubSteps': SubStep.objects.filter(from_step=step_id)}
     args.update({'Recording': camera_curr_status})
     return render_to_response('step_view.html', args, context_instance=RequestContext(request))
 
@@ -437,27 +425,16 @@ def stop_recording(request, course_id, lesson_id, step_id):
 
 @login_required(login_url='/login/')
 @can_edit_page
-def remove_substep(request, course_id, lesson_id, step_id, substep_id):
-    post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/' + \
-               STEP_URL_NAME + '/' + step_id + '/'
-
+def delete_substep(request, course_id, lesson_id, step_id, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
     except:
         return error500_handler(request)
 
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'postUrl': post_url,
-            'SubSteps': SubStep.objects.filter(from_step=step_id),
-            'currSubStep': substep,
-            }
+    if substep.is_locked:
+        return error_description(request, 'Sorry, can\'t delete locked substep.')
 
-    server_remove_status = delete_server_substep_files(user_id=request.user.id,
-                                                       user_profile=UserProfile.objects.get(user=request.user.id),
-                                                       data=args)
+    server_remove_status = delete_substep_on_disk(substep)
     tablet_remove_status = delete_tablet_substep_files(substep)
 
     if server_remove_status.status is not ExecutionStatus.SUCCESS:
@@ -466,34 +443,30 @@ def remove_substep(request, course_id, lesson_id, step_id, substep_id):
     if tablet_remove_status.status is not ExecutionStatus.SUCCESS:
         return error_description(request, tablet_remove_status.message)
 
-    args.update({'Recording': camera_curr_status()})
     substep.delete()
-    return HttpResponseRedirect(post_url)
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
 @login_required(login_url='/login/')
 @can_edit_page
 def delete_step(request, course_id, lesson_id, step_id):
-    step = Step.objects.get(id=step_id)
-    post_url = '/' + COURSE_ULR_NAME + '/' + course_id + '/' + LESSON_URL_NAME + '/' + lesson_id + '/'
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
-            'Lesson': Lesson.objects.filter(id=lesson_id).first(),
-            'Step': Step.objects.filter(id=step_id).first(),
-            'postUrl': post_url,
-            'SubSteps': SubStep.objects.filter(from_step=step_id),
-            }
-    substeps = SubStep.objects.filter(from_step=step_id)
-    server_step_files_deleted = delete_server_step_files(user_id=request.user.id,
-                                                         user_profile=UserProfile.objects.get(user=request.user.id),
-                                                         data=args)
-    tablet_step_files_deleted = delete_tablet_step_files(step)
+    try:
+        step = Step.objects.get(id=step_id)
+        substeps = SubStep.objects.filter(from_step=step_id)
+    except:
+        logger.warning('Failed to delete step files.')
+        return error_description(request, 'Sorry, can\'t delete step files. Error log will sent to developers.')
 
-    if server_step_files_deleted and tablet_step_files_deleted:
-        for substep in substeps:
-            substep.delete()
+    for ss in substeps:
+        if ss.is_locked:
+            return error_description(request, 'Sorry, can\'t delete step files. Step contains locked substep.')
+        else:
+            ss.delete()
+
+    if delete_step_on_disk(step).status is ExecutionStatus.SUCCESS and \
+            delete_tablet_step_files(step).status is ExecutionStatus.SUCCESS:
         step.delete()
-        return HttpResponseRedirect(post_url)
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
     else:
         logger.warning('Failed to delete step files.')
         return error_description(request, 'Sorry, can\'t delete step files. Error log will sent to developers.')
@@ -534,8 +507,7 @@ def reorder_elements(request):
 @can_edit_page
 def show_course_struct(request, course_id):
     args = {'full_name': request.user.username,
-            'Course': Course.objects.get(id=course_id),
-            }
+            'Course': Course.objects.get(id=course_id)}
     args.update({'user_profile': UserProfile.objects.get(user=request.user.id)})
     args.update({'Recording': camera_curr_status})
     all_lessons = Lesson.objects.filter(from_course=course_id)
@@ -555,8 +527,7 @@ def show_course_struct(request, course_id):
 @can_edit_page
 def view_stat(request, course_id):
     args = {'full_name': request.user.username,
-            'Course': Course.objects.get(id=course_id),
-            }
+            'Course': Course.objects.get(id=course_id)}
     return render_to_response('stat.html', args, context_instance=RequestContext(request))
 
 
@@ -565,82 +536,72 @@ def view_stat(request, course_id):
 def video_view(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        path = substep.os_path
-        base_path = os.path.splitext(path)[0]
-
-        if os.path.isfile(base_path + MP4_EXTENSION):
-            path_to_mp4 = base_path + MP4_EXTENSION
-            return stream_video(request, path_to_mp4)
+        if os.path.isfile(substep.os_path):
+            return stream_video(request, substep.os_path)
+        elif os.path.isfile(substep.os_path_old):
+            return stream_video(request, substep.os_path_old)
         else:
-            return stream_video(request, path)
-    except FileNotFoundError as e:
-        logger.warning('Missing file: %s', str(e))
-        return error_description(request, 'File is missing.')
+            logger.warning('Missing camera recording file.')
+            return error_description(request, 'File is missing.')
     except:
         return error500_handler(request)
 
 
-# TODO: hotfix here is bad =(
 @login_required(login_url='/login/')
 def video_screen_view(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        path = '/'.join((list(filter(None, substep.os_path.split('/'))))[:-1]) + '/' + substep.name + SUBSTEP_SCREEN
-        base_path = os.path.splitext(path)[0]
-
-        if os.path.isfile(base_path + MP4_EXTENSION):
-            path_to_mp4 = base_path + MP4_EXTENSION
-            return stream_video(request, path_to_mp4)
+        if os.path.isfile(substep.os_screencast_path):
+            return stream_video(request, substep.os_screencast_path)
+        elif os.path.isfile(substep.os_screencast_path_old):
+            return stream_video(request, substep.os_screencast_path_old)
         else:
-            return stream_video(request, path)
-    except FileNotFoundError as e:
-        logger.warning('Missed file: %s', str(e))
-        return error_description(request, 'File is missing.')
-    except Exception:
+            logger.warning('Missing screencast file.')
+            return error_description(request, 'File is missing.')
+    except:
         return error500_handler(request)
 
 
+@login_required(login_url='/login/')
 def show_montage(request, substep_id):
     try:
         substep = SubStep.objects.get(id=substep_id)
-        path = substep.os_automontage_file
-        return stream_video(request, path)
+        return stream_video(request, substep.os_automontage_file)
     except FileNotFoundError as e:
-        logger.warning('Missed file: %s', str(e))
+        logger.warning('Missing raw cut file: %s', e)
         return error_description(request, 'File is missing.')
-    except Exception:
+    except:
         return error500_handler(request)
 
 
 def rename_elem(request):
     if request.POST and request.is_ajax():
         rest_data = dict(request.POST.lists())
-        if 'step' in rest_data['type'] or 'lesson' in rest_data['type']:
-            if 'step' in rest_data['type']:
-                obj_to_rename = Step.objects.get(id=rest_data['id'][0])
-            else:
-                obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
-
-            logger.debug('Renaming: %s', obj_to_rename.os_path)
-            tmp_step = copy.copy(obj_to_rename)
-            tmp_step.name = rest_data['name_new'][0]
-
-            if not camera_curr_status():
-                rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
-                if rename_status.status is ExecutionStatus.SUCCESS:
-                    obj_to_rename.delete()
-                    tmp_step.save()
-                    return HttpResponse('Ok')
-                elif rename_status.status is ExecutionStatus.FIXABLE_ERROR:
-                    return HttpResponseServerError(rename_status.message)
-                elif rename_status.status is ExecutionStatus.FATAL_ERROR:
-                    return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
-            else:
-                return Http404
+        if 'step' in rest_data['type']:
+            obj_to_rename = Step.objects.get(id=rest_data['id'][0])
+        elif 'lesson' in rest_data['type']:
+            obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
         else:
-            return Http404
+            raise Http404
+
+        logger.debug('Renaming: %s', obj_to_rename.os_path)
+        tmp_step = copy.copy(obj_to_rename)
+        tmp_step.name = rest_data['name_new'][0]
+
+        if not camera_curr_status():
+            rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
+            if rename_status.status is ExecutionStatus.SUCCESS:
+                obj_to_rename.delete()
+                tmp_step.save()
+                return HttpResponse('Ok')
+            elif rename_status.status is ExecutionStatus.FIXABLE_ERROR:
+                return HttpResponseServerError(rename_status.message)
+            elif rename_status.status is ExecutionStatus.FATAL_ERROR:
+                return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
+        else:
+            raise Http404
     else:
-        return Http404
+        raise Http404
 
 
 def clear_all_locked_substeps(request):

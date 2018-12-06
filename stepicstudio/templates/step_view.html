@@ -10,9 +10,9 @@
             </div>
             {% endif %}
 
-            <b>Course: <a class="reference_wo_underline" href={{ Course.url }}>{{ Course.name}}</a></b>
+            <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
             <br>
-            <b>Lesson: <a class="reference_wo_underline" href={{ Lesson.url }}>{{ Lesson.name}}</a></b>
+            <b>Lesson: <a class="reference_wo_underline" href="{{ Lesson.url }}">{{ Lesson.name}}</a></b>
             <br>
             <b>Step: <a>{{ Step.name}}</a></b>
             <br>
@@ -43,7 +43,7 @@
                                | Scr: {% if SS.screencast_duration > 0.0 %} {{ SS.screencast_duration | sec_to_time}} {% else %} Err! {% endif %}
                                | {% if not SS.is_videos_ok %} Err! {% endif %}
                                 <div class="delete_button right">
-                                    <div class="delete-url right" data-urllink="{{ postUrl }}{{ SS.id }}/delete/"> Delete </div>
+                                    <div class="delete-url right" data-urllink="{{ SS.id }}/delete/"> Delete </div>
                                 </div>
                         </div>
                 {% endfor %}
@@ -65,7 +65,7 @@
             <div ALIGN = center>
             <h3> Recording started</h3>
             <br>
-            <h1><a href="{{ postUrl }}stop/" class="stop_recording">Stop Recording</a>
+            <h1><a href="stop/" class="stop_recording">Stop Recording</a>
             </h1>
             <div id = "timer" data-starttime="{{ StartTime }}">00:00</div>
             </div>

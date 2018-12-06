@@ -2,9 +2,9 @@
 
 {% if Recording == False %}
     {%  block content %}
-        <b>Course: <a class="reference_wo_underline" href = {{ Course.url }}>{{ Course.name}}</a></b>
+        <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
         <br>
-        <b>Lesson: <a class="reference_wo_underline" href href = {{ Lesson.url }}>{{ Lesson.name}}</a></b>
+        <b>Lesson: <a class="reference_wo_underline" href="{{ Lesson.url }}">{{ Lesson.name}}</a></b>
         <br>
         <br>
         <div style="height: 70px">
@@ -12,7 +12,7 @@
                 <a class="add_button_ref" href="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/add_step/"> Add Step</a>
             </div>
 
-            <div  id="draggable_tip">
+            <div id="draggable_tip">
                 <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
             </div>
         </div>
@@ -28,7 +28,7 @@
                         <span class="rename_button step_rename">rename</span> |
                         <span class="lesson_info">info</span> |
                         <span class="delete_button">
-                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{ Course.id}}/lesson/{{ Lesson.id  }}/step/{{ S.id }}/delete/" width="22" height="22" id="delete_svg">
+                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="step/{{ S.id }}/delete/" width="22" height="22" id="delete_svg">
                         </span> |
                         <span class="drag_handle">
                             <img src="/static/icons/draggable.svg" width="30" height="30">
@@ -43,7 +43,7 @@
     {% endblock %}
     {% block controls %}
         <div class="back button right">
-            <a href= {{Course.url}} >Back</a>
+            <a href="{{Course.url}}" >Back</a>
         </div>
     {% endblock %}
 {% endif %}
