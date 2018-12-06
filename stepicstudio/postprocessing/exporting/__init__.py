@@ -21,20 +21,30 @@ class PPROCommandBuilder(object):
 
     def __init__(self, base_command):
         self.base_command = base_command + " \""
+        self.script_to_include = ''
 
-    def append_opening_document(self, path):
+    def append_opening_document(self, path: str):
         self.base_command += 'app.openDocument(' + '\'' + path + '\'' + ');'
         return self
 
-    def append_script_including(self, path):
-        self.base_command += ' //@include \'' + path + '\''
+    # script including should be appended at the end of command
+    # use append_eval_file() if you need to execute detached script
+    def append_script_including(self, path: str):
+        if self.script_to_include:
+            raise Exception('Command already contains script including')
+
+        self.script_to_include = ' //@include \'' + path + '\''
         return self
 
-    def append_string_const(self, const_name, const_value):
-        self.base_command += ' const ' + const_name + ' = ' + '\'' + const_value + '\'' + ";"
+    def append_eval_file(self, path):
+        self.base_command += ' $.evalFile(\"' + path + '\");'
         return self
 
-    def append_const_array(self, const_name, const_values):
+    def append_string_const(self, const_name: str, const_value: str):
+        self.base_command += ' const ' + const_name + ' = ' + '\'' + const_value + '\'' + ';'
+        return self
+
+    def append_const_array(self, const_name: str, const_values: list):
         values = ''
         for value in const_values:
             values += '\'' + str(value) + '\', '
@@ -42,7 +52,14 @@ class PPROCommandBuilder(object):
         self.base_command += ' const ' + const_name + ' = ' + '[' + values + '];'
         return self
 
+    def append_bool_value(self, bool_name: str, bool_value: bool):
+        self.base_command += ' boolean ' + bool_name + ' = ' + str(bool_value) + ';'
+        return self
+
     def build(self):
+        if self.script_to_include:
+            self.base_command += self.script_to_include
+
         return self.base_command + '\"'
 
 
