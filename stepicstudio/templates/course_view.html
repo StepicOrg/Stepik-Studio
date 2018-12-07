@@ -1,51 +1,68 @@
-{%  extends "base.html" %}
-{%  load static %}
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+    {{ block.super }}
+    <script src="{% static "js/subfolder_view.js" %}"></script>
+{% endblock %}
 
 {% if Recording == False %}
-    {%  block content %}
-        <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
-        <br>
-        <br>
-        <br>
+    {% block content %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="/courses/">Courses</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ Course.name }}
+                </li>
+            </ol>
+        </nav>
 
-        <div style="height: 70px">
-            <div class="add_container">
-                <a class="add_button_ref" href="/add-lesson/">Add Lesson</a>
-            </div>
+        <div class="add-item btn-group dropright" data-urllink="/course/{{ Course.id }}/add-lesson/">
+            <span data-toggle="dropdown">
+                <button type="button" class="btn btn-light btn-lg border rounded btn-list dropdown-toggle-split"
+                        data-toggle="tooltip" aria-haspopup="true" aria-expanded="false" data-placement="left" title="Create new lesson">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </span>
 
-            <div id="draggable_tip">
-                <b>Pull <img src="/static/icons/draggable.svg" width="20" height="20"> to change order</b>
+            <div class="dropdown-menu p-4" id="add-form">
             </div>
         </div>
 
-        <ul id="sortable">
-            {% for L in Lessons  %}
-            <li id="{{ L.position }}"  lessonID ="{{ L.id }}" class="ui-state-default">
-                <div class="listdiv">
-                    <a class="obj_name lesson_name" href="/course/{{ Course.id}}/lesson/{{ L.id  }}/">{{ L.name }}</a>
-                    <div class="lesson_controls">
-                        <span class="raw_cut_lesson">Raw Cut</span> |
-                        <span class="rename_button lesson_rename">rename</span> |
-                        <span class="delete_button">
-                            <img class="delete-url" src="/static/icons/bin.svg" data-urllink="/course/{{Course.id}}/lesson/{{L.id}}/delete/" width="22" height="22" id="delete_svg">
-                        </span> |
-                        <span class="drag_handle">
-                            <img src="/static/icons/draggable.svg" width="30" height="30">
-                        </span>
+        <div class="btn-group-vertical w-100 sortable">
+            {% for L in Lessons %}
+                <div class="btn-group" id="{{ L.position }}" elem_id="{{ L.id }}">
+                    <a class="btn btn-light btn-lg text-left border btn-list elem-name" type="lesson"
+                       href="/course/{{ Course.id }}/lesson/{{ L.id }}/">{{ L.name }}</a>
+
+                    <button type="button"
+                            class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item raw-cut" data-urllink="/create-lesson-montage/{{ L.id }}/" href>
+                            Raw cut</a>
+                        <a class="dropdown-item" id="#rename-button" href="#renameModalCenter">Rename</a>
+                        <a class="dropdown-item" id="#delete-button"
+                           data-urllink="/course/{{ Course.id }}/lesson/{{ L.id }}/delete/" href="#deleteModalCenter">Delete</a>
                     </div>
                 </div>
-            </li>
-
             {% endfor %}
-            <br>
-        </ul>
-    </ul>
+        </div>
+
+        {% include 'modal_delete.html' %}
+        {% include 'modal_rename.html' %}
+
     {% endblock %}
 
     {% block controls %}
-        <div class="back button right">
-            <a href="/courses/">Back</a>
-        </div>
+        <a href="/courses/">
+            <button type="button"
+                    class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+            </button>
+        </a>
     {% endblock %}
-
 {% endif %}

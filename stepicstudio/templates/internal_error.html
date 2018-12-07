@@ -1,11 +1,16 @@
-{%  extends "base.html" %}
-{%  block content %}
-        <div>Sorry it's a bug, error log will be sent to developers.</div>
-        {% if sentry_id %}
-            <p>If you need assistance, you may reference this error as
+{% extends "base.html" %}
+{% block content %}
+    <div>Sorry it's a bug, error log will be sent to developers.</div>
+    {% if sentry_id %}
+        <p>If you need assistance, you may reference this error as
             <strong>{{ sentry_id }}</strong></p>
-        {% endif %}
-        <div>
-            <a href="{{ go_back }}">Back</a>
-        </div>
-    {% endblock %}
+    {% endif %}
+{% endblock %}
+{% block controls %}
+    <a href="{{ go_back }}">
+        <button type="button"
+                class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </button>
+    </a>
+{% endblock %}

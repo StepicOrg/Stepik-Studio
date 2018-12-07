@@ -1,75 +1,74 @@
-{%  load static %}
+{% load static %}
 <html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title> {%  block title %}Stepic Studio Server{% endblock %}</title>
-    <link rel = "icon" href="{% static "icons/favicon.ico" %}">
-    <link rel = "stylesheet" type="text/css" href="{% static "css/default.css" %}" >
-    <link rel = "stylesheet" type="text/css" href="{% static "css/jquery-ui.css" %}" >
-    <link rel = "stylesheet" type="text/css" href="{% static "css/jquery-ui.theme.css" %}" >
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <link href='http://fonts.googleapis.com/css?family=Lato:300' rel='stylesheet' type='text/css'>
-    <script src="{% static "js/list.js" %}"></script>
-    <script src={% static "extra/jquery-ui-1.11.2.custom/jquery-ui.js" %}></script>
-    <script src={%  static "extra/handlebars-v3.0.3.js" %}></script>
-    <script src={%  static "extra/hb_templates/templates.js" %}></script>
-</head>
+{% block head %}
+    <head lang="en">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title> {% block title %}Stepik Studio Server{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{% static "bootstrap-4/css/bootstrap.css" %}">
+        <link rel="icon" href="{% static "icons/favicon.ico" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "css/base.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "css/jquery-ui.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "css/jquery-ui.theme.css" %}">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src={% static "extra/jquery-ui-1.11.2.custom/jquery-ui.js" %}></script>
+        <script src="{% static "bootstrap-4/js/bootstrap.bundle.js" %}"></script>
+        <script src="{% static "js/utils.js" %}"></script>
+        <script src={% static "extra/handlebars-v3.0.3.js" %}></script>
+    </head>
+{% endblock %}
 <body>
-    {% if say_hello == True %}
-        <header id="header">
-            <h3>Hello, and welcome to Stepic Studio.</h3>
-            <p>We missed you and hope you will bring joy of knowledge with your course!</p>
-        </header>
-    {% endif %}
-    <div id="page">
-        <div id = "left_controls">
-            <div id = "sidebar">
-                {% block sidebar %}
-                    <div id="navcontainer">
-                    <ul id="navlist">
-                            <li>Logged as {{ full_name }}</li>
-                            <li><a href="/courses/">Courses list</a></li>
-                            <li><a href="/settings/">Settings</a></li>
-                        {%  if Course.id > 0 %}
-                            <li><a href="/course/{{ Course.id }}/structure">Structure</a></li>
-                        {% endif %}
-                        <li><a href="/logout/">Log out</a></li>
-                    </ul>
-                    </div>
-                {% endblock %}
-                <div>
-                    Server disk free/total space:
-                    <br>
-                    {{ request.session.server_space_info }}
-                    {% if request.session.server_space_status == 'warning' %}
-                            <img src="/static/icons/yellow_warning.png" width="20" height="20">
-                    {% endif %}
-                    {% if request.session.server_space_status == 'error' %}
-                            <img src="/static/icons/red_warning.svg" width="20" height="20">
-                    {% endif %}
-                </div>
-                <div>
-                    Tablet disk free/total space:
-                    <br>
-                    {{ request.session.tablet_space_info }}
-                    {% if request.session.tablet_space_status == 'warning' %}
-                            <img src="/static/icons/yellow_warning.png" width="20" height="20">
-                    {% endif %}
-                    {% if request.session.tablet_space_status == 'error' %}
-                            <img src="/static/icons/red_warning.svg" width="20" height="20">
-                    {% endif %}
-                </div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="/loggedin/">
+        <img src="{% static "icons/favicon.ico" %}" alt="" width="41" height="41">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-            </div>
-
-
-        </div>
-        <div id="content">
-
-            {% block content %} {% endblock %}
-            {% block controls %} {% endblock %}
-        </div>
-
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="/courses/">Courses<span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
+        <a class="nav-link text-light">{{ full_name }}</a>
+        <a class="btn btn-outline-info my-2 my-sm-0" href="/logout/">Logout</a>
     </div>
+</nav>
+
+{% block controls %} {% endblock %}
+<div class="container">
+    <div id="content">
+        {% block content %} {% endblock %}
+    </div>
+</div>
+
+<nav class="footer navbar fixed-bottom">
+    <div class="row justify-content-start">
+        <div class="text-muted p-2">
+            <span>Server disk free/total space: {{ request.session.server_space_info }}
+                {% if request.session.server_space_status == 'warning' %}
+                    <img src="/static/icons/yellow_warning.png" width="20" height="20">
+                {% endif %}
+                {% if request.session.server_space_status == 'error' %}
+                    <img src="/static/icons/red_warning.svg" width="20" height="20">
+                {% endif %}
+            </span>
+        </div>
+        <div class="text-muted p-2">
+            <span>Tablet disk free/total space: {{ request.session.tablet_space_info }}
+                {% if request.session.tablet_space_status == 'warning' %}
+                    <img src="/static/icons/yellow_warning.png" width="20" height="20">
+                {% endif %}
+                {% if request.session.tablet_space_status == 'error' %}
+                    <img src="/static/icons/red_warning.svg" width="20" height="20">
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</nav>
+
 </body>
 </html>
