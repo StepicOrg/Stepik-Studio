@@ -2,140 +2,172 @@
 //https://github.com/Adobe-CEP/Samples/blob/master/PProPanel/jsx/PPRO/Premiere.jsx
 //https://media.readthedocs.org/pdf/premiere-scripting-guide/latest/premiere-scripting-guide.pdf
 
+const screenTargetTrack = 0;
+const profTargetTrack = 1;
+const sequenceNamePostfix = "_sequence";
+
+// var templateProject = "C:\\Development\\AdobeScripts\\template.prproj";
+// var presetPath = "C:\\Development\\AdobeScripts\\ppro.sqpreset";
+// var screenVideos = ["Step4from376_Screen.mp4", "Step3from376_Screen.mp4", "Step1from377_Screen.mp4", "Step2from378_Screen.mp4"];
+// var professorVideos = ["Step4from376_Professor.mp4", "Step3from376_Professor.mp4", "Step1from377_Professor.mp4", "Step2from378_Professor.mp4"];
+// var basePath = "D:\\STEPIKSTUDIO\\TESTER\\test_course\\TestPProLesson3";
+// var outputName = "TestPProLesson3";
+//
+// app.openDocument(templateProject);
+
 /*Creates sequence
-params:
-name - name of sequence as string
-preset - path to .sqpreset file as string*/
+    params:
+    name: name of sequence as string;
+    presetPath: path to .sqpreset file as string. */
 function createSequence(name, preset) {
     app.enableQE();
     qe.project.newSequence(name, preset);
 }
 
 /*Appends item to sequence
-params:
-item - projectItem to append to sequence
-targetVTrackNumber - number of track to append*/
+    params:
+    item: projectItem to append to sequence;
+    targetVTrackNumber: number of track to append. */
 function appendItemToSequence(item, targetVTrackNumber) {
-    var seq = app.project.activeSequence;
-    if (seq){
-        if (item){
-            var numVTracks = seq.videoTracks.numTracks;
-            if (targetVTrackNumber >= numVTracks || targetVTrackNumber < 0) {
-                throw new Error("Number of video track is out of bounds");
-            }
-            var targetVTrack = seq.videoTracks[targetVTrackNumber];
-            if (targetVTrack){
-                // If there are already clips in this track,
-                // append this one to the end. Otherwise,
-                // insert at start time.
-                if (targetVTrack.clips.numItems > 0){
-                    var lastClip = targetVTrack.clips[(targetVTrack.clips.numItems - 1)];
-                    if (lastClip){
-                        targetVTrack.insertClip(item, lastClip.end.seconds);
-                    }
-                }else {
-                        targetVTrack.insertClip(item, '00;00;00;00');
-                }
-            } else {
-                throw new Error("Could not find video track to append.");
-            }
-        } else {
-            throw new Error("Couldn't locate first projectItem.");
-        }
+    const seq = app.project.activeSequence;
+
+    if (targetVTrackNumber >= seq.videoTracks.numTracks ||
+        targetVTrackNumber < 0) {
+        throw new Error("Number of video track is out of bounds");
+    }
+    var targetVTrack = seq.videoTracks[targetVTrackNumber];
+
+    if (!targetVTrack) {
+        throw new Error("Could not find video track to append.");
+    }
+    // If there are already clips in this track,
+    // append this one to the end. Otherwise,
+    // insert at start time.
+    if (targetVTrack.clips.numItems > 0) {
+        var lastClip = targetVTrack.clips[(targetVTrack.clips.numItems - 1)];
+        targetVTrack.insertClip(item, lastClip.end.seconds);
     } else {
-        throw new Error("no active sequence.");
+        targetVTrack.insertClip(item, "00;00;00;00");
     }
 }
 
-/*Appends list of items to sequence
-params:
-path - base path to directory with media items
-files - array of file names of media items
-trackNumber - track number of sequence*/
-function appendToSequence(path, files, trackNumber, root) {
-    var fullPaths = files.slice();
-    for(var i = 0; i < files.length; i++) {
-          fullPaths[i] = path + files[i];
-    }
-    for(var i = 0; i < root.children.numItems; i++) {
-        for(var j = 0; j < files.length; j++) {
-            if (root.children[i].name === files[j]) { //indexOf() isn't supported by ExtendScript
-                try {
-                    appendItemToSequence(root.children[i], trackNumber);
-                } catch (e) {
-                    app.project.closeDocument(0, 0); // 0 - without save before closing to avoid creating project with missing files; 0 - to close without modal dialog
-                    app.quit();
-                }
-                break;
-            }   
-        }
-   }
-}
-
+/*Checks that array contains items value */
 function arrayContainsItem(arr, item) {
-    for(var i = 0; i < arr.length; i++) {
+    for (var i = 0; i < arr.length; i++) {
         if (item === arr[i]) { //indexOf() isn't supported by ExtendScript
             return true;
         }
     }
+    return false;
 }
 
+/*Return projectItem with name itemName if exists.
+    params:
+    itemName: name of item to find;
+    root: root item to start searching;
+    Uses app.project.rootItem by default;*/
 function getItemByName(itemName, root) {
     if (root === undefined) {
         root = app.project.rootItem;
     }
     for (var i = 0; i < root.children.numItems; i++) {
-        var curChild = root.children[i];
-        if (curChild.name === itemName) {
-            return curChild;
+        if (root.children[i].name === itemName) { //indexOf() isn't supported by ExtendScript
+            return root.children[i];
         }
     }
     return undefined;
 }
 
-var preset = 'C:\\Development\\AdobeScripts\\ppro.sqpreset';
-var screenVideos = ['Step1from376_Screen.mp4', 'Step3from376_Screen.mp4'];
-var profVideos = ['Step1from376_Professor.mp4', 'Step3from376_Professor.mp4'];
-
-function createDeepBinStructure(parentFolder, currentBin) {
-    var sub = parentFolder.getFiles();
-    var containsSequence = false;
-    for(var i =0; i < sub.length; i++) {
-        if (sub[i] instanceof File) {
-            app.project.importFiles([sub[i].fsName], 
-                        1,				// suppress warnings 
-                        currentBin,
-                        0);                // import as numbered stills
-                        
-            if (!containsSequence) { //if there is no sequence for this folder
-                createSequence(parentFolder.name + '_sequence', preset);
-                var currentSequence = getItemByName(parentFolder.name + '_sequence');
-                currentSequence.moveBin(currentBin);
-                containsSequence = true;
-            }
-            var currentMovie = getItemByName(sub[i].name, currentBin);
-            appendItemToSequence(currentMovie, 0); //appends movie to active sequence
-        } else if(sub[i] instanceof Folder) {
-            var childFolder = Folder(sub[i]);
-            var childBin = currentBin.createBin(childFolder.name);
-            currentBin.select(); //set bin as a target for subsequent imports
-            createDeepBinStructure(childFolder, childBin);
-        }
+/* Returns corresponding sequence track number if filenameToCheck found in
+    screenVideos array or professorVideos array; */
+function getTargetSequenceNumber(filenameToCheck,
+                                 screenVideos,
+                                 profVideos,
+                                 screenTarget,
+                                 profTarget) {
+    if (arrayContainsItem(screenVideos, filenameToCheck)) {
+        return screenTarget;
+    } else if (arrayContainsItem(profVideos, filenameToCheck)) {
+        return profTarget;
+    } else {
+        return undefined;
     }
 }
 
-var templateProject = "C:\\Development\\AdobeScripts\\template.prproj";
-app.openDocument(templateProject);
+/* Depth crawl of file system folders structure. 
+    Creates similar bin scructure with suquence for each bin according to media files in folder.  
+    params:
+    parentFolder: Folder object of root;
+    currentBin: projectItem representing bin object, accroding to parentFolder;
+    seqPreset: path to presetPath with sequences config;
+    screenVideos: array of target screen filenames;
+    professorVideos: array of target prof filenames.
+    return true if success, false otherwise.*/
+function createDeepBinStructure(parentFolder, currentBin, seqPreset, screenVideos, profVideos) {
+    var subItems = parentFolder.getFiles();
+    for (var i = 0; i < subItems.length; i++) {
+        if (subItems[i] instanceof File) {
+            var targetSequenceNumber = getTargetSequenceNumber(subItems[i].name,
+                screenVideos,
+                profVideos,
+                screenTargetTrack,
+                profTargetTrack);
 
-var basePath = 'D:\\STEPIKSTUDIO\\TESTER\\test_course\\TestPProLesson3';
-var parentFolder = Folder(basePath); //may return File
-var parentBin = app.project.rootItem.createBin(parentFolder.name);
+            if (targetSequenceNumber === undefined) { //skip current file if it is out of target files
+                continue;
+            }
+            app.project.importFiles([subItems[i].fsName],
+                1,				// suppress warnings
+                currentBin,
+                0);                // import as numbered stills
 
-createDeepBinStructure(parentFolder, parentBin);
+            var currentSequence = getItemByName(parentFolder.name + sequenceNamePostfix, currentBin);
 
-//createSequence(outputName, presetPath);
-//appendToSequence(basePath, professorVideos, 1);
-//appendToSequence(basePath, screenVideos, 0);
-//app.project.saveAs(basePath + outputName + '.prproj'); //save as another project(without template modification)
-//app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
-//app.quit();
+            if (currentSequence === undefined) { //if there is no sequence for this folder
+                createSequence(parentFolder.name + sequenceNamePostfix, seqPreset);
+                getItemByName(parentFolder.name + sequenceNamePostfix)
+                    .moveBin(currentBin);
+            }
+            var currentMovie = getItemByName(subItems[i].name, currentBin);
+            try {
+                appendItemToSequence(currentMovie, targetSequenceNumber); //appends movie to active sequence
+            } catch (e) {
+                return false;
+            }
+        } else { //subItems[i] is folder
+            var childFolder = Folder(subItems[i]);
+            var childBin = currentBin.createBin(childFolder.name);
+
+            createDeepBinStructure(childFolder,
+                childBin,
+                seqPreset,
+                screenVideos,
+                profVideos);
+        }
+    }
+    return true;
+}
+
+/*Uses global variables*/
+function createProject() {
+    var parentFolder = Folder(basePath); //may return File
+    var parentBin = app.project
+        .rootItem
+        .createBin(parentFolder.name);
+
+    var result = createDeepBinStructure(parentFolder,
+        parentBin,
+        presetPath,
+        screenVideos,
+        professorVideos);
+
+    if (result) {
+        app.project.saveAs(basePath + outputName + ".prproj"); //save as another project(without template modification)
+        app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
+    } else {
+        app.project.closeDocument(0, 0);  // 0 - without save before closing; 0 - to close without modal dialog
+    }
+}
+
+createProject();
+app.quit();

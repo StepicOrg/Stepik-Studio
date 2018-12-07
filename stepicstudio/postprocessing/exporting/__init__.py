@@ -10,7 +10,7 @@ from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
 PRPROJ_TEMPLATE = 'template.prproj'
 PRPROJ_PRESET = 'ppro.sqpreset'
-PRPROJ_SCRIPT = 'create_step_project.jsx'
+PRPROJ_SCRIPT = 'create_deep_structured_project.jsx'
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class PPROCommandBuilder(object):
     """
 
     def __init__(self, base_command):
-        self.base_command = base_command + " \""
+        self.base_command = base_command + ' \"'
         self.script_to_include = ''
 
     def append_opening_document(self, path: str):
@@ -75,7 +75,8 @@ def export_step_to_prproj(step_object) -> InternalOperationResult:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
                                        'Step is empty or substeps are broken.')
 
-    ppro_templates_path = os.path.join(os.path.dirname(__file__), 'adobe_templates')
+    ppro_templates_path = os.path.join(os.path.dirname(__file__),
+                                       'adobe_templates')
 
     try:
         ppro_command = build_ppro_command(step_object.os_path,

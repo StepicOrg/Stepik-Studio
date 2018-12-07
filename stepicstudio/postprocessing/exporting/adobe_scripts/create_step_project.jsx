@@ -5,7 +5,7 @@
 /*Creates sequence
 params:
 name - name of sequence as string
-preset - path to .sqpreset file as string*/
+presetPath - path to .sqpreset file as string*/
 function createSequence(name, preset) {
     app.enableQE();
     qe.project.newSequence(name, preset);
