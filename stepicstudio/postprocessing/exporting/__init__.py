@@ -55,7 +55,7 @@ class PPROCommandBuilder(object):
         return self
 
     def append_bool_value(self, bool_name: str, bool_value: bool):
-        self.base_command += ' boolean ' + bool_name + ' = ' + str(bool_value) + ';'
+        self.base_command += ' var ' + bool_name + ' = ' + str(bool_value).lower() + ';'
         return self
 
     def build(self):
@@ -101,6 +101,7 @@ def build_ppro_command(base_path, templates_path, screen_files, prof_files, outp
         .append_string_const('presetPath', prproj_preset_path.replace(os.sep, '\\\\')) \
         .append_const_array('screenVideos', screen_files) \
         .append_const_array('professorVideos', prof_files) \
+        .append_bool_value('needSync', True) \
         .append_script_including(script_path.replace(os.sep, '\\\\')) \
         .build()
 

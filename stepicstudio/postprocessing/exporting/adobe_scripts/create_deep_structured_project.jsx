@@ -16,7 +16,33 @@ function createSequence(name, preset) {
     qe.project.newSequence(name, preset);
 }
 
-function appendVideoItemToSequence(videoItem, targetVTrackNumber) {
+function getInsertionTime(needSync, targetVTrackNumber, sequence) {
+    var targetVTrack = sequence.videoTracks[targetVTrackNumber];
+
+    if (!targetVTrack) {
+        throw new Error("Could not find video track to append.");
+    }
+
+    if (targetVTrack.clips.numItems === 0) {
+        return "00;00;00;00";
+    }
+
+    var lastClipIndex = targetVTrack.clips.numItems - 1; //should be similar for all of tracks
+
+    var sceenVTrack = sequence.videoTracks[screenTargetTrackNumber];
+    var profVTrack = sequence.videoTracks[profTargetTrackNumber];
+
+    var screenEndTrackTime = sceenVTrack.clips[lastClipIndex].end.seconds;
+    var profEndTrackTime = profVTrack.clips[lastClipIndex].end.seconds;
+
+    if (needSync) {
+        return Math.max(screenEndTrackTime, profEndTrackTime);
+    } else {
+        return targetVTrackNumber === profTargetTrackNumber ? profEndTrackTime : screenEndTrackTime;
+    }
+}
+
+function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSync) {
     const seq = app.project.activeSequence;
 
     if (targetVTrackNumber >= seq.videoTracks.numTracks ||
@@ -29,15 +55,8 @@ function appendVideoItemToSequence(videoItem, targetVTrackNumber) {
     if (!targetVTrack) {
         throw new Error("Could not find video track to append.");
     }
-    // If there are already clips in this track,
-    // append this one to the end. Otherwise,
-    // insert at start time.
-    if (targetVTrack.clips.numItems > 0) {
-        var lastClip = targetVTrack.clips[(targetVTrack.clips.numItems - 1)];
-        targetVTrack.insertClip(videoItem, lastClip.end.seconds);
-    } else {
-        targetVTrack.insertClip(videoItem, "00;00;00;00");
-    }
+
+    targetVTrack.insertClip(videoItem, getInsertionTime(needSync, targetVTrackNumber, seq));
 }
 
 function arrayContainsItem(arr, item) {
@@ -90,13 +109,15 @@ function getTargetSequenceNumber(filenameToCheck,
  * @param seqPreset Path to sequences config.
  * @param screenVideos Array of target screen filenames.
  * @param profVideos Array of target prof filenames.
+ * @param needSync Synchronize flag
  * @returns {boolean} true if success, false otherwise.
  */
 function createDeepBinStructure(parentFolder,
                                 currentBin,
                                 seqPreset,
                                 screenVideos,
-                                profVideos) {
+                                profVideos,
+                                needSync) {
     var subItems = parentFolder.getFiles();
     for (var i = 0; i < subItems.length; i++) {
         if (subItems[i] instanceof Folder) {
@@ -134,7 +155,7 @@ function createDeepBinStructure(parentFolder,
 
         try {
             var currentVideo = getItemByName(subItems[i].name, currentBin);
-            appendVideoItemToSequence(currentVideo, targetSequenceNumber); //appends movie to active sequence
+            appendVideoItemToSequence(currentVideo, targetSequenceNumber, needSync); //appends movie to active sequence
         } catch (e) {
             return false;
         }
@@ -146,7 +167,8 @@ function createProject(basePath,
                        presetPath,
                        screenVideos,
                        professorVideos,
-                       outputName) {
+                       outputName,
+                       needSync) {
     var parentFolder = Folder(basePath);
     var parentBin = app.project
                        .rootItem
@@ -156,7 +178,8 @@ function createProject(basePath,
                                         parentBin,
                                         presetPath,
                                         screenVideos,
-                                        professorVideos);
+                                        professorVideos,
+                                        needSync);
 
     if (result) {
         app.project.saveAs(basePath + outputName + extensionLabel); //save as another project(without template modification)
@@ -170,5 +193,6 @@ createProject(basePath,
               presetPath,
               screenVideos,
               professorVideos,
-              outputName);
+              outputName,
+              needSync);
 app.quit();
