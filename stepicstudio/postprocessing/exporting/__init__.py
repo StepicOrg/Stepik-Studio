@@ -4,13 +4,15 @@ import os
 from django.conf import settings
 
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
-from stepicstudio.models import SubStep
+from stepicstudio.models import SubStep, Step, Lesson
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
+from stepicstudio.utils.extra import translate_non_alphanumerics
 
 PRPROJ_TEMPLATE = 'template.prproj'
 PRPROJ_PRESET = 'ppro.sqpreset'
 PRPROJ_SCRIPT = 'create_deep_structured_project.jsx'
+PRPROJ_TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), 'adobe_templates')
 
 logger = logging.getLogger(__name__)
 
@@ -63,41 +65,6 @@ class PPROCommandBuilder(object):
         return self.base_command + '\"'
 
 
-def export_step_to_prproj(step_object) -> InternalOperationResult:
-    """Creates PPro project in .prproj format using ExtendScript script.
-    Project includes video files of each substep of corresponding step.
-    Screencasts and camera recordings puts on different tracks of single sequence.
-    :param step_object: step single object.
-    """
-
-    screen_files, prof_files = get_target_filenames(step_object.id)
-    if not screen_files or not prof_files:
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
-                                       'Step is empty or substeps are broken.')
-
-    ppro_templates_path = os.path.join(os.path.dirname(__file__),
-                                       'adobe_templates')
-
-    try:
-        ppro_command = build_ppro_command(step_object.os_path,
-                                          ppro_templates_path,
-                                          screen_files,
-                                          prof_files,
-                                          step_object.name)
-    except Exception as e:
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
-
-    exec_status = FileSystemClient().execute_command_sync(ppro_command, allowable_code=1)  # may return 1 - it's OK
-
-    if exec_status.status is not ExecutionStatus.SUCCESS:
-        logger.error('Cannot execute PPro command: %s \n PPro command: %s', exec_status.message, ppro_command)
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
-                                       'Cannot execute PPro command. Check PPro configuration.')
-
-    logger.info('Execution of PPro command started; \n PPro command: %s', ppro_command)
-    return InternalOperationResult(ExecutionStatus.SUCCESS)
-
-
 def build_ppro_command(base_path, templates_path, screen_files, prof_files, output_name):
     """Builds Premiere Pro script which should be executed through command line.
     Arguments passes to PPro via declaration ExtendScript variable.
@@ -138,15 +105,74 @@ def build_ppro_command(base_path, templates_path, screen_files, prof_files, outp
         .build()
 
 
-def get_target_filenames(step_id):
+def export_obj_to_prproj(db_object, files_extractor) -> InternalOperationResult:
+    """Creates PPro project in .prproj format using ExtendScript script.
+    Project includes video files of each subitem of corresponding object.
+    Screencasts and camera recordings puts on different tracks of single sequence.
+    :param files_extractor: function for extracting target filenames from db_object;
+    :param db_object: db single object.
+    """
+
+    screen_files, prof_files = files_extractor(db_object)
+    if not screen_files or not prof_files:
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
+                                       'Object is empty or subitems are broken.')
+
+    try:
+        ppro_command = build_ppro_command(db_object.os_path,
+                                          PRPROJ_TEMPLATES_PATH,
+                                          screen_files,
+                                          prof_files,
+                                          translate_non_alphanumerics(db_object.name))
+    except Exception as e:
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
+
+    exec_status = FileSystemClient().execute_command_sync(ppro_command, allowable_code=1)  # may return 1 - it's OK
+
+    if exec_status.status is not ExecutionStatus.SUCCESS:
+        logger.error('Cannot execute PPro command: %s \n PPro command: %s', exec_status.message, ppro_command)
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
+                                       'Cannot execute PPro command. Check PPro configuration.')
+
+    logger.info('Execution of PPro command started; \n PPro command: %s', ppro_command)
+    return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+
+def get_target_step_files(step_obj):
     screen_files = []
     prof_files = []
 
-    for substep in SubStep.objects.filter(from_step=step_id).order_by('start_time'):
+    for substep in SubStep.objects.filter(from_step=step_obj.id).order_by('start_time'):
         if substep.is_videos_ok and \
                 os.path.isfile(substep.os_screencast_path) and \
                 os.path.isfile(substep.os_path):
             screen_files.append(substep.screencast_name)
             prof_files.append(substep.camera_recording_name)
+
+    return screen_files, prof_files
+
+
+def get_target_lesson_files(lesson_obj):
+    screen_files = []
+    prof_files = []
+
+    if os.path.isdir(lesson_obj.os_path):
+        for step in Step.objects.filter(from_lesson=lesson_obj.id).order_by('start_time'):
+            step_files = get_target_step_files(step)
+            screen_files.extend(step_files[0])
+            prof_files.extend(step_files[1])
+
+    return screen_files, prof_files
+
+
+def get_target_course_files(course_obj):
+    screen_files = []
+    prof_files = []
+
+    if os.path.isdir(course_obj.os_path):
+        for lesson in Lesson.objects.filter(from_course=course_obj.id).order_by('start_time'):
+            lesson_files = get_target_lesson_files(lesson)
+            screen_files.extend(lesson_files[0])
+            prof_files.extend(lesson_files[1])
 
     return screen_files, prof_files

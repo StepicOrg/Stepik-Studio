@@ -17,7 +17,8 @@ from stepicstudio.camera_controls import AutofocusController
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.models import UserProfile, Lesson, SubStep
 from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
-from stepicstudio.postprocessing.exporting import export_step_to_prproj
+from stepicstudio.postprocessing.exporting import export_obj_to_prproj, get_target_step_files, \
+    get_target_lesson_files, get_target_course_files
 from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files, \
     delete_tablet_lesson_files
 from stepicstudio.utils.utils import *
@@ -606,9 +607,45 @@ def autofocus_camera(request):
 
 @login_required(login_url='/login/')
 @can_edit_page
-def export_to_pproj(request, course_id, lesson_id, step_id):
-    step_obj = Step.objects.get(id=step_id)
-    result = export_step_to_prproj(step_obj)
+def export_step_to_prproj(request, course_id, lesson_id, step_id):
+    try:
+        step_obj = Step.objects.get(id=step_id)
+    except:
+        return HttpResponseServerError('Step with id {} not found'.format(step_id))
+
+    result = export_obj_to_prproj(step_obj, get_target_step_files)
+
+    if result.status is ExecutionStatus.SUCCESS:
+        return HttpResponse('Ok')
+    else:
+        return HttpResponseServerError(result.message)
+
+
+@login_required(login_url='/login/')
+@can_edit_page
+def export_lesson_to_prproj(request, course_id, lesson_id):
+    try:
+        lesson_obj = Lesson.objects.get(id=lesson_id)
+    except:
+        return HttpResponseServerError('Lesson with id {} not found'.format(lesson_id))
+
+    result = export_obj_to_prproj(lesson_obj, get_target_lesson_files)
+
+    if result.status is ExecutionStatus.SUCCESS:
+        return HttpResponse('Ok')
+    else:
+        return HttpResponseServerError(result.message)
+
+
+@login_required(login_url='/login/')
+@can_edit_page
+def export_course_to_prproj(request, course_id):
+    try:
+        course_obj = Course.objects.get(id=course_id)
+    except:
+        return HttpResponseServerError('Course with id {} not found'.format(course_id))
+
+    result = export_obj_to_prproj(course_obj, get_target_course_files)
 
     if result.status is ExecutionStatus.SUCCESS:
         return HttpResponse('Ok')
