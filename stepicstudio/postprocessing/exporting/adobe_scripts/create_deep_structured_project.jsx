@@ -16,7 +16,7 @@ function createSequence(name, preset) {
     qe.project.newSequence(name, preset);
 }
 
-function getInsertionTime(needSync, targetVTrackNumber, sequence) {
+function getInsertionTime(needSynchronize, targetVTrackNumber, sequence) {
     var targetVTrack = sequence.videoTracks[targetVTrackNumber];
 
     if (!targetVTrack) {
@@ -35,14 +35,14 @@ function getInsertionTime(needSync, targetVTrackNumber, sequence) {
     var screenEndTrackTime = sceenVTrack.clips[lastClipIndex].end.seconds;
     var profEndTrackTime = profVTrack.clips[lastClipIndex].end.seconds;
 
-    if (needSync) {
+    if (needSynchronize) {
         return Math.max(screenEndTrackTime, profEndTrackTime);
     } else {
         return targetVTrackNumber === profTargetTrackNumber ? profEndTrackTime : screenEndTrackTime;
     }
 }
 
-function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSync) {
+function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchronize) {
     const seq = app.project.activeSequence;
 
     if (targetVTrackNumber >= seq.videoTracks.numTracks ||
@@ -56,7 +56,7 @@ function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSync) {
         throw new Error("Could not find video track to append.");
     }
 
-    targetVTrack.insertClip(videoItem, getInsertionTime(needSync, targetVTrackNumber, seq));
+    targetVTrack.insertClip(videoItem, getInsertionTime(needSynchronize, targetVTrackNumber, seq));
 }
 
 function arrayContainsItem(arr, item) {
@@ -109,7 +109,7 @@ function getTargetSequenceNumber(filenameToCheck,
  * @param seqPreset Path to sequences config.
  * @param screenVideos Array of target screen filenames.
  * @param profVideos Array of target prof filenames.
- * @param needSync Synchronize flag
+ * @param needSynchronize Synchronize flag
  * @returns {boolean} true if success, false otherwise.
  */
 function createDeepBinStructure(parentFolder,
@@ -117,7 +117,7 @@ function createDeepBinStructure(parentFolder,
                                 seqPreset,
                                 screenVideos,
                                 profVideos,
-                                needSync) {
+                                needSynchronize) {
     var subItems = parentFolder.getFiles();
     for (var i = 0; i < subItems.length; i++) {
         if (subItems[i] instanceof Folder) {
@@ -125,7 +125,8 @@ function createDeepBinStructure(parentFolder,
                                    currentBin.createBin(subItems[i].name),
                                    seqPreset,
                                    screenVideos,
-                                   profVideos);
+                                   profVideos,
+                                   needSynchronize);
 
             continue;
         }
@@ -155,7 +156,7 @@ function createDeepBinStructure(parentFolder,
 
         try {
             var currentVideo = getItemByName(subItems[i].name, currentBin);
-            appendVideoItemToSequence(currentVideo, targetSequenceNumber, needSync); //appends movie to active sequence
+            appendVideoItemToSequence(currentVideo, targetSequenceNumber, needSynchronize); //appends movie to active sequence
         } catch (e) {
             return false;
         }
@@ -168,18 +169,17 @@ function createProject(basePath,
                        screenVideos,
                        professorVideos,
                        outputName,
-                       needSync) {
+                       needSynchronize) {
     var parentFolder = Folder(basePath);
     var parentBin = app.project
                        .rootItem
                        .createBin(parentFolder.name);
-
     var result = createDeepBinStructure(parentFolder,
                                         parentBin,
                                         presetPath,
                                         screenVideos,
                                         professorVideos,
-                                        needSync);
+                                        needSynchronize);
 
     if (result) {
         app.project.saveAs(basePath + outputName + extensionLabel); //save as another project(without template modification)
