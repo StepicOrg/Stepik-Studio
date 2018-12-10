@@ -1,7 +1,7 @@
 {%  extends "base.html" %}
 {%  load static %}
 
-{% if Recording == False %}
+{% if not Recording %}
     {%  block content %}
         Statistics for <a href="{{ Course.url }}">{{ Course.name}}</a><br>
             <script>

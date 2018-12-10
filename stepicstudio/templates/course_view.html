@@ -5,7 +5,7 @@
     <script src="{% static "js/subfolder_view.js" %}"></script>
 {% endblock %}
 
-{% if Recording == False %}
+{% if not Recording %}
     {% block content %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">

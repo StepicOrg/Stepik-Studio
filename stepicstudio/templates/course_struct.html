@@ -2,7 +2,7 @@
 {%  load static %}
 {% load app_filters %}
 
-{% if Recording == False %}
+{% if not Recording %}
     {%  block content %}
         Structure for <a href="{{ Course.url }}">{{ Course.name}}</a><br>
         <br>

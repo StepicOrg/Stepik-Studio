@@ -25,13 +25,13 @@
         </ol>
     </nav>
 
-    {% if AF_ENABLED == True %}
+    {% if AF_ENABLED %}
         <div class="af-button float-right">
             <b>Autofocus</b>
         </div>
     {% endif %}
 
-    {% if Recording != True %}
+    {% if not Recording %}
 
         <div class="w-100 text-center p-5">
             <button type="button" class="start-recording btn btn-light recording-button">

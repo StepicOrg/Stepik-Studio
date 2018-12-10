@@ -5,7 +5,7 @@
     <script src="{% static "js/subfolder_view.js" %}"></script>
 {% endblock %}
 
-{% if Recording == False %}
+{% if not Recording %}
     {% block content %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -37,7 +37,7 @@
 
         <div class="btn-group-vertical w-100 sortable">
             {% for S in Steps %}
-                <div class="btn-group" id='{{ S.position }}' elem_id="{{ S.pk }}">
+                <div class="btn-group" id="{{ S.position }}" elem_id="{{ S.pk }}">
                     <a class="btn btn-light btn-lg text-left border btn-list elem-name" type="step"
                        href="/course/{{ Course.id }}/lesson/{{ Lesson.id }}/step/{{ S.id }}/">{{ S.name }}</a>
 

@@ -40,7 +40,7 @@ class LessonForm(forms.ModelForm):
         if not self.cleaned_data.get('name'):
             return
 
-        if Lesson.objects.filter(from_course=self.from_course, name=self.cleaned_data.get('name')).count():
+        if Lesson.objects.filter(from_course=self.from_course, name=self.cleaned_data.get('name')).exists():
             raise ValidationError('Name \'{}\' already exists. Please, use another name for lesson.'
                                   .format(self.cleaned_data.get('name')))
 
@@ -77,7 +77,7 @@ class StepForm(forms.ModelForm):
         if not self.cleaned_data.get('name'):
             return
 
-        if Step.objects.filter(from_lesson=self.lesson_id, name=self.cleaned_data.get('name')).count():
+        if Step.objects.filter(from_lesson=self.lesson_id, name=self.cleaned_data.get('name')).exists():
             raise ValidationError('Name \'{}\' already exists. Please, use another name for step.'
                                   .format(self.cleaned_data.get('name')))
 
