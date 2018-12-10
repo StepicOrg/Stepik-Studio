@@ -1,73 +1,79 @@
-{%  extends "base.html" %}
+{% extends "base.html" %}
 {% load app_filters %}
-{%  load static %}
-    {%  block content %}
+{% load static %}
+{% block head %}
+    {{ block.super }}
+    <script src="{% static "js/step_view.js" %}"></script>
+    <script src="{% static "js/recording_utils.js" %}"></script>
+{% endblock %}
 
-        {% if Recording != True %}
-            {% if AF_ENABLED == True %}
-            <div class="af_button right">
-                <b>Autofocus</b>
-            </div>
-            {% endif %}
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">
+                <a href="/courses/">Courses</a>
+            </li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a href="{{ Course.url }}">{{ Course.name }}</a>
+            </li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a href="{{ Lesson.url }}">{{ Lesson.name }}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ Step.name }}
+            </li>
+        </ol>
+    </nav>
 
-            <b>Course: <a class="reference_wo_underline" href="{{ Course.url }}">{{ Course.name}}</a></b>
-            <br>
-            <b>Lesson: <a class="reference_wo_underline" href="{{ Lesson.url }}">{{ Lesson.name}}</a></b>
-            <br>
-            <b>Step: <a>{{ Step.name}}</a></b>
-            <br>
-            <br class="step_view">
+    {% if AF_ENABLED %}
+        <div class="af-button float-right">
+            <b>Autofocus</b>
+        </div>
+    {% endif %}
 
-            <div ALIGN="CENTER">
-                <h1><span class="start_recording">Start Recording </span>
-                </h1>
-                <h5><span class="tip-text">Click here or press the spacebar to start</span>
-                </h5>
-            </div>
-            <br>
-                {% for SS in SubSteps  %}
-                       <div class="substep_list" data-ss_id="{{ SS.id }}" data-ss_locked="{{ SS.is_locked }}" {% if SS.is_locked %} style="background: #141628; pointer-events: none; cursor: default" {% endif %}>
-                               <span class="substep_name">{{ SS.name|to_custom_name:tmpl_name}}
-                               </span>
-                               |<span class="show_content" data-ss_id="{{ SS.id }}"><img src="/static/icons/video-camera.svg"></span>|
-                                <span class="show_screen_content" data-ss_id="{{ SS.id }}"><img src="/static/icons/display.svg"></span>
-                                {% if SS.automontage_exist %}|
-                                <span class="show_montage" data-ss_id="{{ SS.id }}"><img src="/static/icons/Film_strip_Silhouette_24.png"></span>
-                                <a target="_blank" class="start_montage" hidden="true" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
-                                {% endif %}
-                                {% if not SS.automontage_exist %}|
-                                <span class="show_montage" hidden="true" data-ss_id="{{ SS.id }}"><img src="/static/icons/Film_strip_Silhouette_24.png"></span>
-                                <a target="_blank" class="start_montage" data-ss_id="{{ SS.id }}" data-urllink="/create_montage/{{ SS.id }}"> Raw Cut</a>
-                                {% endif %}
-                               | V: {% if SS.duration > 0.0 %} {{ SS.duration | sec_to_time}} {% else %} Err! {% endif %}
-                               | Scr: {% if SS.screencast_duration > 0.0 %} {{ SS.screencast_duration | sec_to_time}} {% else %} Err! {% endif %}
-                               | {% if not SS.is_videos_ok %} Err! {% endif %}
-                                <div class="delete_button right">
-                                    <div class="delete-url right" data-urllink="{{ SS.id }}/delete/"> Delete </div>
-                                </div>
-                        </div>
-                {% endfor %}
+    {% if not Recording %}
 
-            <div class="back button" ALIGN="RIGHT"> <a href="{{ Lesson.url }}">Back</a></div>
+        <div class="w-100 text-center p-5">
+            <button type="button" class="start-recording btn btn-light recording-button">
+                <h1 class="head-text">Start Recording</h1>
+                <h5 class="tip-text">Click here or press the spacebar to start</h5>
+            </button>
+        </div>
 
-            <p>Video Editing Notes:</p>
-            {{ Step.text_data | formatting_text}}
-            <input id = "edit-text" type="submit" value="Edit">
-            <div class="form-edit-text hidden_form">
-                <form action="/notes/step/{{ Step.id }}/" method="POST">
-                    {% csrf_token %}
-                <textarea name="note" cols=60 rows=10>{{ Step.text_data }}
-                </textarea>
-                <input type="submit" value="Publish">
-                </form>
-            </div>
-        {% else %}
-            <div ALIGN = center>
+        <div class="list-group w-100 pb-4">
+            {% for Substep in SubSteps %}
+                {% include 'substep_block.html' %}
+            {% endfor %}
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+            <label for="form-notes">Notes:</label>
+            <textarea class="form-control" id="form-notes" rows="5">{{ Step.text_data }}</textarea>
+            <button type="submit" class="btn btn-info float-right m-1 save-notes"
+                    data-urllink="/notes/step/{{ Step.id }}/">Save
+            </button>
+        </div>
+
+        {% include 'modal_delete.html' %}
+        {% include 'modal_video.html' %}
+
+    {% else %}
+        <div ALIGN=center>
             <h3> Recording started</h3>
             <br>
-            <h1><a href="stop/" class="stop_recording">Stop Recording</a>
+            <h1><a href="stop/" class="stop-recording">Stop Recording</a>
             </h1>
-            <div id = "timer" data-starttime="{{ StartTime }}">00:00</div>
-            </div>
-        {% endif %}
-    {% endblock %}
+            <div id="timer" data-starttime="{{ StartTime }}">00:00</div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block controls %}
+    <a href="{{ Lesson.url }}">
+        <button type="button" class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </button>
+    </a>
+{% endblock %}

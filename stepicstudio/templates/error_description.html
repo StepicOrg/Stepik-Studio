@@ -1,10 +1,15 @@
-{%  extends "base.html" %}
-{%  block content %}
-        <div>Something went wrong:</div>
-        {% if description %}
-            {{ description }}
-        {% endif %}
-        <div>
-            <a href="{{ go_back }}">Back</a>
-        </div>
-    {% endblock %}
+{% extends "base.html" %}
+{% block content %}
+    <div>Something went wrong:</div>
+    {% if description %}
+        {{ description }}
+    {% endif %}
+{% endblock %}
+{% block controls %}
+    <a href="{{ go_back }}">
+        <button type="button"
+                class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </button>
+    </a>
+{% endblock %}

@@ -20,16 +20,20 @@ ATTEMPTS_PAUSE = 0.05  # seconds
 
 def delete_substep_on_disk(substep) -> InternalOperationResult:
     client = FileSystemClient()
-    cam_removing_info = client.remove_file(substep.os_path)
-    screencast_removing_info = client.remove_file(substep.os_screencast_path)
-    raw_cut_removing_info = client.remove_file(substep.os_automontage_file)
 
-    if cam_removing_info.status is ExecutionStatus.SUCCESS and \
-            screencast_removing_info.status is ExecutionStatus.SUCCESS and \
-            raw_cut_removing_info.status is ExecutionStatus.SUCCESS:
-        return InternalOperationResult(ExecutionStatus.SUCCESS)
-    else:
-        return InternalOperationResult(ExecutionStatus.FATAL_ERROR)
+    cam_removing_info = client.remove_file(substep.os_path)
+    if cam_removing_info.status is not ExecutionStatus.SUCCESS:
+        return cam_removing_info
+
+    screencast_removing_info = client.remove_file(substep.os_screencast_path)
+    if screencast_removing_info.status is not ExecutionStatus.SUCCESS:
+        return screencast_removing_info
+
+    raw_cut_removing_info = client.remove_file(substep.os_automontage_file)
+    if raw_cut_removing_info.status is not ExecutionStatus.SUCCESS:
+        return raw_cut_removing_info
+
+    return InternalOperationResult(ExecutionStatus.SUCCESS)
 
 
 def delete_step_on_disk(step) -> InternalOperationResult:

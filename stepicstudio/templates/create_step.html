@@ -1,15 +1,6 @@
-{%  extends "base.html" %}
-{% if Recording == False %}
-    {%  block content %}
-
-    <form action="{{ postUrl }}" method = "post" > {% csrf_token %}
-        <ul>
-            {{ form.as_ul }}
-        </ul>
-        <input type="submit" name="submit" value="Add Step" autofocus />
-    </form>
-    <div class="back button right">
-        <a href="/course/{{CourseID}}/lesson/{{LessonID}}/" >Back</a>
+<form id="target" method="post"> {% csrf_token %}
+    {{ form.as_ul }}
+    <div class="row justify-content-end" style="padding-top: 10px; padding-right: 10px">
+        <input type="submit" class="btn btn-primary btn-info border" value="Create step">
     </div>
-    {% endblock %}
-{% endif %}
+</form>

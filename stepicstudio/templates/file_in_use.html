@@ -1,9 +1,0 @@
-{%  extends "base.html" %}
-{% if Recording == False %}
-    {%  block content %}
-        <div>Can't delete instance while task is running. Try to cancel montage process, if exist.</div>
-        <div>
-            <a href="{{ go_back }}">Back to Step</a>
-        </div>
-    {% endblock %}
-{% endif %}

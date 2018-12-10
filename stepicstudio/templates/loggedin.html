@@ -1,20 +1,20 @@
-{%  extends "base.html" %}
-{% if Recording == False %}
-    {%  block content %}
-    Hello, {{ full_name }}!
-    <br>
-    <br>
-    <b>Your courses:</b>
-    <br>
-    <br>
-    <ul id="sortable">
-        {%  for i in Courses %}
-            <li class="ui-state-default">
-                <a class="reference_wo_underline course_name" href="/course/{{i.id}}/"> {{i.name}} </a>
-            </li>
-        {% endfor %}
-    </ul>
-
+{% extends "base.html" %}
+{% if not Recording %}
+    {% block content %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active" aria-current="page">
+                    <a>Courses</a>
+                </li>
+            </ol>
+        </nav>
+        <div class="btn-group-vertical w-100">
+            {% for i in Courses %}
+                <a href="/course/{{ i.id }}/" class="btn btn-light btn-lg text-left border btn-list">
+                    {{ i.name }}
+                </a>
+            {% endfor %}
+        </div>
     {% endblock %}
 
     {% block controls %}
