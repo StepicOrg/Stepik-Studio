@@ -55,7 +55,7 @@ class PPROCommandBuilder(object):
         return self
 
     def append_bool_value(self, bool_name: str, bool_value: bool):
-        self.base_command += ' var ' + bool_name + ' = ' + str(bool_value).lower() + ';'
+        self.base_command += ' var ' + bool_name + ' = Boolean(' + str(bool_value).lower() + ');'
         return self
 
     def build(self):
