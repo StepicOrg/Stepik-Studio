@@ -16,30 +16,26 @@ function createSequence(name, preset) {
     qe.project.newSequence(name, preset);
 }
 
-function getInsertionTime(needSynchronize, targetVTrackNumber, sequence) {
-    var targetVTrack = sequence.videoTracks[targetVTrackNumber];
-
-    if (!targetVTrack) {
-        throw new Error("Could not find video track to append.");
-    }
-
+function getInsertionTime(needSynchronize, targetVTrack, sequence) {
     if (targetVTrack.clips.numItems === 0) {
         return "00;00;00;00";
     }
 
-    var lastClipIndex = targetVTrack.clips.numItems - 1; //should be similar for all of tracks
-
-    var sceenVTrack = sequence.videoTracks[screenTargetTrackNumber];
-    var profVTrack = sequence.videoTracks[profTargetTrackNumber];
-
-    var screenEndTrackTime = sceenVTrack.clips[lastClipIndex].end.seconds;
-    var profEndTrackTime = profVTrack.clips[lastClipIndex].end.seconds;
-
-    if (needSynchronize) {
-        return Math.max(screenEndTrackTime, profEndTrackTime);
-    } else {
-        return targetVTrackNumber === profTargetTrackNumber ? profEndTrackTime : screenEndTrackTime;
+    if (!needSynchronize) {
+        return targetVTrack.clips[targetVTrack.clips.numItems - 1].end.seconds
     }
+
+    const sceenVTrack = sequence.videoTracks[screenTargetTrackNumber];
+    const profVTrack = sequence.videoTracks[profTargetTrackNumber];
+
+    if (sceenVTrack.clips.numItems !== profVTrack.clips.numItems) {
+        throw new Error("Tracks contains different number of videos.");
+    }
+
+    const screenEndTrackTime = sceenVTrack.clips[sceenVTrack.clips.numItems - 1].end.seconds;
+    const profEndTrackTime = profVTrack.clips[profVTrack.clips.numItems].end.seconds;
+
+    return Math.max(screenEndTrackTime, profEndTrackTime);
 }
 
 function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchronize) {
@@ -50,13 +46,13 @@ function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchroniz
         throw new Error("Number of video track is out of bounds");
     }
 
-    var targetVTrack = seq.videoTracks[targetVTrackNumber];
+    const targetVTrack = seq.videoTracks[targetVTrackNumber];
 
     if (!targetVTrack) {
         throw new Error("Could not find video track to append.");
     }
 
-    targetVTrack.insertClip(videoItem, getInsertionTime(needSynchronize, targetVTrackNumber, seq));
+    targetVTrack.insertClip(videoItem, getInsertionTime(needSynchronize, targetVTrack, seq));
 }
 
 function arrayContainsItem(arr, item) {
@@ -142,9 +138,9 @@ function createDeepBinStructure(parentFolder,
         }
 
         app.project.importFiles([subItems[i].fsName],
-                                1,				// suppress warnings
+                                1,                      // suppress warnings
                                 currentBin,
-                                0);                // import as numbered stills
+                                0);                     // import as numbered stills
 
         var currentSequence = getItemByName(parentFolder.name + sequenceNamePostfix, currentBin);
 
@@ -174,7 +170,7 @@ function createProject(basePath,
     var parentBin = app.project
                        .rootItem
                        .createBin(parentFolder.name);
-    var result = createDeepBinStructure(parentFolder,
+    const result = createDeepBinStructure(parentFolder,
                                         parentBin,
                                         presetPath,
                                         screenVideos,
