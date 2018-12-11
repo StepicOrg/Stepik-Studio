@@ -21,32 +21,29 @@ function getInsertionTime(needSynchronize, targetVTrack, sequence) {
         return "00;00;00;00";
     }
 
+    var orderNumber = targetVTrack.clips.numItems - 1; //both of tracks have to contain item with this index
+
     if (!needSynchronize) {
-        return targetVTrack.clips[targetVTrack.clips.numItems - 1].end.seconds
+        return targetVTrack.clips[orderNumber].end.seconds;
     }
 
-    const sceenVTrack = sequence.videoTracks[screenTargetTrackNumber];
-    const profVTrack = sequence.videoTracks[profTargetTrackNumber];
+    var screenVTrack = sequence.videoTracks[screenTargetTrackNumber];
+    var profVTrack = sequence.videoTracks[profTargetTrackNumber];
 
-    if (sceenVTrack.clips.numItems !== profVTrack.clips.numItems) {
-        throw new Error("Tracks contains different number of videos.");
-    }
-
-    const screenEndTrackTime = sceenVTrack.clips[sceenVTrack.clips.numItems - 1].end.seconds;
-    const profEndTrackTime = profVTrack.clips[profVTrack.clips.numItems].end.seconds;
+    var screenEndTrackTime = screenVTrack.clips[orderNumber].end.seconds;
+    var profEndTrackTime = profVTrack.clips[orderNumber].end.seconds;
 
     return Math.max(screenEndTrackTime, profEndTrackTime);
 }
 
 function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchronize) {
-    const seq = app.project.activeSequence;
+    var seq = app.project.activeSequence;
 
-    if (targetVTrackNumber >= seq.videoTracks.numTracks ||
-        targetVTrackNumber < 0) {
+    if (targetVTrackNumber >= seq.videoTracks.numTracks || targetVTrackNumber < 0) {
         throw new Error("Number of video track is out of bounds");
     }
 
-    const targetVTrack = seq.videoTracks[targetVTrackNumber];
+    var targetVTrack = seq.videoTracks[targetVTrackNumber];
 
     if (!targetVTrack) {
         throw new Error("Could not find video track to append.");
@@ -105,7 +102,7 @@ function getTargetSequenceNumber(filenameToCheck,
  * @param seqPreset Path to sequences config.
  * @param screenVideos Array of target screen filenames.
  * @param profVideos Array of target prof filenames.
- * @param needSynchronize Synchronize flag
+ * @param needSynchronize Synchronize flag.
  * @returns {boolean} true if success, false otherwise.
  */
 function createDeepBinStructure(parentFolder,
@@ -150,14 +147,11 @@ function createDeepBinStructure(parentFolder,
                 .moveBin(currentBin);
         }
 
-        try {
-            var currentVideo = getItemByName(subItems[i].name, currentBin);
-            appendVideoItemToSequence(currentVideo, targetSequenceNumber, needSynchronize); //appends movie to active sequence
-        } catch (e) {
-            return false;
-        }
+        //appends movie to active(last created) sequence
+        appendVideoItemToSequence(getItemByName(subItems[i].name, currentBin),
+                                  targetSequenceNumber,
+                                  needSynchronize);
     }
-    return true;
 }
 
 function createProject(basePath,
@@ -170,17 +164,18 @@ function createProject(basePath,
     var parentBin = app.project
                        .rootItem
                        .createBin(parentFolder.name);
-    const result = createDeepBinStructure(parentFolder,
-                                        parentBin,
-                                        presetPath,
-                                        screenVideos,
-                                        professorVideos,
-                                        needSynchronize);
 
-    if (result) {
+    try {
+        createDeepBinStructure(parentFolder,
+                               parentBin,
+                               presetPath,
+                               screenVideos,
+                               professorVideos,
+                               needSynchronize);
+
         app.project.saveAs(basePath + outputName + extensionLabel); //save as another project(without template modification)
         app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
-    } else {
+    } catch (e) {
         app.project.closeDocument(0, 0);  // 0 - without save before closing; 0 - to close without modal dialog
     }
 }
