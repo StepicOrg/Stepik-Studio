@@ -3,6 +3,7 @@ import itertools
 import re
 
 from django.contrib import auth
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
@@ -12,6 +13,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 from stepicstudio.camera_controls import AutofocusController
 from stepicstudio.forms import LessonForm, StepForm
@@ -35,6 +37,15 @@ def can_edit_page(view_function):
             return HttpResponseRedirect(reverse('stepicstudio.views.login'))
         else:
             return view_function(*args, **kwargs)
+
+    return process_request
+
+
+def ajax_required(view_function):
+    def process_request(request, *args, **kwargs):
+        if not request.is_ajax():
+            return HttpResponseBadRequest()
+        return view_function(request, *args, **kwargs)
 
     return process_request
 
@@ -91,10 +102,44 @@ def logout(request):
     return HttpResponseRedirect(reverse('stepicstudio.views.login'))
 
 
-@login_required(login_url='/login/')
+@staff_member_required
+def get_users_list(request):
+    args = {'Users': UserProfile.objects.all().order_by('-last_visit')}
+    return render_to_response('control_panel/users_list.html', args, context_instance=RequestContext(request))
+
+
+@staff_member_required
+@ajax_required
+@require_http_methods(['POST'])
 def get_user_courses(request):
-    args = {'full_name': request.user.username,
-            'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date')}
+    user_id = request.POST['item_id']
+    args = {'Courses': Course.objects.filter(editors=user_id).order_by('-start_date')}
+    html = render_to_string('control_panel/courses_block.html', args)
+    return HttpResponse(html)
+
+
+@staff_member_required
+@ajax_required
+@require_http_methods(['POST'])
+def get_course_lessons(request):
+    course_id = request.POST['item_id']
+    print(course_id)
+    args = {'Lessons': Lesson.objects.filter(from_course=course_id).order_by('position', '-start_time')}
+    html = render_to_string('control_panel/lessons_block.html', args)
+    return HttpResponse(html)
+
+
+@staff_member_required
+@ajax_required
+@require_http_methods(['POST'])
+def get_lessons_steps(request):
+    # TODO
+    pass
+
+
+@login_required(login_url='/login/')
+def get_courses(request):
+    args = {'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date')}
     args.update({'Recording': camera_curr_status})
     return render_to_response('courses.html', args, context_instance=RequestContext(request))
 
@@ -103,13 +148,13 @@ def get_user_courses(request):
 @can_edit_page
 def get_course_page(request, course_id):
     lesson_list = Lesson.objects.filter(from_course=course_id).order_by('position', '-start_time')
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id)[0],
+    args = {'Course': Course.objects.filter(id=course_id)[0],
             'Lessons': lesson_list}
     args.update({'Recording': camera_curr_status})
     return render_to_response('course_view.html', args, context_instance=RequestContext(request))
 
 
+@require_http_methods(['POST'])
 def auth_view(request):
     username = request.POST.get('username', '')
     password = request.POST.get('password', '')
@@ -130,8 +175,7 @@ def auth_view(request):
 def loggedin(request):
     if request.user.is_authenticated():
         say_hello = bool(request.GET.get('message'))
-        args = {'full_name': request.user.username,
-                'say_hello': say_hello,
+        args = {'say_hello': say_hello,
                 'Courses': Course.objects.filter(editors=request.user.id).order_by('-start_date')}
         args.update(csrf(request))
         return render_to_response('loggedin.html', args, context_instance=RequestContext(request))
@@ -166,8 +210,7 @@ def add_lesson(request, course_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def show_lesson(request, course_id, lesson_id):
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.filter(id=course_id).first(),
+    args = {'Course': Course.objects.filter(id=course_id).first(),
             'Lesson': Lesson.objects.filter(id=lesson_id).first(),
             'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position', '-start_time')}
     args.update({'Recording': camera_curr_status})
@@ -249,8 +292,7 @@ def show_step(request, course_id, lesson_id, step_id):
     step_obj.is_fresh = True
     step_obj.duration += summ_time
     step_obj.save()
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.get(id=course_id),
+    args = {'Course': Course.objects.get(id=course_id),
             'Lesson': Lesson.objects.get(id=lesson_id),
             'Step': Step.objects.get(id=step_id),
             'SubSteps': all_substeps,
@@ -263,10 +305,8 @@ def show_step(request, course_id, lesson_id, step_id):
 
 @login_required(login_url='/login')
 @can_edit_page
+@ajax_required
 def stop_recording(request, course_id, lesson_id, step_id):
-    if not request.is_ajax():
-        raise Http404
-
     if stop_cam_recording():
         last_substep = SubStep.objects.filter(from_step=step_id).latest('start_time')
         update_time_records(None, new_step_only=True, new_step_obj=last_substep)
@@ -279,16 +319,16 @@ def stop_recording(request, course_id, lesson_id, step_id):
 
 
 @login_required(login_url='/login')
+@ajax_required
+@require_http_methods(['POST'])
 def notes(request, step_id):
-    if request.POST and request.is_ajax():
-        try:
-            step_obj = Step.objects.get(id=step_id)
-            step_obj.text_data = dict(request.POST.lists())['notes'][0]
-            step_obj.save()
-        except:
-            return HttpResponseServerError()
-    else:
-        raise Http404
+    try:
+        step_obj = Step.objects.get(id=step_id)
+        step_obj.text_data = dict(request.POST.lists())['notes'][0]
+        step_obj.save()
+    except:
+        return HttpResponseServerError()
+
     return HttpResponse('Ok')
 
 
@@ -338,31 +378,27 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 
 
 @login_required(login_url='/login')
+@ajax_required
 def montage(request, substep_id):
-    if not request.is_ajax():
-        raise Http404
-
     start_subtep_montage(substep_id)
     return HttpResponse('Ok')
 
 
+@ajax_required
 def step_montage(request, step_id):
-    if not request.is_ajax():
-        raise Http404
-
     start_step_montage(step_id)
     return HttpResponse('Ok')
 
 
+@ajax_required
 def lesson_montage(request, lesson_id):
-    if not request.is_ajax():
-        raise Http404
-
     start_lesson_montage(lesson_id)
     return HttpResponse('Ok')
 
 
 @login_required(login_url='/login')
+@ajax_required
+@require_http_methods(['POST'])
 def substep_statuses(request):
     ids = (dict(request.POST.lists()))['ids']
     result = {}
@@ -441,39 +477,36 @@ def delete_step(request, course_id, lesson_id, step_id):
 @login_required(login_url='/login/')
 def user_profile(request):
     return render_to_response('UserProfile.html',
-                              {'full_name': request.user.username,
-                               'settings': UserProfile.objects.get(user_id=request.user.id)},
+                              {'settings': UserProfile.objects.get(user_id=request.user.id)},
                               context_instance=RequestContext(request))
 
 
 # TODO: Refactor
+@ajax_required
+@require_http_methods(['POST'])
 def reorder_elements(request):
-    if request.POST and request.is_ajax():
-        args = url_to_args(request.META['HTTP_REFERER'])
-        args.update({'user_profile': UserProfile.objects.get(user=request.user.id)})
-        if request.POST.get('type') == 'lesson' or request.POST.get('type') == 'step':
-            neworder = request.POST.getlist('ids[]')
-            for i in range(len(neworder)):
-                id = neworder[i]
-                if id == '':
-                    break
-                if request.POST.get('type') == 'lesson':
-                    l = Lesson.objects.get(id=id)
-                else:
-                    l = Step.objects.get(id=id)
-                l.position = i
-                l.save()
-        return HttpResponse('Ok')
+    args = url_to_args(request.META['HTTP_REFERER'])
+    args.update({'user_profile': UserProfile.objects.get(user=request.user.id)})
 
-    else:
-        return Http404
+    if request.POST.get('type') == 'lesson' or request.POST.get('type') == 'step':
+        neworder = request.POST.getlist('ids[]')
+        for i in range(len(neworder)):
+            id = neworder[i]
+            if id == '':
+                break
+            if request.POST.get('type') == 'lesson':
+                l = Lesson.objects.get(id=id)
+            else:
+                l = Step.objects.get(id=id)
+            l.position = i
+            l.save()
+    return HttpResponse('Ok')
 
 
 @login_required(login_url='/login/')
 @can_edit_page
 def show_course_struct(request, course_id):
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.get(id=course_id)}
+    args = {'Course': Course.objects.get(id=course_id)}
     args.update({'user_profile': UserProfile.objects.get(user=request.user.id)})
     args.update({'Recording': camera_curr_status})
     all_lessons = Lesson.objects.filter(from_course=course_id)
@@ -492,8 +525,7 @@ def show_course_struct(request, course_id):
 @login_required(login_url='/login/')
 @can_edit_page
 def view_stat(request, course_id):
-    args = {'full_name': request.user.username,
-            'Course': Course.objects.get(id=course_id)}
+    args = {'Course': Course.objects.get(id=course_id)}
     return render_to_response('stat.html', args, context_instance=RequestContext(request))
 
 
@@ -540,34 +572,34 @@ def show_montage(request, substep_id):
         return error500_handler(request)
 
 
+@ajax_required
+@require_http_methods(['POST'])
 def rename_elem(request):
-    if request.POST and request.is_ajax():
-        rest_data = dict(request.POST.lists())
-        if 'step' in rest_data['type']:
-            obj_to_rename = Step.objects.get(id=rest_data['id'][0])
-        elif 'lesson' in rest_data['type']:
-            obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
-        else:
-            raise Http404
-
-        logger.debug('Renaming: %s', obj_to_rename.os_path)
-        tmp_step = copy.copy(obj_to_rename)
-        tmp_step.name = rest_data['name_new'][0]
-
-        if not camera_curr_status():
-            rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
-            if rename_status.status is ExecutionStatus.SUCCESS:
-                obj_to_rename.delete()
-                tmp_step.save()
-                return HttpResponse('Ok')
-            elif rename_status.status is ExecutionStatus.FIXABLE_ERROR:
-                return HttpResponseServerError(rename_status.message)
-            elif rename_status.status is ExecutionStatus.FATAL_ERROR:
-                return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
-        else:
-            raise Http404
+    rest_data = dict(request.POST.lists())
+    if 'step' in rest_data['type']:
+        obj_to_rename = Step.objects.get(id=rest_data['id'][0])
+    elif 'lesson' in rest_data['type']:
+        obj_to_rename = Lesson.objects.get(id=rest_data['id'][0])
     else:
         raise Http404
+
+    logger.debug('Renaming: %s', obj_to_rename.os_path)
+    tmp_step = copy.copy(obj_to_rename)
+    tmp_step.name = rest_data['name_new'][0]
+
+    if not camera_curr_status():
+        rename_status = rename_element_on_disk(obj_to_rename, tmp_step)
+        if rename_status.status is ExecutionStatus.SUCCESS:
+            obj_to_rename.delete()
+            tmp_step.save()
+            return HttpResponse('Ok')
+        elif rename_status.status is ExecutionStatus.FIXABLE_ERROR:
+            return HttpResponseServerError(rename_status.message)
+        elif rename_status.status is ExecutionStatus.FATAL_ERROR:
+            return HttpResponseServerError('Sorry, there is some problems.\nError log will sent to developers.')
+    else:
+        raise Http404
+
 
 
 def clear_all_locked_substeps(request):
@@ -576,8 +608,7 @@ def clear_all_locked_substeps(request):
         ss.is_locked = False
         ss.save()
     return render_to_response('UserProfile.html',
-                              {'full_name': request.user.username,
-                               'settings': UserProfile.objects.get(user_id=request.user.id)},
+                              {'settings': UserProfile.objects.get(user_id=request.user.id)},
                               context_instance=RequestContext(request))
 
 
@@ -592,8 +623,9 @@ def generate_notes_page(request, course_id):
     return render_to_response('notes_page.html', args, context_instance=RequestContext(request))
 
 
+@ajax_required
 def autofocus_camera(request):
-    if not request.is_ajax or not settings.ENABLE_REMOTE_AUTOFOCUS:
+    if not settings.ENABLE_REMOTE_AUTOFOCUS:
         raise Http404
 
     result = AutofocusController().focus_camera()
@@ -656,8 +688,7 @@ def export_course_to_prproj(request, course_id):
 def error500_handler(request):
     logger.exception('Unknown internal server error')
     if 'HTTP_REFERER' in request.META:
-        args = {'go_back': request.META['HTTP_REFERER'],
-                'full_name': request.user.username}
+        args = {'go_back': request.META['HTTP_REFERER']}
     else:
         args = {'go_back': '/'}
 
@@ -668,8 +699,7 @@ def error500_handler(request):
 
 def error_description(request, description='Unknown error'):
     if 'HTTP_REFERER' in request.META:
-        args = {'go_back': request.META['HTTP_REFERER'],
-                'full_name': request.user.username}
+        args = {'go_back': request.META['HTTP_REFERER']}
     else:
         args = {'go_back': '/'}
 

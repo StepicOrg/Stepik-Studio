@@ -11,30 +11,30 @@ function deleteSubstepView(id) {
 function lockSubstep(id) {
     const element = $(".substep-list[data-ss-id=" + id + "]");
     element.data("ss-locked", "True")
-        .find("button")
-        .each(function () {
-            if ($(this).hasClass("show-content")) {
-                return true;
-            }
-            $(this).attr("disabled", "disabled");
-            $(this).tooltip("hide");
-        });
+           .find("button")
+           .each(function () {
+               if ($(this).hasClass("show-content")) {
+                   return true;
+               }
+               $(this).attr("disabled", "disabled");
+               $(this).tooltip("hide");
+           });
 
     element.find(".progress")
-        .removeClass("d-none");
+           .removeClass("d-none");
 }
 
 //Unlocks substep
 function unlockSubstep(id) {
     const element = $(".substep-list[data-ss-id=" + id + "]");
     element.data("ss-locked", "False")
-        .find("button")
-        .each(function () {
-            $(this).removeAttr("disabled");
-        });
+           .find("button")
+           .each(function () {
+               $(this).removeAttr("disabled");
+           });
 
     element.find(".progress")
-        .addClass("d-none");
+           .addClass("d-none");
 }
 
 $(document).ready(function () {
@@ -84,13 +84,13 @@ $(document).ready(function () {
         $("#delete-error").empty();
 
         $("#deleteModalCenter").off()
-            .modal("show")
-            .focus()
-            .keypress(function (e) {
-                if (e.which === 13) {
-                    $("#modalDeleteButton").trigger("click");
-                }
-            });
+                               .modal("show")
+                               .focus()
+                               .keypress(function (e) {
+                                   if (e.which === 13) {
+                                       $("#modalDeleteButton").trigger("click");
+                                   }
+                               });
 
         const urlink = $(this).data("urllink");
         const substepId = $(this).parent().parent().data("ss-id");
@@ -185,24 +185,24 @@ $(document).ready(function () {
             data: {"notes": data},
             success: function (data) {
                 element.removeClass("btn-info")
-                    .addClass("btn-success")
-                    .text("Success");
+                       .addClass("btn-success")
+                       .text("Success");
 
                 setTimeout(function () {
                     element.removeClass("btn-success")
-                        .addClass("btn-info")
-                        .text("Save");
+                           .addClass("btn-info")
+                           .text("Save");
                 }, 1000);
             },
             error: function (data) {
                 element.removeClass("btn-info")
-                    .addClass("btn-danger")
-                    .text("Error");
+                       .addClass("btn-danger")
+                       .text("Error");
 
                 setTimeout(function () {
                     element.removeClass("btn-danger")
-                        .addClass("btn-info")
-                        .text("Save");
+                           .addClass("btn-info")
+                           .text("Save");
                 }, 1000);
             }
         });
@@ -212,19 +212,19 @@ $(document).ready(function () {
     $(".af-button").on("click", function (event) {
         const defaultColor = $(this).css("color");
         $(this).text("Processing...")
-            .click(function () {
-                return false;
-            })
-            .prop("disabled", true)
-            .fadeTo("fast", 0.5)
-            .css("color", "initial");
+               .click(function () {
+                   return false;
+               })
+               .prop("disabled", true)
+               .fadeTo("fast", 0.5)
+               .css("color", "initial");
 
         const elem = $(this);
 
         var unlock = function (element) {
             element.text("Autofocus")
-                .prop("disabled", false)
-                .fadeTo("fast", 1);
+                   .prop("disabled", false)
+                   .fadeTo("fast", 1);
         };
 
         $.ajax({

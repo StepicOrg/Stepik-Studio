@@ -37,6 +37,10 @@ code {
     width: 4% !important;
 }
 
+.w-95 {
+    width: 95% !important;
+}
+
 .btn-back {
     background-color: transparent;
     border-color: #efefef;

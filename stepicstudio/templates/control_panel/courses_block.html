@@ -1,0 +1,9 @@
+<div class="item-group btn-group-vertical w-100 py-2 pl-4">
+    {% for course in Courses %}
+        <button class="btn btn-light btn-lg text-left border btn-list item-button"
+                data-item-id="{{ course.id }}"
+                data-urllink="course-lessons/">
+            {{ course.name }}
+        </button>
+    {% endfor %}
+</div>
