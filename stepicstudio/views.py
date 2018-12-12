@@ -123,7 +123,6 @@ def get_user_courses(request):
 @require_http_methods(['POST'])
 def get_course_lessons(request):
     course_id = request.POST['item_id']
-    print(course_id)
     args = {'Lessons': Lesson.objects.filter(from_course=course_id).order_by('position', '-start_time')}
     html = render_to_string('control_panel/lessons_block.html', args)
     return HttpResponse(html)
@@ -133,8 +132,20 @@ def get_course_lessons(request):
 @ajax_required
 @require_http_methods(['POST'])
 def get_lessons_steps(request):
-    # TODO
-    pass
+    lesson_id = request.POST['item_id']
+    args = {'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position', '-start_time')}
+    html = render_to_string('control_panel/steps_block.html', args)
+    return HttpResponse(html)
+
+
+@staff_member_required
+@ajax_required
+@require_http_methods(['POST'])
+def get_steps_substeps(request):
+    step_id = request.POST['item_id']
+    args = {'Substeps': SubStep.objects.filter(from_step=step_id).order_by('-start_time')}
+    html = render_to_string('control_panel/substeps_block.html', args)
+    return HttpResponse(html)
 
 
 @login_required(login_url='/login/')
