@@ -14,9 +14,20 @@
 
                 <button type="button" class="btn btn-light btn-lg text-left border btn-list item-button w-100"
                         data-urllink="items/">
+                    <span class="glyphicon glyphicon-chevron-down pr-2 align-middle"></span>
                     {{ user.user }}
                 </button>
             </div>
         {% endfor %}
     </div>
+{% endblock %}
+
+{#back button#}
+{% block controls %}
+    <a href="/">
+        <button type="button"
+                class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </button>
+    </a>
 {% endblock %}

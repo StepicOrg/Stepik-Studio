@@ -2,15 +2,23 @@ $(document).ready(function () {
     //appends/removes list of items
     $(document).on("click", ".item-button", function (e) {
         const elem = $(this);
+        const itemType = $(this).parent().data("item-type");
 
         if (elem.parent().next().hasClass("item-group")) {
             elem.parent().next().remove(); //after() uses for appending
+            elem.find("span")
+                .removeClass("glyphicon-chevron-up")
+                .addClass("glyphicon-chevron-down");
+            return false;
+        }
+
+        if (itemType === "substep") {
             return false;
         }
 
         const urlink = $(this).data("urllink");
         const itemId = $(this).parent().data("item-id");
-        const itemType = $(this).parent().data("item-type");
+
 
         $.ajax({
             beforeSend: getCookie,
@@ -24,8 +32,11 @@ $(document).ready(function () {
                 if (data) {
                     elem.parent().after(data);
                     $("[data-toggle=\"tooltip\"]").tooltip(); //enable tooltip on appended element
+                    elem.find("span")
+                        .removeClass("glyphicon-chevron-down")
+                        .addClass("glyphicon-chevron-up");
                 }
-            },
+            }
         });
     });
 

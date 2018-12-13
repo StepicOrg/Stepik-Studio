@@ -5,11 +5,16 @@
              data-item-type="{{ item_type }}">
             <button type="button" class="btn btn-light btn-lg text-left border btn-list item-button w-100"
                     data-urllink="items/">
+
+                {% if item_type != "substep" %}
+                <span class="glyphicon glyphicon-chevron-down pr-2 align-middle"></span>
+                {% endif %}
                 {{ item.name }}
             </button>
 
             {% block controls %}
             {% endblock %}
+
         </div>
     {% endfor %}
 </div>
