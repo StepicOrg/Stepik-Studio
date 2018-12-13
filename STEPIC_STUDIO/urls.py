@@ -24,6 +24,7 @@ courseurlpatterns = patterns(
 
 staffurlpatterns = patterns(
     '',
+    url(r'^export/', 'stepicstudio.views.export_prproj'),
     url(r'^items/', 'stepicstudio.views.get_items'),
     url(r'^', 'stepicstudio.views.get_users_list'),
 )

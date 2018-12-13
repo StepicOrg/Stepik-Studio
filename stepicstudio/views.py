@@ -106,7 +106,7 @@ def logout(request):
 def get_users_list(request):
     args = {'Users': UserProfile.objects.all().order_by('-last_visit'),
             'item_type': 'user'}
-    return render_to_response('control_panel/users_list.html', args, context_instance=RequestContext(request))
+    return render_to_response('control_panel/base_control_panel.html', args, context_instance=RequestContext(request))
 
 
 @staff_member_required
@@ -119,21 +119,24 @@ def get_items(request):
     if requesting_item_type == 'user':
         args = {'Items': Course.objects.filter(editors=item_id).order_by('-start_date'),
                 'item_type': 'course'}
+        html = render_to_string('control_panel/courses_block.html', args)
     elif requesting_item_type == 'course':
         args = {'Items': Lesson.objects.filter(from_course=item_id).order_by('position', '-start_time'),
                 'item_type': 'lesson'}
+        html = render_to_string('control_panel/lessons_block.html', args)
     elif requesting_item_type == 'lesson':
         args = {'Items': Step.objects.filter(from_lesson=item_id).order_by('position', '-start_time'),
                 'item_type': 'step'}
+        html = render_to_string('control_panel/steps_block.html', args)
     elif requesting_item_type == 'step':
         args = {'Items': SubStep.objects.filter(from_step=item_id).order_by('-start_time'),
                 'item_type': 'substep'}
+        html = render_to_string('control_panel/substeps_block.html', args)
     elif requesting_item_type == 'substep':
         return HttpResponse()
     else:
         return HttpResponseBadRequest
 
-    html = render_to_string('control_panel/items_block.html', args)
     return HttpResponse(html)
 
 
@@ -637,47 +640,29 @@ def autofocus_camera(request):
         return HttpResponseServerError(result.message)
 
 
-@login_required(login_url='/login/')
-@can_edit_page
-def export_step_to_prproj(request, course_id, lesson_id, step_id):
+@staff_member_required
+@ajax_required
+@require_http_methods(['POST'])
+def export_prproj(request):
+    item_id = request.POST['item_id']
+    item_type = request.POST['item_type']
+
     try:
-        step_obj = Step.objects.get(id=step_id)
+        if item_type == 'step':
+            extractor = get_target_step_files
+            db_obj = Step.objects.get(id=item_id)
+        elif item_type == 'lesson':
+            extractor = get_target_lesson_files
+            db_obj = Lesson.objects.get(id=item_id)
+        elif item_type == 'course':
+            extractor = get_target_course_files
+            db_obj = Course.objects.get(id=item_id)
+        else:
+            return HttpResponseBadRequest
     except:
-        return HttpResponseServerError('Step with id {} not found'.format(step_id))
+        return HttpResponseServerError('{} with id {} not found'.format(item_type, item_id))
 
-    result = export_obj_to_prproj(step_obj, get_target_step_files)
-
-    if result.status is ExecutionStatus.SUCCESS:
-        return HttpResponse('Ok')
-    else:
-        return HttpResponseServerError(result.message)
-
-
-@login_required(login_url='/login/')
-@can_edit_page
-def export_lesson_to_prproj(request, course_id, lesson_id):
-    try:
-        lesson_obj = Lesson.objects.get(id=lesson_id)
-    except:
-        return HttpResponseServerError('Lesson with id {} not found'.format(lesson_id))
-
-    result = export_obj_to_prproj(lesson_obj, get_target_lesson_files)
-
-    if result.status is ExecutionStatus.SUCCESS:
-        return HttpResponse('Ok')
-    else:
-        return HttpResponseServerError(result.message)
-
-
-@login_required(login_url='/login/')
-@can_edit_page
-def export_course_to_prproj(request, course_id):
-    try:
-        course_obj = Course.objects.get(id=course_id)
-    except:
-        return HttpResponseServerError('Course with id {} not found'.format(course_id))
-
-    result = export_obj_to_prproj(course_obj, get_target_course_files)
+    result = export_obj_to_prproj(db_obj, extractor)
 
     if result.status is ExecutionStatus.SUCCESS:
         return HttpResponse('Ok')

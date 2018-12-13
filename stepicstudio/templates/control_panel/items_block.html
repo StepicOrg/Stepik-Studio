@@ -1,10 +1,15 @@
-<div class="item-group btn-group-vertical w-100 py-2 pl-4">
+<div class="item-group w-100 py-2 pl-4">
     {% for item in Items %}
-        <button class="btn btn-light btn-lg text-left border btn-list item-button"
-                data-item-id="{{ item.id }}"
-                data-item-type="{{ item_type }}"
-                data-urllink="items/">
-            {{ item.name }}
-        </button>
+        <div class="w-100 btn-group" role="group"
+             data-item-id="{{ item.id }}"
+             data-item-type="{{ item_type }}">
+            <button type="button" class="btn btn-light btn-lg text-left border btn-list item-button w-100"
+                    data-urllink="items/">
+                {{ item.name }}
+            </button>
+
+            {% block controls %}
+            {% endblock %}
+        </div>
     {% endfor %}
 </div>
