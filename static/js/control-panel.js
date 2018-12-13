@@ -10,14 +10,20 @@ $(document).ready(function () {
 
         const urlink = $(this).data("urllink");
         const itemId = $(this).data("item-id");
+        const itemType = $(this).data("item-type");
 
         $.ajax({
             beforeSend: getCookie,
             type: "POST",
             url: window.location.pathname + urlink,
-            data: {'item_id': itemId},
+            data: {
+                'item_id': itemId,
+                'requesting_item_type': itemType
+            },
             success: function (data) {
-                elem.after(data);
+                if (data) {
+                    elem.after(data);
+                }
             },
         });
     });

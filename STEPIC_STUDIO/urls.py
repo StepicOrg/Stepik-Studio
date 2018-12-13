@@ -24,10 +24,7 @@ courseurlpatterns = patterns(
 
 staffurlpatterns = patterns(
     '',
-    url(r'^steps-substeps/', 'stepicstudio.views.get_steps_substeps'),
-    url(r'^lessons-steps/', 'stepicstudio.views.get_lessons_steps'),
-    url(r'^course-lessons/', 'stepicstudio.views.get_course_lessons'),
-    url(r'^user-courses/', 'stepicstudio.views.get_user_courses'),
+    url(r'^items/', 'stepicstudio.views.get_items'),
     url(r'^', 'stepicstudio.views.get_users_list'),
 )
 

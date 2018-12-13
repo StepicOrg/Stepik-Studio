@@ -104,47 +104,36 @@ def logout(request):
 
 @staff_member_required
 def get_users_list(request):
-    args = {'Users': UserProfile.objects.all().order_by('-last_visit')}
+    args = {'Users': UserProfile.objects.all().order_by('-last_visit'),
+            'item_type': 'user'}
     return render_to_response('control_panel/users_list.html', args, context_instance=RequestContext(request))
 
 
 @staff_member_required
 @ajax_required
 @require_http_methods(['POST'])
-def get_user_courses(request):
-    user_id = request.POST['item_id']
-    args = {'Courses': Course.objects.filter(editors=user_id).order_by('-start_date')}
-    html = render_to_string('control_panel/courses_block.html', args)
-    return HttpResponse(html)
+def get_items(request):
+    item_id = request.POST['item_id']
+    requesting_item_type = request.POST['requesting_item_type']
 
+    if requesting_item_type == 'user':
+        args = {'Items': Course.objects.filter(editors=item_id).order_by('-start_date'),
+                'item_type': 'course'}
+    elif requesting_item_type == 'course':
+        args = {'Items': Lesson.objects.filter(from_course=item_id).order_by('position', '-start_time'),
+                'item_type': 'lesson'}
+    elif requesting_item_type == 'lesson':
+        args = {'Items': Step.objects.filter(from_lesson=item_id).order_by('position', '-start_time'),
+                'item_type': 'step'}
+    elif requesting_item_type == 'step':
+        args = {'Items': SubStep.objects.filter(from_step=item_id).order_by('-start_time'),
+                'item_type': 'substep'}
+    elif requesting_item_type == 'substep':
+        return HttpResponse()
+    else:
+        return HttpResponseBadRequest
 
-@staff_member_required
-@ajax_required
-@require_http_methods(['POST'])
-def get_course_lessons(request):
-    course_id = request.POST['item_id']
-    args = {'Lessons': Lesson.objects.filter(from_course=course_id).order_by('position', '-start_time')}
-    html = render_to_string('control_panel/lessons_block.html', args)
-    return HttpResponse(html)
-
-
-@staff_member_required
-@ajax_required
-@require_http_methods(['POST'])
-def get_lessons_steps(request):
-    lesson_id = request.POST['item_id']
-    args = {'Steps': Step.objects.filter(from_lesson=lesson_id).order_by('position', '-start_time')}
-    html = render_to_string('control_panel/steps_block.html', args)
-    return HttpResponse(html)
-
-
-@staff_member_required
-@ajax_required
-@require_http_methods(['POST'])
-def get_steps_substeps(request):
-    step_id = request.POST['item_id']
-    args = {'Substeps': SubStep.objects.filter(from_step=step_id).order_by('-start_time')}
-    html = render_to_string('control_panel/substeps_block.html', args)
+    html = render_to_string('control_panel/items_block.html', args)
     return HttpResponse(html)
 
 
