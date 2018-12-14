@@ -44,6 +44,9 @@ $(document).ready(function () {
     $(document).on("click", ".export-prproj", function (e) {
         const itemId = $(this).parent().data("item-id");
         const itemType = $(this).parent().data("item-type");
+        const title = $(this).parent()
+                             .find(".item-button")
+                             .text();
 
         $.ajax({
             beforeSend: getCookie,
@@ -52,6 +55,14 @@ $(document).ready(function () {
             data: {
                 'item_id': itemId,
                 'item_type': itemType
+            },
+            error: function (data) {
+                $("#modalDescriptionTitle").text("Exporting " + itemType + " \'" + title + "\'");
+
+                $("#descriptionModalCenter")
+                    .modal("show")
+                    .find("#export-error")
+                    .text(data.responseText);
             }
         });
     });

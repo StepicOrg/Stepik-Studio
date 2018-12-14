@@ -10,9 +10,11 @@ from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.utils.extra import translate_non_alphanumerics
 
 PRPROJ_TEMPLATE = 'template.prproj'
+PRPROJ_REQUIRED_FILE = 'extendscriptprqe.txt' # it's required for PPro scripts executing
 PRPROJ_PRESET = 'ppro.sqpreset'
 PRPROJ_SCRIPT = 'create_deep_structured_project.jsx'
 PRPROJ_TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), 'adobe_templates')
+PPRO_WIN_PROCESS_NAME = 'Adobe Premiere Pro.exe'
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +83,7 @@ def build_ppro_command(base_path, templates_path, screen_files, prof_files, outp
         raise Exception('Adobe PremierePro configuration is missing. '
                         'Please, specify path to PremierePro in config file.')
 
-    base_command = settings.ADOBE_PPRO_PATH + ' ' + settings.ADOBE_PPRO_CMD
+    base_command = '\"' + settings.ADOBE_PPRO_PATH + '\" ' + settings.ADOBE_PPRO_CMD
     prproj_template_path = os.path.join(templates_path, PRPROJ_TEMPLATE)
     prproj_preset_path = os.path.join(templates_path, PRPROJ_PRESET)
     script_path = os.path.join(os.path.dirname(__file__), 'adobe_scripts', PRPROJ_SCRIPT)
@@ -113,6 +115,16 @@ def export_obj_to_prproj(db_object, files_extractor) -> InternalOperationResult:
     :param files_extractor: function for extracting target filenames from db_object;
     :param db_object: db single object.
     """
+
+    ppro_dir = os.path.dirname(settings.ADOBE_PPRO_PATH)
+    if not os.path.isfile(os.path.join(ppro_dir, PRPROJ_REQUIRED_FILE)):
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
+                                       '\'{0}\' is missing. Please, place \'{0}\' empty file to \n\'{1}\'.'
+                                       .format(PRPROJ_REQUIRED_FILE, ppro_dir))
+
+    if FileSystemClient().process_with_name_exists(PPRO_WIN_PROCESS_NAME):
+        return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
+                                       'Only one instance of PPro may exist. Please, close PPro and try again.')
 
     screen_files, prof_files = files_extractor(db_object)
     if not screen_files or not prof_files:

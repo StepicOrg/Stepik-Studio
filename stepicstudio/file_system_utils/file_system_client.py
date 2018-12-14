@@ -144,3 +144,8 @@ class FileSystemClient(object):
         except Exception as e:
             logger.error('Can\'t delete recursively %s: %s', path, e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
+
+    def process_with_name_exists(self, process_name):
+        command = 'tasklist /FI \"IMAGENAME eq {0}\"'.format(process_name)  # search for task with specified name
+        _, output = self.exec_and_get_output(command)
+        return process_name in output.decode('utf8')
