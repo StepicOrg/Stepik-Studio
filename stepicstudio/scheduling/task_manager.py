@@ -37,6 +37,10 @@ class TaskManager(object):
     def run_once_time(self, job: callable, args):
         launch_time = self.__get_launch_time()
         trigger = DateTrigger(launch_time, timezone=get_localzone())
+        self.scheduler.add_job(func=job,
+                               trigger=trigger,
+                               args=args,
+                               misfire_grace_time=MISFIRE_GRACE_SECONDS)
 
         self.__logger.info('New task for scheduled execution: %s. \n '
                            'Current size of tasks queue: %s; \n'
@@ -46,17 +50,12 @@ class TaskManager(object):
                            launch_time,
                            datetime.now(self.scheduler.timezone))
 
-        return self.scheduler.add_job(func=job,
-                                      trigger=trigger,
-                                      args=args,
-                                      misfire_grace_time=MISFIRE_GRACE_SECONDS)
-
     def run_with_delay(self, job: callable, args, delay=0):
-        return self.scheduler.add   _job(func=job,
-                                      trigger='date',
-                                      next_run_time=datetime.now() + timedelta(seconds=delay),
-                                      args=args,
-                                      misfire_grace_time=MISFIRE_GRACE_SECONDS)
+        self.scheduler.add_job(func=job,
+                               trigger='date',
+                               next_run_time=datetime.now() + timedelta(seconds=delay),
+                               args=args,
+                               misfire_grace_time=MISFIRE_GRACE_SECONDS)
 
     def run_while_idle_repeatable(self, job: callable, single=True):
         if single:
@@ -65,6 +64,11 @@ class TaskManager(object):
                     self.__logger.info('Scheduler already contains task with name \'%s\'.', job.__name__)
                     return
 
+        self.scheduler.add_job(func=job,
+                               trigger='cron',
+                               hour=settings.BACKGROUND_TASKS_START_HOUR,
+                               misfire_grace_time=MISFIRE_GRACE_SECONDS)
+
         self.__logger.info('New task for scheduled repeatable execution: %s. \n '
                            'Execution time: %s:00 of next day; \n Current time: %s; \n'
                            'Size of scheduler queue: %s tasks.',
@@ -72,11 +76,6 @@ class TaskManager(object):
                            settings.BACKGROUND_TASKS_START_HOUR,
                            datetime.now(self.scheduler.timezone),
                            self.__current_size())
-
-        return self.scheduler.add_job(func=job,
-                                      trigger='cron',
-                                      hour=settings.BACKGROUND_TASKS_START_HOUR,
-                                      misfire_grace_time=MISFIRE_GRACE_SECONDS)
 
     def remove_all_tasks(self):
         for task in self.scheduler.get_jobs():
