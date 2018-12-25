@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 DIFF_THRESHOLD = 120000  # number of pixels
-DELAY_MSEC = 500
+DELAY_SEC = 0.5
 FRAME_WIDTH = 576
 FRAME_HEIGHT = 324
 
@@ -31,8 +31,8 @@ def get_diff_times(path):
 
         diff_count = np.count_nonzero(prev_frame_gray - curr_frame_gray)
 
-        frame_time = cap.get(cv2.CAP_PROP_POS_MSEC)  # Current position of the video file in milliseconds
-        if diff_count >= DIFF_THRESHOLD and frame_time - last_diff_time >= DELAY_MSEC:
+        frame_time = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0  # Current position of the video file in seconds
+        if diff_count >= DIFF_THRESHOLD and frame_time - last_diff_time >= DELAY_SEC:
             times.append(frame_time)
             last_diff_time = frame_time
 
