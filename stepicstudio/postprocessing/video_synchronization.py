@@ -1,19 +1,45 @@
+import logging
 import os
+import wave
 
+import numpy as np
 from django.conf import settings
+from scipy.signal import correlate
 
+from stepicstudio.const import SYNC_LABEL
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
+from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
+
+CHUNKSIZE = 10000  # bytes
+MIN_DIFF = 0.03
+
+logger = logging.getLogger(__name__)
 
 
 def sync(substep_obj):
     screencast_audio = extract_audio(substep_obj.os_screencast_path)
     prof_audio = extract_audio(substep_obj.os_path)
 
+    wf_prof = wave.open(screencast_audio, 'r')
+    wf_screencast = wave.open(prof_audio, 'r')
+
+    diff_sec = get_seconds_diff(wf_prof, wf_screencast)
+
+    if diff_sec - MIN_DIFF > 0:
+        add_empty_frames(substep_obj.os_path, diff_sec)
+    elif diff_sec + MIN_DIFF < 0:
+        add_empty_frames(substep_obj.os_screencast_path, abs(diff_sec))
+    else:
+        logger.info('Video synchronizing: no need to be synchronized')
+        return InternalOperationResult(ExecutionStatus.SUCCESS)
+
+    wf_prof.close()
+    wf_screencast.close()
+
 
 def extract_audio(video_path):
-    wo_extension = os.path.splitext(video_path)[0]
-    audio_output = wo_extension + '.wav'
+    audio_output = os.path.splitext(video_path)[0] + '.wav'
 
     extract_result = FileSystemClient.execute_command_sync([settings.FFMPEG_PATH, '-y',
                                                             '-i', video_path, '-vn', '-ac', '1',
@@ -25,30 +51,48 @@ def extract_audio(video_path):
     return audio_output
 
 
-def process(audio_1, audio_2, output_file: str):
-    self._check_compability(audio_1, audio_2)
+def frames_to_seconds(frames: int, frequency: int) -> float:
+    return frames / frequency
 
-    diff = self.get_frames_diff(audio_1, audio_2)
 
-    if diff <= 0:
-        source = wave.open(audio_1.path, 'r')
-    else:
-        source = wave.open(audio_2.path, 'r')
+def normalize_signal(signal):
+    """
+    Normalize signal to [-1, 1] range.
+    """
+    return signal / np.amax(signal)
 
-    output = get_output_waveform(output_file,
-                                 source.getnchannels(),
-                                 source.getsampwidth(),
-                                 source.getframerate())
 
-    original = source.readframes(self.chunksize)
-    silence = np.zeros(abs(diff), audio_1.get_sample_size())
-    silence = np.frombuffer(silence, np.byte)
+def get_frames_diff(wf_audio_1, wf_audio_2) -> int:
+    frames_1 = wf_audio_1.readframes(CHUNKSIZE)
+    frames_2 = wf_audio_2.readframes(CHUNKSIZE)
 
-    output.writeframes(b''.join(silence))
+    string_size_1 = wf_audio_1.getnchannels() * wf_audio_1.getsampwidth()
+    string_size_2 = wf_audio_2.getnchannels() * wf_audio_2.getsampwidth()
 
-    while original != b'':
-        output.writeframes(b''.join(np.frombuffer(original, np.byte)))
-        original = source.readframes(self.chunksize)
+    frames_1 = np.fromstring(frames_1, string_size_1)
+    frames_2 = np.fromstring(frames_2, string_size_2)
 
-    source.close()
-    output.close()
+    frames_1 = normalize_signal(frames_1)
+    frames_2 = normalize_signal(frames_2)
+
+    corr = correlate(frames_1, frames_2)
+    lag = np.argmax(corr)
+
+    return lag - frames_2.size
+
+
+def get_seconds_diff(wf_audio_1, wf_audio_2) -> float:
+    return frames_to_seconds(get_frames_diff(wf_audio_1, wf_audio_2),
+                             wf_audio_1.get_framerate())
+
+
+def add_empty_frames(path, duration):
+    splitted_path = os.path.splitext(path)
+    new_path = splitted_path[0] + SYNC_LABEL + splitted_path[1]
+    duration = '%.3f' % duration
+    command = settings.FFMPEG_PATH + ' ' + settings.VIDEO_OFFSET_TEMPLATE.format(duration, path, new_path)
+
+    status = FileSystemClient.execute_command_sync(command)
+
+    if status.status is not ExecutionStatus.SUCCESS:
+        raise Exception(status.message)
