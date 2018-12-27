@@ -108,7 +108,8 @@ class FileSystemClient(object):
             logger.warning('Can\'t get information about total disk capacity: %s', str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, str(e)), None
 
-    def remove_file(self, file: str) -> InternalOperationResult:
+    @staticmethod
+    def remove_file(file: str) -> InternalOperationResult:
         if not os.path.isfile(file):
             logger.warning('Can\'t delete non-existing file %s ', file)
             return InternalOperationResult(ExecutionStatus.SUCCESS)

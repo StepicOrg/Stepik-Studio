@@ -16,9 +16,9 @@ function createSequence(name, preset) {
     qe.project.newSequence(name, preset);
 }
 
-function getInsertionTime(needSynchronize, targetVTrack, sequence) {
+function getInsertionTime(needSynchronize, targetVTrack, sequence, syncOffset) {
     if (targetVTrack.clips.numItems === 0) {
-        return "00;00;00;00";
+        return syncOffset;
     }
 
     var orderNumber = targetVTrack.clips.numItems - 1; //both of tracks have to contain item with this index
@@ -33,10 +33,10 @@ function getInsertionTime(needSynchronize, targetVTrack, sequence) {
     var screenEndTrackTime = screenVTrack.clips[orderNumber].end.seconds;
     var profEndTrackTime = profVTrack.clips[orderNumber].end.seconds;
 
-    return Math.max(screenEndTrackTime, profEndTrackTime);
+    return syncOffset + Math.max(screenEndTrackTime, profEndTrackTime);
 }
 
-function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchronize) {
+function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchronize, syncOffsets) {
     var seq = app.project.activeSequence;
 
     if (targetVTrackNumber >= seq.videoTracks.numTracks || targetVTrackNumber < 0) {
@@ -49,7 +49,10 @@ function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchroniz
         throw new Error("Could not find video track to append.");
     }
 
-    targetVTrack.insertClip(videoItem, getInsertionTime(needSynchronize, targetVTrack, seq));
+    var syncOffset = syncOffsets[videoItem.name] !== undefined ? parseFloat(syncOffsets[videoItem.name]) : 0;
+
+    targetVTrack.insertClip(videoItem,
+                            getInsertionTime(needSynchronize, targetVTrack, seq, syncOffset));
 }
 
 function appendMarkers(videoItem, markerTimes) {
@@ -115,6 +118,8 @@ function getTargetSequenceNumber(filenameToCheck,
  * @param screenVideos Array of target screen filenames.
  * @param profVideos Array of target prof filenames.
  * @param needSynchronize Synchronize flag.
+ * @param markerTimes markers which indicates screencasts frame change
+ * @param syncOffset offset which should be added to synchronize video tracks via audio
  * @returns {boolean} true if success, false otherwise.
  */
 function createDeepBinStructure(parentFolder,
@@ -123,7 +128,8 @@ function createDeepBinStructure(parentFolder,
                                 screenVideos,
                                 profVideos,
                                 needSynchronize,
-                                markerTimes) {
+                                markerTimes,
+                                syncOffset) {
     var subItems = parentFolder.getFiles();
     for (var i = 0; i < subItems.length; i++) {
         if (subItems[i] instanceof Folder) {
@@ -163,7 +169,8 @@ function createDeepBinStructure(parentFolder,
         //appends movie to active(last created) sequence
         appendVideoItemToSequence(getItemByName(subItems[i].name, currentBin),
                                   targetSequenceNumber,
-                                  needSynchronize);
+                                  needSynchronize,
+                                  syncOffset);
 
         appendMarkers(getItemByName(subItems[i].name, currentBin), markerTimes)
     }
@@ -175,7 +182,8 @@ function createProject(basePath,
                        professorVideos,
                        outputName,
                        needSynchronize,
-                       markerTimes) {
+                       markerTimes,
+                       sync_offsets) {
     var parentFolder = Folder(basePath);
     var parentBin = app.project
                        .rootItem
@@ -188,8 +196,8 @@ function createProject(basePath,
                                screenVideos,
                                professorVideos,
                                needSynchronize,
-                               markerTimes);
-
+                               markerTimes,
+                               sync_offsets);
         app.project.saveAs(basePath + outputName + extensionLabel); //save as another project(without template modification)
         app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
     } catch (e) {
@@ -203,5 +211,6 @@ createProject(basePath,
               professorVideos,
               outputName,
               needSync,
-              markerTimes);
+              markerTimes,
+              syncOffsets);
 app.quit();
