@@ -50,20 +50,21 @@ function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchroniz
     }
 
     var syncOffset = syncOffsets[videoItem.name] !== undefined ? parseFloat(syncOffsets[videoItem.name]) : 0;
+    var insertionTime = getInsertionTime(needSynchronize, targetVTrack, seq, syncOffset);
+    targetVTrack.insertClip(videoItem, insertionTime);
 
-    targetVTrack.insertClip(videoItem,
-                            getInsertionTime(needSynchronize, targetVTrack, seq, syncOffset));
+    return insertionTime;
 }
 
-function appendMarkers(videoItem, markerTimes) {
+function appendMarkers(videoItem, itemAppendingTime, markerTimes) {
     if (markerTimes[videoItem.name] === undefined) {
         return;
     }
 
     var seq = app.project.activeSequence;
 
-    for(var i = 0; i < markerTimes[videoItem.name].length; i++) {
-        seq.markers.createMarker(parseFloat(markerTimes[videoItem.name][i]));
+    for (var i = 0; i < markerTimes[videoItem.name].length; i++) {
+        seq.markers.createMarker(itemAppendingTime + parseFloat(markerTimes[videoItem.name][i]));
     }
 }
 
@@ -166,13 +167,16 @@ function createDeepBinStructure(parentFolder,
                 .moveBin(currentBin);
         }
 
+        var currentItem = getItemByName(subItems[i].name, currentBin);
         //appends movie to active(last created) sequence
-        appendVideoItemToSequence(getItemByName(subItems[i].name, currentBin),
-                                  targetSequenceNumber,
-                                  needSynchronize,
-                                  syncOffset);
+        var itemAppendingTime = appendVideoItemToSequence(currentItem,
+                                                          targetSequenceNumber,
+                                                          needSynchronize,
+                                                          syncOffset);
 
-        appendMarkers(getItemByName(subItems[i].name, currentBin), markerTimes)
+        appendMarkers(currentItem,
+                      itemAppendingTime,
+                      markerTimes)
     }
 }
 

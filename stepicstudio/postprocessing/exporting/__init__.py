@@ -189,8 +189,7 @@ def get_target_step_files(step_obj):
 
             if curr_sync_offset > 0:
                 sync_offsets[substep.screencast_name] = curr_sync_offset
-                marker_times[substep.screencast_name] += curr_sync_offset
-            elif curr_sync_offset < 0:
+            else:
                 sync_offsets[substep.camera_recording_name] = abs(curr_sync_offset)
 
     return screen_files, prof_files, marker_times, sync_offsets
