@@ -9,7 +9,7 @@ from scipy.signal import correlate
 from stepicstudio.file_system_utils.file_system_client import FileSystemClient
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 
-CHUNKSIZE = 1000000
+CHUNKSIZE = 1000000  # bytes
 MIN_DIFF_SEC = 0.01
 MAX_DIFF_SEC = 2
 SAMPLE_SIZES = {
@@ -75,13 +75,8 @@ def normalize_signal(signal):
 
 
 def get_frames_diff(wf_audio_1, wf_audio_2) -> int:
-    data_size = max(wf_audio_1.getnframes(), wf_audio_2.getnframes()) * \
-                wf_audio_1.getnchannels() * \
-                wf_audio_1.getsampwidth()
-
-    # use last frames to avoid .wav delay due to FFMPEG issue
-    frames_1 = wf_audio_1.readframes(data_size)[-CHUNKSIZE:]
-    frames_2 = wf_audio_2.readframes(data_size)[-CHUNKSIZE:]
+    frames_1 = wf_audio_1.readframes(CHUNKSIZE)
+    frames_2 = wf_audio_2.readframes(CHUNKSIZE)
 
     # parameters of wav files must be the same (according to FFMPEG parameters)
     string_size = SAMPLE_SIZES[wf_audio_1.getnchannels() * wf_audio_1.getsampwidth()]
