@@ -362,15 +362,15 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 
     try:
         last_ss_name = target_substeps.latest('start_time').name
-        substep_index = int(re.search(r'\d+', last_ss_name).group()) + 1  # index of latest substep
+        substep_index = re.findall(r'\d+', last_ss_name)[1] + 1  # index of latest substep
     except:
         substep_index = 1
 
-    substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+    substep.name = str(substep.from_step) + '_' + str(substep_index)
 
     while target_substeps.filter(name=substep.name).count():
         substep_index += 1
-        substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+        substep.name = str(substep.from_step) + '_' + str(substep_index)
 
     substep.save()
 
