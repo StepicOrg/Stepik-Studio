@@ -265,14 +265,6 @@ def add_step(request, course_id, lesson_id):
     return render_to_response('create_step.html', args, context_instance=RequestContext(request))
 
 
-def to_custom_name(substep_name, user_name_template):
-    m = re.search(r'(\d+)_(\d+)', substep_name)
-    ss_id, s_id = (m.group(1), m.group(2))
-    tmp = re.sub(r'(\$id)', re.escape(ss_id), user_name_template)
-    fin = re.sub(r'(\$stepid)', re.escape(s_id), tmp)
-    return fin
-
-
 @login_required(login_url='/login/')
 @can_edit_page
 def show_step(request, course_id, lesson_id, step_id):
