@@ -31,7 +31,7 @@ def formatting_text(value):
 
 @register.filter(name='to_custom_name')
 def to_custom_name(substep_name, user_name_template=None):
-    m = re.search(r'Step(\d+)from(\d+)', substep_name)
+    m = re.search(r'(\d+)_(\d+)', substep_name)
     ss_id, s_id = (m.group(1), m.group(2))
     tmp = re.sub(r'(\$id)', re.escape(ss_id), user_name_template)
     fin = re.sub(r'(\$stepid)', re.escape(s_id), tmp)
