@@ -8,6 +8,7 @@ from stepicstudio.models import SubStep, Step, Lesson
 from stepicstudio.operations_statuses.operation_result import InternalOperationResult
 from stepicstudio.operations_statuses.statuses import ExecutionStatus
 from stepicstudio.postprocessing.exporting.video_diff_check import get_diff_times
+from stepicstudio.postprocessing.video_synchronization import get_sync_offset
 from stepicstudio.utils.extra import translate_non_alphanumerics
 
 PRPROJ_TEMPLATE = 'template.prproj'
@@ -63,9 +64,12 @@ class PPROCommandBuilder(object):
     def append_bool_value(self, bool_name: str, bool_value: bool):
         self.base_command += ' var {} = Boolean({});'.format(bool_name, str(bool_value).lower())
         return self
-    
-    def append_dict(self, name, source_dict):
-        data = ', '.join('\'{}\': {}'.format(key, self._list_to_array(val)) for key, val in source_dict.items())
+
+    def append_dict(self, name, source_dict, val_type: type = list):
+        if val_type is list:
+            data = ', '.join('\'{}\': {}'.format(key, self._list_to_array(val)) for key, val in source_dict.items())
+        else:
+            data = ', '.join('\'{}\': {}'.format(key, val) for key, val in source_dict.items())
 
         self.base_command += ' var {} = {{{}}};'.format(name, data)
         return self
@@ -77,7 +81,7 @@ class PPROCommandBuilder(object):
         return self.base_command + '\"'
 
 
-def build_ppro_command(base_path, templates_path, screen_files, prof_files, marker_times, output_name):
+def build_ppro_command(base_path, templates_path, screen_files, prof_files, marker_times, sync_offsets, output_name):
     """Builds Premiere Pro script which should be executed through command line.
     Arguments passes to PPro via declaration ExtendScript variable.
     Command includes base script using #include preprocessor directive
@@ -116,6 +120,7 @@ def build_ppro_command(base_path, templates_path, screen_files, prof_files, mark
         .append_const_array('professorVideos', prof_files) \
         .append_bool_value('needSync', True) \
         .append_dict('markerTimes', marker_times) \
+        .append_dict('syncOffsets', sync_offsets, float) \
         .append_script_including(script_path.replace(os.sep, '\\\\')) \
         .build()
 
@@ -138,7 +143,8 @@ def export_obj_to_prproj(db_object, files_extractor) -> InternalOperationResult:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
                                        'Only one instance of PPro may exist. Please, close PPro and try again.')
 
-    screen_files, prof_files, marker_times = files_extractor(db_object)
+    screen_files, prof_files, marker_times, sync_offsets = files_extractor(db_object)
+
     if not screen_files or not prof_files:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR,
                                        'Object is empty or subitems are broken.')
@@ -149,6 +155,7 @@ def export_obj_to_prproj(db_object, files_extractor) -> InternalOperationResult:
                                           screen_files,
                                           prof_files,
                                           marker_times,
+                                          sync_offsets,
                                           translate_non_alphanumerics(db_object.name))
     except Exception as e:
         return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
@@ -168,6 +175,7 @@ def get_target_step_files(step_obj):
     screen_files = []
     prof_files = []
     marker_times = {}
+    sync_offsets = {}
 
     for substep in SubStep.objects.filter(from_step=step_obj.id).order_by('start_time'):
         if substep.is_videos_ok and \
@@ -175,15 +183,23 @@ def get_target_step_files(step_obj):
                 os.path.isfile(substep.os_path):
             screen_files.append(substep.screencast_name)
             prof_files.append(substep.camera_recording_name)
+
+            curr_sync_offset = get_sync_offset(substep)
             marker_times[substep.screencast_name] = get_diff_times(substep.os_screencast_path)
 
-    return screen_files, prof_files, marker_times
+            if curr_sync_offset > 0:
+                sync_offsets[substep.screencast_name] = curr_sync_offset
+            else:
+                sync_offsets[substep.camera_recording_name] = abs(curr_sync_offset)
+
+    return screen_files, prof_files, marker_times, sync_offsets
 
 
 def get_target_lesson_files(lesson_obj):
     screen_files = []
     prof_files = []
     marker_times = {}
+    sync_offsets = {}
 
     if os.path.isdir(lesson_obj.os_path):
         for step in Step.objects.filter(from_lesson=lesson_obj.id).order_by('start_time'):
@@ -191,14 +207,16 @@ def get_target_lesson_files(lesson_obj):
             screen_files.extend(step_files[0])
             prof_files.extend(step_files[1])
             marker_times.update(step_files[2])
+            sync_offsets.update(step_files[3])
 
-    return screen_files, prof_files, marker_times
+    return screen_files, prof_files, marker_times, sync_offsets
 
 
 def get_target_course_files(course_obj):
     screen_files = []
     prof_files = []
     marker_times = {}
+    sync_offsets = {}
 
     if os.path.isdir(course_obj.os_path):
         for lesson in Lesson.objects.filter(from_course=course_obj.id).order_by('start_time'):
@@ -206,5 +224,6 @@ def get_target_course_files(course_obj):
             screen_files.extend(lesson_files[0])
             prof_files.extend(lesson_files[1])
             marker_times.update(lesson_files[2])
+            sync_offsets.update(lesson_files[3])
 
-    return screen_files, prof_files, marker_times
+    return screen_files, prof_files, marker_times, sync_offsets
