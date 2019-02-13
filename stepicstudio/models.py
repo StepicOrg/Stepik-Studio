@@ -25,7 +25,12 @@ class Course(models.Model):
     @property
     def os_path(self):
         user_id = self.editors
-        user_folder = UserProfile.objects.get(user_id=user_id).serverFilesFolder
+        user_folder = UserProfile \
+            .objects \
+            .get(user_id=user_id) \
+            .serverFilesFolder \
+            .replace('/', os.sep)  # DB may contain path with bad separators
+
         return os.path.join(user_folder, translate_non_alphanumerics(self.name) + os.sep)
 
     @property
