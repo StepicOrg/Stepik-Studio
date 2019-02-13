@@ -52,6 +52,18 @@ function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchroniz
     targetVTrack.insertClip(videoItem, getInsertionTime(needSynchronize, targetVTrack, seq));
 }
 
+function appendMarkers(videoItem, markerTimes) {
+    if (markerTimes[videoItem.name] === undefined) {
+        return;
+    }
+
+    var seq = app.project.activeSequence;
+
+    for(var i = 0; i < markerTimes[videoItem.name].length; i++) {
+        seq.markers.createMarker(parseFloat(markerTimes[videoItem.name][i]));
+    }
+}
+
 function arrayContainsItem(arr, item) {
     for (var i = 0; i < arr.length; i++) {
         if (item === arr[i]) { //indexOf() isn't supported by ExtendScript
@@ -110,7 +122,8 @@ function createDeepBinStructure(parentFolder,
                                 seqPreset,
                                 screenVideos,
                                 profVideos,
-                                needSynchronize) {
+                                needSynchronize,
+                                markerTimes) {
     var subItems = parentFolder.getFiles();
     for (var i = 0; i < subItems.length; i++) {
         if (subItems[i] instanceof Folder) {
@@ -151,6 +164,8 @@ function createDeepBinStructure(parentFolder,
         appendVideoItemToSequence(getItemByName(subItems[i].name, currentBin),
                                   targetSequenceNumber,
                                   needSynchronize);
+
+        appendMarkers(getItemByName(subItems[i].name, currentBin), markerTimes)
     }
 }
 
@@ -159,7 +174,8 @@ function createProject(basePath,
                        screenVideos,
                        professorVideos,
                        outputName,
-                       needSynchronize) {
+                       needSynchronize,
+                       markerTimes) {
     var parentFolder = Folder(basePath);
     var parentBin = app.project
                        .rootItem
@@ -171,7 +187,8 @@ function createProject(basePath,
                                presetPath,
                                screenVideos,
                                professorVideos,
-                               needSynchronize);
+                               needSynchronize,
+                               markerTimes);
 
         app.project.saveAs(basePath + outputName + extensionLabel); //save as another project(without template modification)
         app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
@@ -185,5 +202,6 @@ createProject(basePath,
               screenVideos,
               professorVideos,
               outputName,
-              needSync);
+              needSync,
+              markerTimes);
 app.quit();
