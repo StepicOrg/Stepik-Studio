@@ -26,6 +26,6 @@ function rectime(sec) {
     while (sec.length < 2) {
         sec = "0" + sec;
     }
-    hr = (hr) ? ":" + hr : "";
+    hr = (hr) ? hr + ":" : "";
     return hr + min + ":" + sec;
 }
