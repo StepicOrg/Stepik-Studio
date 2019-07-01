@@ -265,14 +265,6 @@ def add_step(request, course_id, lesson_id):
     return render_to_response('create_step.html', args, context_instance=RequestContext(request))
 
 
-def to_custom_name(substep_name, user_name_template):
-    m = re.search(r'Step(\d+)from(\d+)', substep_name)
-    ss_id, s_id = (m.group(1), m.group(2))
-    tmp = re.sub(r'(\$id)', re.escape(ss_id), user_name_template)
-    fin = re.sub(r'(\$stepid)', re.escape(s_id), tmp)
-    return fin
-
-
 @login_required(login_url='/login/')
 @can_edit_page
 def show_step(request, course_id, lesson_id, step_id):
@@ -362,15 +354,15 @@ def start_new_step_recording(request, course_id, lesson_id, step_id) -> Internal
 
     try:
         last_ss_name = target_substeps.latest('start_time').name
-        substep_index = int(re.search(r'\d+', last_ss_name).group()) + 1  # index of latest substep
+        substep_index = re.findall(r'\d+', last_ss_name)[1] + 1  # index of latest substep
     except:
         substep_index = 1
 
-    substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+    substep.name = str(substep.from_step) + '_' + str(substep_index)
 
     while target_substeps.filter(name=substep.name).count():
         substep_index += 1
-        substep.name = 'Step' + str(substep_index) + 'from' + str(substep.from_step)
+        substep.name = str(substep.from_step) + '_' + str(substep_index)
 
     substep.save()
 
