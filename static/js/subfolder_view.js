@@ -59,12 +59,12 @@ $(document).ready(function () {
         const title = "Delete " + $(this).parent().parent().find(".elem-name").text() + "?";
         $("#modalDeleteTitle").text(title);
         $("#deleteModalCenter").modal("show")
-            .focus()
-            .keypress(function (e) {
-                if (e.which === 13) {
-                    $("#modalDeleteButton").trigger("click");
-                }
-            });
+                               .focus()
+                               .keypress(function (e) {
+                                   if (e.which === 13) {
+                                       $("#modalDeleteButton").trigger("click");
+                                   }
+                               });
 
         const urlink = $(this).data("urllink");
         $("#modalDeleteButton").off().on("click", function () {
@@ -74,7 +74,7 @@ $(document).ready(function () {
 
     $("#renameModalCenter").on("shown.bs.modal", function () { //Focus on input field when rename modal opened
         $(this).find("[autofocus]")
-            .focus();
+               .focus();
     }).on("hidden.bs.modal", function (e) { //Clear error message on close
         $("#rename-error").empty();
     });

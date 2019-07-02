@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+    {{ block.super }}
+    <script src="{% static "js/control-panel.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="item-group  w-100">
+        {% for user in Users %}
+            <div class="w-100 btn-group" role="group"
+                 data-item-id="{{ user.id }}"
+                 data-item-type="{{ item_type }}">
+
+                <button type="button" class="btn btn-light btn-lg text-left border btn-list item-button w-100"
+                        data-urllink="items/">
+                    <span class="glyphicon glyphicon-chevron-down pr-2 align-middle"></span>
+                    {{ user.user }}
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% include "control_panel/modal_description.html" %}
+{% endblock %}
+
+{#back button#}
+{% block controls %}
+    <a href="/">
+        <button type="button"
+                class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </button>
+    </a>
+{% endblock %}

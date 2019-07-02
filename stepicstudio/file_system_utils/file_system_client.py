@@ -108,7 +108,8 @@ class FileSystemClient(object):
             logger.warning('Can\'t get information about total disk capacity: %s', str(e))
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, str(e)), None
 
-    def remove_file(self, file: str) -> InternalOperationResult:
+    @staticmethod
+    def remove_file(file: str) -> InternalOperationResult:
         if not os.path.isfile(file):
             logger.warning('Can\'t delete non-existing file %s ', file)
             return InternalOperationResult(ExecutionStatus.SUCCESS)
@@ -144,3 +145,8 @@ class FileSystemClient(object):
         except Exception as e:
             logger.error('Can\'t delete recursively %s: %s', path, e)
             return InternalOperationResult(ExecutionStatus.FATAL_ERROR, e)
+
+    def process_with_name_exists(self, process_name):
+        command = 'tasklist /FI \"IMAGENAME eq {0}\"'.format(process_name)  # search for task with specified name
+        _, output = self.exec_and_get_output(command)
+        return process_name in output.decode('utf8')

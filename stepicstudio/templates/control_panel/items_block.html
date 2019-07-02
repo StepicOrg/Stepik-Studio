@@ -1,0 +1,20 @@
+<div class="item-group w-100 py-2 pl-4">
+    {% for item in Items %}
+        <div class="w-100 btn-group" role="group"
+             data-item-id="{{ item.id }}"
+             data-item-type="{{ item_type }}">
+            <button type="button" class="btn btn-light btn-lg text-left border btn-list item-button w-100"
+                    data-urllink="items/">
+
+                {% if item_type != "substep" %}
+                <span class="glyphicon glyphicon-chevron-down pr-2 align-middle"></span>
+                {% endif %}
+                {{ item.name }}
+            </button>
+
+            {% block controls %}
+            {% endblock %}
+
+        </div>
+    {% endfor %}
+</div>

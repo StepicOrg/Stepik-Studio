@@ -16,9 +16,9 @@ function createSequence(name, preset) {
     qe.project.newSequence(name, preset);
 }
 
-function getInsertionTime(needSynchronize, targetVTrack, sequence) {
+function getInsertionTime(needSynchronize, targetVTrack, sequence, syncOffset) {
     if (targetVTrack.clips.numItems === 0) {
-        return "00;00;00;00";
+        return syncOffset;
     }
 
     var orderNumber = targetVTrack.clips.numItems - 1; //both of tracks have to contain item with this index
@@ -33,10 +33,10 @@ function getInsertionTime(needSynchronize, targetVTrack, sequence) {
     var screenEndTrackTime = screenVTrack.clips[orderNumber].end.seconds;
     var profEndTrackTime = profVTrack.clips[orderNumber].end.seconds;
 
-    return Math.max(screenEndTrackTime, profEndTrackTime);
+    return syncOffset + Math.max(screenEndTrackTime, profEndTrackTime);
 }
 
-function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchronize) {
+function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchronize, syncOffsets) {
     var seq = app.project.activeSequence;
 
     if (targetVTrackNumber >= seq.videoTracks.numTracks || targetVTrackNumber < 0) {
@@ -49,7 +49,23 @@ function appendVideoItemToSequence(videoItem, targetVTrackNumber, needSynchroniz
         throw new Error("Could not find video track to append.");
     }
 
-    targetVTrack.insertClip(videoItem, getInsertionTime(needSynchronize, targetVTrack, seq));
+    var syncOffset = syncOffsets[videoItem.name] !== undefined ? parseFloat(syncOffsets[videoItem.name]) : 0;
+    var insertionTime = getInsertionTime(needSynchronize, targetVTrack, seq, syncOffset);
+    targetVTrack.insertClip(videoItem, insertionTime);
+
+    return insertionTime;
+}
+
+function appendMarkers(videoItem, itemAppendingTime, markerTimes) {
+    if (markerTimes[videoItem.name] === undefined) {
+        return;
+    }
+
+    var seq = app.project.activeSequence;
+
+    for (var i = 0; i < markerTimes[videoItem.name].length; i++) {
+        seq.markers.createMarker(itemAppendingTime + parseFloat(markerTimes[videoItem.name][i]));
+    }
 }
 
 function arrayContainsItem(arr, item) {
@@ -103,6 +119,8 @@ function getTargetSequenceNumber(filenameToCheck,
  * @param screenVideos Array of target screen filenames.
  * @param profVideos Array of target prof filenames.
  * @param needSynchronize Synchronize flag.
+ * @param markerTimes markers which indicates screencasts frame change
+ * @param syncOffset offset which should be added to synchronize video tracks via audio
  * @returns {boolean} true if success, false otherwise.
  */
 function createDeepBinStructure(parentFolder,
@@ -110,7 +128,9 @@ function createDeepBinStructure(parentFolder,
                                 seqPreset,
                                 screenVideos,
                                 profVideos,
-                                needSynchronize) {
+                                needSynchronize,
+                                markerTimes,
+                                syncOffset) {
     var subItems = parentFolder.getFiles();
     for (var i = 0; i < subItems.length; i++) {
         if (subItems[i] instanceof Folder) {
@@ -147,10 +167,16 @@ function createDeepBinStructure(parentFolder,
                 .moveBin(currentBin);
         }
 
+        var currentItem = getItemByName(subItems[i].name, currentBin);
         //appends movie to active(last created) sequence
-        appendVideoItemToSequence(getItemByName(subItems[i].name, currentBin),
-                                  targetSequenceNumber,
-                                  needSynchronize);
+        var itemAppendingTime = appendVideoItemToSequence(currentItem,
+                                                          targetSequenceNumber,
+                                                          needSynchronize,
+                                                          syncOffset);
+
+        appendMarkers(currentItem,
+                      itemAppendingTime,
+                      markerTimes)
     }
 }
 
@@ -159,7 +185,9 @@ function createProject(basePath,
                        screenVideos,
                        professorVideos,
                        outputName,
-                       needSynchronize) {
+                       needSynchronize,
+                       markerTimes,
+                       sync_offsets) {
     var parentFolder = Folder(basePath);
     var parentBin = app.project
                        .rootItem
@@ -171,8 +199,9 @@ function createProject(basePath,
                                presetPath,
                                screenVideos,
                                professorVideos,
-                               needSynchronize);
-
+                               needSynchronize,
+                               markerTimes,
+                               sync_offsets);
         app.project.saveAs(basePath + outputName + extensionLabel); //save as another project(without template modification)
         app.project.closeDocument(1, 0); // 1 - to save before closing; 0 - to close without modal dialog
     } catch (e) {
@@ -185,5 +214,7 @@ createProject(basePath,
               screenVideos,
               professorVideos,
               outputName,
-              needSync);
+              needSync,
+              markerTimes,
+              syncOffsets);
 app.quit();
