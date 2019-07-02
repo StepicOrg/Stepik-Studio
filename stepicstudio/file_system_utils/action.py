@@ -14,8 +14,8 @@ from stepicstudio.utils.extra import translate_non_alphanumerics
 
 logger = logging.getLogger('stepic_studio.file_system_utils.action')
 MIN_ACCEPTABLE_DIFF = 7.0  # seconds
-ATTEMPTS_TO_GET_DURATION = 5
-ATTEMPTS_PAUSE = 0.05  # seconds
+ATTEMPTS_TO_GET_DURATION = 10
+ATTEMPTS_PAUSE = 0.25  # seconds
 
 
 def delete_substep_on_disk(substep) -> InternalOperationResult:
@@ -105,8 +105,11 @@ def rename_element_on_disk(from_obj: 'Step', to_obj: 'Step') -> InternalOperatio
 def get_length_in_sec(filename: str) -> float:
     for _ in range(0, ATTEMPTS_TO_GET_DURATION):
         try:
-            result = subprocess.Popen([FFPROBE_RUN_PATH, filename], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            duration_string = [x.decode('utf-8') for x in result.stdout.readlines() if 'Duration' in x.decode('utf-8')][0]
+            result = subprocess.Popen([FFPROBE_RUN_PATH, filename],
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT)
+            duration_string = [x.decode('utf-8') for x in result.stdout.readlines()
+                               if 'Duration' in x.decode('utf-8')][0]
             duration = duration_string.replace(' ', '').split(',')[0].replace('Duration:', '').split(':')
             return float(duration[0]) * 3600 + float(duration[1]) * 60 + float(duration[2])
         except:
