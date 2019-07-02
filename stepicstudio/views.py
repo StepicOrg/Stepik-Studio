@@ -7,8 +7,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404, HttpResponse, HttpResponseServerError, HttpResponseBadRequest, \
-    JsonResponse
+from django.http import (HttpResponseRedirect, Http404,
+                         HttpResponse, HttpResponseServerError,
+                         HttpResponseBadRequest, JsonResponse)
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -18,11 +19,16 @@ from django.views.decorators.http import require_http_methods
 from stepicstudio.camera_controls import AutofocusController
 from stepicstudio.forms import LessonForm, StepForm
 from stepicstudio.models import UserProfile, Lesson, SubStep
-from stepicstudio.postprocessing import start_subtep_montage, start_step_montage, start_lesson_montage
-from stepicstudio.postprocessing.exporting import export_obj_to_prproj, get_target_step_files, \
-    get_target_lesson_files, get_target_course_files
-from stepicstudio.ssh_connections import delete_tablet_substep_files, delete_tablet_step_files, \
-    delete_tablet_lesson_files
+from stepicstudio.postprocessing import (start_subtep_montage,
+                                         start_step_montage,
+                                         start_lesson_montage)
+from stepicstudio.postprocessing.exporting import (export_obj_to_prproj,
+                                                   get_target_step_files,
+                                                   get_target_lesson_files,
+                                                   get_target_course_files)
+from stepicstudio.ssh_connections import (delete_tablet_substep_files,
+                                          delete_tablet_step_files,
+                                          delete_tablet_lesson_files)
 from stepicstudio.utils.utils import *
 from stepicstudio.video_recorders.action import *
 from stepicstudio.video_streaming import stream_video

@@ -60,10 +60,15 @@ class ServerCameraRecorder(PostprocessableRecorder):
                                            'Camera isn\'t active: can\'t stop non existing FFMPEG process')
 
         result = self.__fs_client.send_quit_signal(self.__process)
-        TaskManager().run_with_delay(FileSystemClient.kill_process, [self.__process.pid], delay=KILL_DELAY)
+
+        # try to kill ffmpeg process (sending of quit signal may have no effect)
+        TaskManager().run_with_delay(FileSystemClient.kill_process,
+                                     [self.__process.pid],
+                                     delay=KILL_DELAY)
 
         if result.status is ExecutionStatus.SUCCESS:
-            self.__logger.info('Successfully stop camera recording (FFMPEG PID: %s)', self.__process.pid)
+            self.__logger.info('Successfully stop camera recording (FFMPEG PID: %s)',
+                               self.__process.pid)
             self.__process = None
             self._apply_pipe(self.last_processed_path, self.last_processed_file)
             return result
