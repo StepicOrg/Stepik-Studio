@@ -1,6 +1,8 @@
 <form id="target" method="post"> {% csrf_token %}
     {{ form.as_ul }}
-    <div class="row justify-content-end" style="padding-top: 10px; padding-right: 10px">
-        <input type="submit" class="btn btn-primary btn-info border" value="Create lesson">
+    <div class="row justify-content-end"
+         style="padding-top: 10px; padding-right: 10px">
+        <input type="submit" class="btn btn-primary btn-outline-dark"
+               value="Create lesson">
     </div>
 </form>

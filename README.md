@@ -24,7 +24,33 @@ mkvirtualenv -p /path/to/python3 studio-env
 pip install -r requirements.txt
 ```
 
-# Run
+## Encrypt settings
+
+
+macOS:
+```
+brew install git-crypt
+git-crypt unlock secret
+```
+
+## Setup database
+
+
+macOS:
+```
+brew install postgresql
+brew services start postgresql
+ 
+psql postgres
+
+# username, password, DB name should be the same as specified in the local settings
+CREATE ROLE user WITH LOGIN PASSWORD 'password';
+CREATE DATABASE databasename;
+
+python manage.py migrate
+```
+
+## Run
 
 macOS and Linux, not sure about Windows:
 
