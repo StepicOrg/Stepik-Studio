@@ -43,14 +43,14 @@ brew services start postgresql
  
 psql postgres
 
-# user name, password, DB name should be the same as specified in the local settings
+# username, password, DB name should be the same as specified in the local settings
 CREATE ROLE user WITH LOGIN PASSWORD 'password';
 CREATE DATABASE databasename;
 
 python manage.py migrate
 ```
 
-# Run
+## Run
 
 macOS and Linux, not sure about Windows:
 
