@@ -39,11 +39,6 @@ code {
 
 .btn-back {
     background-color: transparent;
-    border-color: #efefef;
-}
-
-.btn-list {
-    background-color: #fcfcfc;
 }
 
 .btn-add {
@@ -64,10 +59,6 @@ code {
     font-size: 1.25rem;
 }
 
-.navbar-brand {
-    padding: 0 0 0;
-}
-
 #add-form {
     width: 500px;
 }
@@ -84,7 +75,6 @@ code {
 .recording-button {
     min-height: 170px;
     background-color: transparent;
-    border-color: #17a2b8;
 }
 
 .recording-button[disabled] {
@@ -98,4 +88,8 @@ code {
 .btn.btn-outline-info:disabled {
     opacity: 80%;
     background-color: #eeeeee;
+}
+
+.navbar {
+    background-color: rgb(27, 31, 35);
 }

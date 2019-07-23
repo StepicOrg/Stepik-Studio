@@ -9,34 +9,54 @@
 
 {% block content %}
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item" aria-current="page">
-                <a href="/courses/">Courses</a>
+        <ol class="breadcrumb bg-dark">
+            <li class="breadcrumb-item"
+                aria-current="page">
+                <a href="/courses/"
+                   class="text-light">
+                    Courses
+                </a>
             </li>
-            <li class="breadcrumb-item" aria-current="page">
-                <a href="{{ Course.url }}">{{ Course.name }}</a>
+            <li class="breadcrumb-item"
+                aria-current="page">
+                <a href="{{ Course.url }}"
+                   class="text-light">
+                    {{ Course.name }}
+                </a>
             </li>
-            <li class="breadcrumb-item" aria-current="page">
-                <a href="{{ Lesson.url }}">{{ Lesson.name }}</a>
+            <li class="breadcrumb-item"
+                aria-current="page">
+                <a href="{{ Lesson.url }}"
+                   class="text-light">
+                    {{ Lesson.name }}
+                </a>
             </li>
-            <li class="breadcrumb-item active" aria-current="page">
+            <li class="breadcrumb-item active text-light"
+                aria-current="page">
                 {{ Step.name }}
             </li>
         </ol>
     </nav>
 
     {% if AF_ENABLED %}
-        <div class="af-button float-right">
-            <b>Autofocus</b>
+        <div class="af-button text-light float-right">
+            <b>
+                Autofocus
+            </b>
         </div>
     {% endif %}
 
     {% if not Recording %}
 
         <div class="w-100 text-center p-5">
-            <button type="button" class="start-recording btn btn-light recording-button">
-                <h1 class="head-text">Start Recording</h1>
-                <h5 class="tip-text">Click here or press the spacebar to start</h5>
+            <button type="button"
+                    class="start-recording btn btn-outline-light recording-button">
+                <h1 class="head-text">
+                    Start Recording
+                </h1>
+                <h5 class="tip-text">
+                    Click here or press the spacebar to start
+                </h5>
             </button>
         </div>
 
@@ -49,10 +69,15 @@
         <hr>
 
         <div class="form-group">
-            <label for="form-notes">Notes:</label>
-            <textarea class="form-control" id="form-notes" rows="5">{{ Step.text_data }}</textarea>
-            <button type="submit" class="btn btn-info float-right m-1 save-notes"
-                    data-urllink="/notes/step/{{ Step.id }}/">Save
+            <label class="text-light" for="form-notes">
+                Notes:
+            </label>
+            <textarea class="form-control bg-dark text-light"
+                      id="form-notes"
+                      rows="5">{{ Step.text_data }}</textarea>
+            <button type="submit" class="btn btn-outline-light float-right m-2 save-notes"
+                    data-urllink="/notes/step/{{ Step.id }}/">
+                Save
             </button>
         </div>
 
@@ -60,10 +85,13 @@
         {% include 'modal_video.html' %}
 
     {% else %}
-        <div ALIGN=center>
+        <div class="text-light" ALIGN=center>
             <h3> Recording started</h3>
             <br>
-            <h1><a href="stop/" class="stop-recording">Stop Recording</a>
+            <h1>
+                <a href="stop/" class="stop-recording">
+                    Stop Recording
+                </a>
             </h1>
             <div id="timer" data-starttime="{{ StartTime }}">00:00</div>
         </div>
@@ -72,7 +100,9 @@
 
 {% block controls %}
     <a href="{{ Lesson.url }}">
-        <button type="button" class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+        <button type="button"
+                class="float-left h-100 btn btn-outline-light
+                btn-back sticky-top rounded-0 border-top-0 border-secondary">
             <span class="glyphicon glyphicon-chevron-left"></span>
         </button>
     </a>

@@ -2,15 +2,19 @@
 {% if not Recording %}
     {% block content %}
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item active" aria-current="page">
-                    <a>Courses</a>
+            <ol class="breadcrumb bg-dark">
+                <li class="breadcrumb-item active"
+                    aria-current="page">
+                    <a class="text-light">
+                        Courses
+                    </a>
                 </li>
             </ol>
         </nav>
         <div class="btn-group-vertical w-100">
             {% for i in Courses %}
-                <a href="/course/{{ i.id }}/" class="btn btn-light btn-lg text-left border btn-list">
+                <a href="/course/{{ i.id }}/"
+                   class="btn btn-outline-light btn-lg text-left border btn-list">
                     {{ i.name }}
                 </a>
             {% endfor %}

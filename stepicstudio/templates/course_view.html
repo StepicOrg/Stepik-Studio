@@ -8,11 +8,12 @@
 {% if not Recording %}
     {% block content %}
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
+            <ol class="breadcrumb bg-dark">
                 <li class="breadcrumb-item" aria-current="page">
-                    <a href="/courses/">Courses</a>
+                    <a href="/courses/" class="text-light">Courses</a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page">
+                <li class="breadcrumb-item text-light active"
+                    aria-current="page">
                     {{ Course.name }}
                 </li>
             </ol>
@@ -20,8 +21,12 @@
 
         <div class="add-item btn-group dropright" data-urllink="/course/{{ Course.id }}/add-lesson/">
             <span data-toggle="dropdown">
-                <button type="button" class="btn btn-light btn-lg border rounded btn-list dropdown-toggle-split"
-                        data-toggle="tooltip" aria-haspopup="true" aria-expanded="false" data-placement="left" title="Create new lesson">
+                <button type="button"
+                        class="btn btn-outline-light btn-lg border
+                        rounded btn-list dropdown-toggle-split"
+                        data-toggle="tooltip" aria-haspopup="true"
+                        aria-expanded="false" data-placement="left"
+                        title="Create new lesson">
                     <span class="glyphicon glyphicon-plus"></span>
                 </button>
             </span>
@@ -32,21 +37,35 @@
 
         <div class="btn-group-vertical w-100 sortable">
             {% for L in Lessons %}
-                <div class="btn-group" id="{{ L.position }}" elem_id="{{ L.id }}">
-                    <a class="btn btn-light btn-lg text-left border btn-list elem-name" type="lesson"
+                <div class="btn-group"
+                     id="{{ L.position }}"
+                     elem_id="{{ L.id }}">
+                    <a class="btn btn-outline-light btn-lg text-left border btn-list elem-name"
+                       type="lesson"
                        href="/course/{{ Course.id }}/lesson/{{ L.id }}/">{{ L.name }}</a>
 
                     <button type="button"
-                            class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            class="btn btn-lg btn-outline-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
                     </button>
 
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item raw-cut" data-urllink="/create-lesson-montage/{{ L.id }}/" href>
-                            Raw cut</a>
-                        <a class="dropdown-item" id="#rename-button" href="#renameModalCenter">Rename</a>
-                        <a class="dropdown-item" id="#delete-button"
-                           data-urllink="/course/{{ Course.id }}/lesson/{{ L.id }}/delete/" href="#deleteModalCenter">Delete</a>
+                        <a class="dropdown-item raw-cut"
+                           data-urllink="/create-lesson-montage/{{ L.id }}/"
+                           href>
+                            Raw cut
+                        </a>
+                        <a class="dropdown-item" id="#rename-button"
+                           href="#renameModalCenter">
+                            Rename
+                        </a>
+                        <a class="dropdown-item"
+                           id="#delete-button"
+                           data-urllink="/course/{{ Course.id }}/lesson/{{ L.id }}/delete/"
+                           href="#deleteModalCenter">
+                            Delete
+                        </a>
                     </div>
                 </div>
             {% endfor %}
@@ -60,7 +79,8 @@
     {% block controls %}
         <a href="/courses/">
             <button type="button"
-                    class="float-left h-100 btn btn-light btn-back sticky-top rounded-0">
+                    class="float-left h-100 btn btn-outline-light
+                    btn-back sticky-top rounded-0 border-top-0 border-secondary">
                 <span class="glyphicon glyphicon-chevron-left"></span>
             </button>
         </a>
