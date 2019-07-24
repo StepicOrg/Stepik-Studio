@@ -50,7 +50,7 @@
 
         <div class="w-100 text-center p-5">
             <button type="button"
-                    class="start-recording btn btn-outline-light recording-button">
+                    class="start-recording btn btn-outline-dark text-light recording-button">
                 <h1 class="head-text">
                     Start Recording
                 </h1>
@@ -75,7 +75,7 @@
             <textarea class="form-control bg-dark text-light"
                       id="form-notes"
                       rows="5">{{ Step.text_data }}</textarea>
-            <button type="submit" class="btn btn-outline-light float-right m-2 save-notes"
+            <button type="submit" class="btn btn-outline-dark text-light float-right m-2 save-notes"
                     data-urllink="/notes/step/{{ Step.id }}/">
                 Save
             </button>
@@ -101,7 +101,7 @@
 {% block controls %}
     <a href="{{ Lesson.url }}">
         <button type="button"
-                class="float-left h-100 btn btn-outline-light
+                class="float-left h-100 btn btn-outline-dark text-light
                 btn-back sticky-top rounded-0 border-top-0 border-secondary">
             <span class="glyphicon glyphicon-chevron-left"></span>
         </button>

@@ -17,7 +17,7 @@
         <script src="{% static "extra/handlebars-v3.0.3.js" %}"></script>
     </head>
 {% endblock %}
-<body class="bg-dark">
+<body>
 <nav class="navbar navbar-expand-lg navbar-dark text-light">
     <a class="navbar-brand p-0" href="/loggedin/">
         <img src="{% static "icons/stepik.png" %}" alt="" width="41" height="41">
@@ -50,7 +50,7 @@
             {% endif %}
         </ul>
         <span class="nav-link text-light">{{ full_name }}</span>
-        <a class="btn btn-outline-light my-2 my-sm-0" href="/logout/">Log out</a>
+        <a class="btn btn-outline-dark text-light my-2 my-sm-0" href="/logout/">Log out</a>
     </div>
 </nav>
 

@@ -1,5 +1,5 @@
 {% load app_filters %}
-<div class="list-group-item substep-list w-100 d-table bg-dark border-light text-light"
+<div class="list-group-item substep-list w-100 d-table border-light text-light"
      data-ss-id="{{ Substep.id }}"
      data-ss-locked="{{ Substep.is_locked }}">
     <span class="ss-name d-table-cell align-middle w-25 pl-2">{{ Substep.name|to_custom_name:tmpl_name }}</span>
@@ -19,7 +19,7 @@
     </span>
     <span class="btn-group float-right">
         <button type="button"
-                class="btn btn-outline-light show-content"
+                class="btn btn-secondary show-content"
                 data-urllink="/showcontent/{{ Substep.id }}/"
                 data-toggle="tooltip" aria-haspopup="true"
                 aria-expanded="false" data-placement="bottom"
@@ -27,7 +27,7 @@
             <img src="/static/icons/video-camera.svg" width="30" height="30">
         </button>
         <button type="button"
-                class="btn btn-outline-light show-content"
+                class="btn btn-secondary show-content"
                 data-urllink="/showscreencontent/{{ Substep.id }}/"
                 data-toggle="tooltip"
                 aria-haspopup="true"
@@ -36,7 +36,7 @@
             <img src="/static/icons/display.svg" width="30" height="30">
         </button>
         <button type="button"
-                class="btn btn-outline-light show-content show-raw-cut {% if not Substep.automontage_exist %} d-none {% endif %}"
+                class="btn btn-secondary show-content show-raw-cut {% if not Substep.automontage_exist %} d-none {% endif %}"
                 data-urllink="/show-montage/{{ Substep.id }}/"
                 data-toggle="tooltip" aria-haspopup="true"
                 aria-expanded="false"
@@ -46,7 +46,7 @@
             <img src="/static/icons/film-strip-play.svg" width="30" height="30">
         </button>
         <button type="button"
-                class="btn btn-outline-light create-raw-cut {% if Substep.automontage_exist %} d-none {% endif %}"
+                class="btn btn-secondary create-raw-cut {% if Substep.automontage_exist %} d-none {% endif %}"
                 data-urllink="/create_montage/{{ Substep.id }}"
                 data-toggle="tooltip"
                 aria-haspopup="true"
@@ -56,7 +56,7 @@
             <img src="/static/icons/raw-cut.svg" width="30" height="30">
         </button>
         <button type="button"
-                class="btn btn-outline-light delete-button"
+                class="btn btn-secondary delete-button"
                 data-urllink="{{ Substep.id }}/delete/"
                 data-toggle="tooltip"
                 aria-haspopup="true"

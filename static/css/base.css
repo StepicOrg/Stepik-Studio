@@ -8,7 +8,7 @@ html {
 body {
     /* Margin bottom by footer height */
     margin-bottom: 40px;
-    background-color: #f5f5f5;
+    background-color: #000000;
 }
 
 .footer {
@@ -57,6 +57,7 @@ code {
     line-height: 1.5;
     white-space: nowrap;
     font-size: 1.25rem;
+    background-color: #000000;
 }
 
 #add-form {

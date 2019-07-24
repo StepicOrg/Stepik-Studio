@@ -22,7 +22,7 @@
         <div class="add-item btn-group dropright" data-urllink="/course/{{ Course.id }}/add-lesson/">
             <span data-toggle="dropdown">
                 <button type="button"
-                        class="btn btn-outline-light btn-lg border
+                        class="btn btn-outline-dark text-light btn-lg border
                         rounded btn-list dropdown-toggle-split"
                         data-toggle="tooltip" aria-haspopup="true"
                         aria-expanded="false" data-placement="left"
@@ -40,12 +40,12 @@
                 <div class="btn-group"
                      id="{{ L.position }}"
                      elem_id="{{ L.id }}">
-                    <a class="btn btn-outline-light btn-lg text-left border btn-list elem-name"
+                    <a class="btn btn-outline-dark text-light btn-lg text-left border btn-list elem-name"
                        type="lesson"
                        href="/course/{{ Course.id }}/lesson/{{ L.id }}/">{{ L.name }}</a>
 
                     <button type="button"
-                            class="btn btn-lg btn-outline-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
+                            class="btn btn-lg btn-outline-dark text-light dropdown-toggle dropdown-toggle-split w-4 border border-left-0 btn-list"
                             data-toggle="dropdown" aria-haspopup="true"
                             aria-expanded="false">
                     </button>
@@ -79,7 +79,7 @@
     {% block controls %}
         <a href="/courses/">
             <button type="button"
-                    class="float-left h-100 btn btn-outline-light
+                    class="float-left h-100 btn btn-outline-dark text-light
                     btn-back sticky-top rounded-0 border-top-0 border-secondary">
                 <span class="glyphicon glyphicon-chevron-left"></span>
             </button>

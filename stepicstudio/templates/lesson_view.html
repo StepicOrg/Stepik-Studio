@@ -33,7 +33,7 @@
 
             <span data-toggle="dropdown">
                 <button type="button"
-                        class="btn btn-outline-light btn-lg border
+                        class="btn btn-outline-dark text-light btn-lg border
                         rounded btn-list dropdown-toggle-split"
                         data-toggle="tooltip" aria-haspopup="true"
                         aria-expanded="false" data-placement="left"
@@ -49,12 +49,12 @@
         <div class="btn-group-vertical w-100 sortable">
             {% for S in Steps %}
                 <div class="btn-group" id="{{ S.position }}" elem_id="{{ S.pk }}">
-                    <a class="btn btn-outline-light btn-lg text-left border btn-list elem-name"
+                    <a class="btn btn-outline-dark text-light btn-lg text-left border btn-list elem-name"
                        type="step"
                        href="/course/{{ Course.id }}/lesson/{{ Lesson.id }}/step/{{ S.id }}/">{{ S.name }}</a>
 
                     <button type="button"
-                            class="btn btn-lg btn-outline-light
+                            class="btn btn-lg btn-outline-dark text-light
                             dropdown-toggle dropdown-toggle-split w-4
                             border border-left-0 btn-list"
                             data-toggle="dropdown" aria-haspopup="true"
@@ -89,7 +89,7 @@
     {% block controls %}
         <a href="{{ Course.url }}">
             <button type="button"
-                    class="float-left h-100 btn btn-outline-light
+                    class="float-left h-100 btn btn-outline-dark text-light
                     btn-back sticky-top rounded-0 border-top-0 border-secondary">
                 <span class="glyphicon glyphicon-chevron-left"></span>
             </button>
