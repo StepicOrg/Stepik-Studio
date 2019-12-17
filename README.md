@@ -50,6 +50,13 @@ CREATE DATABASE databasename;
 python manage.py migrate
 ```
 
+## Setup FFMPEG
+
+```
+FFMPEG settings are hardware specific.
+Check STEPIC_STUDIO/settings/base.py for details.
+```
+
 ## Run
 
 macOS and Linux, not sure about Windows:
