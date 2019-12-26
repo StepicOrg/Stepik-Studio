@@ -21,7 +21,7 @@ LINUX_DIR = ''
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '--+9q@q5n6@x-#!9&4p5k4yw@vfg+m9uk^#$qlqw8bv59y#@p='
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -152,7 +152,7 @@ AUTOFOCUS_MODULE = ''
 PERSISTENT_SCHEDULED_TASKS = True
 
 RAVEN_CONFIG = {
-    'dsn': ' https://efc5d55d068e4b3d9fa9c33a2359ef3a:2cf467c644d7404f9410f694a987cf6c@sentry.stepik.org/14',
+    'dsn': ' ',
 }
 
 SENTRY_CLIENT = 'stepicstudio.logging.SentryLocatedClient'
